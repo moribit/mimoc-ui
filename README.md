@@ -1,6 +1,6 @@
 # Mimoc UI
 
-Small Zig UI core for monochrome embedded displays. The current implementation covers milestones 1–4: fixed-capacity declarative nodes, integer layout, action/focus navigation, SSD1306-format software rendering, headless snapshots, and a macOS virtual display.
+Small Zig UI core for monochrome embedded displays. The current implementation covers milestones 1–5: fixed-capacity declarative nodes, integer layout, action/focus navigation, SSD1306-format software rendering, headless snapshots, a macOS virtual display, and time-based animation.
 
 ```sh
 zig build test
@@ -13,4 +13,6 @@ The simulator uses arrow keys or WASD to move focus, Return/Space to activate, a
 
 For a small target, use `runtime.beginView()` and `runtime.finishView()` to build directly into runtime storage. `src/embedded_smoke.zig` is a freestanding page-render compilation check. The [Milestone 4 review](docs/milestone-4-review.md) records the RAM budget and the next architecture decisions.
 
-Current limits: ASCII bitmap text, one root view, static layout, and a single focus chain. Animation, transitions, Studio, hardware adapters, and browser support belong to later milestones after architecture review.
+Use `Runtime(.{ .max_nodes = 16, .max_animations = 4 })` and set a node's `.animation` to a compact `Animation` value. Call `runtime.update(now_ms)` once per frame, then render the full framebuffer or each page without changing the time. The [Milestone 5 review](docs/milestone-5-review.md) records measured sizes and verification.
+
+Current limits: ASCII bitmap text, one root view, a single focus chain, and rectangle-based animation. Transitions, Studio, hardware adapters, and browser support belong to later milestones.

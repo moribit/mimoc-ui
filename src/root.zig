@@ -4,6 +4,7 @@ pub const font = @import("font.zig");
 pub const view = @import("view.zig");
 pub const layout = @import("layout.zig");
 pub const input = @import("input.zig");
+pub const animation = @import("animation.zig");
 pub const runtime = @import("runtime.zig");
 pub const mono1 = @import("renderers/mono1.zig");
 pub const headless = @import("renderers/headless.zig");

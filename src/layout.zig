@@ -14,7 +14,7 @@ pub fn measure(nodes: []const v.Node, index: usize) g.Size {
     switch (node.kind) {
         .text => return .{ .w = @max(node.min_size.w, font.measure(node.font, node.text)), .h = @max(node.min_size.h, font.metrics(node.font, 0).height) },
         .button => return .{ .w = @max(node.min_size.w, add(font.measure(node.font, node.text), 12)), .h = @max(node.min_size.h, 12) },
-        .rect => return node.min_size,
+        .rect, .filled_rect => return node.min_size,
         .divider => return .{ .w = node.min_size.w, .h = @max(node.min_size.h, 1) },
         .spacer => return node.min_size,
         else => {},

@@ -3,6 +3,11 @@
 
 extern void mimoc_key(int key);
 extern void mimoc_click(int x, int y);
+extern void mimoc_tick(uint32_t now_ms);
+
+uint32_t mimoc_now_ms(void) {
+    return (uint32_t)(uint64_t)([NSProcessInfo processInfo].systemUptime * 1000.0);
+}
 
 static const uint8_t *pixels;
 static NSView *canvas;
@@ -52,6 +57,7 @@ static NSView *canvas;
 @end
 @implementation MimocDelegate
 - (void)windowWillClose:(NSNotification *)notification { [NSApp terminate:nil]; }
+- (void)tick:(NSTimer *)timer { mimoc_tick(mimoc_now_ms()); }
 @end
 
 void mimoc_window_redraw(void) {
@@ -76,6 +82,7 @@ void mimoc_window_run(const uint8_t *framebuffer) {
         [window makeKeyAndOrderFront:nil];
         [window makeFirstResponder:canvas];
         [NSApp activateIgnoringOtherApps:YES];
+        [NSTimer scheduledTimerWithTimeInterval:1.0 / 60.0 target:delegate selector:@selector(tick:) userInfo:nil repeats:YES];
         [NSApp run];
     }
 }

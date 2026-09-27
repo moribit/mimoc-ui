@@ -1,20 +1,23 @@
 const g = @import("geometry.zig");
 const Font = @import("font.zig").Font;
+const Animation = @import("animation.zig").Animation;
 
-pub const Kind = enum { column, row, stack, text, rect, spacer, button, divider };
+pub const Kind = enum { column, row, stack, text, rect, filled_rect, spacer, button, divider };
 pub const Align = enum { start, center, end };
 pub const Node = struct {
-    id: u16 = 0,
-    kind: Kind,
-    parent: ?u16 = null,
-    subtree_end: u16 = 0,
-    frame: g.Rect = .{},
     text: []const u8 = "",
+    frame: g.Rect = .{},
+    min_size: g.Size = .{},
+    offset: g.Point = .{},
+    animation: Animation = .{},
+    parent: u16 = 0xffff,
+    id: u16 = 0,
+    subtree_end: u16 = 0,
+    kind: Kind,
     font: Font = .tiny5x7,
     padding: u8 = 0,
     spacing: u8 = 0,
     alignment: Align = .start,
-    min_size: g.Size = .{},
 };
 
 pub fn Builder(comptime capacity: usize) type {
@@ -56,7 +59,7 @@ fn BuilderImpl(comptime capacity: usize, comptime borrowed: bool) type {
         fn append(self: *Self, node_: Node) error{CapacityExceeded}!u16 {
             if (self.len >= capacity) return error.CapacityExceeded;
             var node = node_;
-            node.parent = if (self.depth == 0) null else self.stack[self.depth - 1];
+            node.parent = if (self.depth == 0) 0xffff else self.stack[self.depth - 1];
             node.subtree_end = self.len + 1;
             const index = self.len;
             self.nodes[index] = node;
