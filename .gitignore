@@ -1,0 +1,8 @@
+# Zig build output and local compilation artifacts
+/.zig-cache/
+/zig-out/
+*.o
+
+# macOS
+*.dSYM/
+.DS_Store

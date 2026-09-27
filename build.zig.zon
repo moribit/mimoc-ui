@@ -1,0 +1,7 @@
+.{
+    .name = .mimoc_ui,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.16.0",
+    .fingerprint = 0xb7bf_fa02_6efc_76f6,
+    .paths = .{ "build.zig", "build.zig.zon", "src", "examples", "docs", "README.md" },
+}
