@@ -11,6 +11,9 @@ uint32_t mimoc_now_ms(void) {
 
 static const uint8_t *pixels;
 static NSView *canvas;
+static int display_width;
+static int display_height;
+static int display_scale;
 
 @interface MimocView : NSView
 @end
@@ -22,10 +25,10 @@ static NSView *canvas;
     [[NSColor colorWithCalibratedWhite:0.04 alpha:1] setFill];
     NSRectFill(self.bounds);
     [[NSColor colorWithCalibratedWhite:0.92 alpha:1] setFill];
-    for (int y = 0; y < 64; ++y) {
-        for (int x = 0; x < 128; ++x) {
-            if (pixels[(y / 8) * 128 + x] & (1u << (y % 8))) {
-                NSRectFill(NSMakeRect(x * 8, y * 8, 8, 8));
+    for (int y = 0; y < display_height; ++y) {
+        for (int x = 0; x < display_width; ++x) {
+            if (pixels[(y / 8) * display_width + x] & (1u << (y % 8))) {
+                NSRectFill(NSMakeRect(x * display_scale, y * display_scale, display_scale, display_scale));
             }
         }
     }
@@ -45,11 +48,19 @@ static NSView *canvas;
     else if ([characters isEqualToString:@"s"]) mimoc_key(1);
     else if ([characters isEqualToString:@"a"]) mimoc_key(2);
     else if ([characters isEqualToString:@"d"]) mimoc_key(3);
+    else if ([characters isEqualToString:@"r"]) mimoc_key(6);
+    else if ([characters isEqualToString:@"p"]) mimoc_key(7);
+    else if ([characters isEqualToString:@"x"]) mimoc_key(8);
+    else if ([characters isEqualToString:@"n"]) mimoc_key(9);
+    else if ([characters isEqualToString:@"f"]) mimoc_key(10);
+    else if ([characters isEqualToString:@"t"]) mimoc_key(11);
+    else if ([characters isEqualToString:@"o"]) mimoc_key(12);
+    else if ([characters isEqualToString:@"z"]) mimoc_key(13);
     else [super keyDown:event];
 }
 - (void)mouseDown:(NSEvent *)event {
     NSPoint point = [self convertPoint:event.locationInWindow fromView:nil];
-    mimoc_click((int)(point.x / 8), (int)(point.y / 8));
+    mimoc_click((int)(point.x / display_scale), (int)(point.y / display_scale));
 }
 @end
 
@@ -64,16 +75,19 @@ void mimoc_window_redraw(void) {
     [canvas setNeedsDisplay:YES];
 }
 
-void mimoc_window_run(const uint8_t *framebuffer) {
+void mimoc_window_run(const uint8_t *framebuffer, int width, int height, int scale, const char *title) {
     @autoreleasepool {
         pixels = framebuffer;
+        display_width = width;
+        display_height = height;
+        display_scale = scale;
         [NSApplication sharedApplication];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-        NSRect rect = NSMakeRect(0, 0, 1024, 512);
+        NSRect rect = NSMakeRect(0, 0, width * scale, height * scale);
         NSWindow *window = [[NSWindow alloc] initWithContentRect:rect
             styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable
             backing:NSBackingStoreBuffered defer:NO];
-        window.title = @"Mimoc UI — Virtual SSD1306";
+        window.title = [NSString stringWithUTF8String:title];
         MimocDelegate *delegate = [MimocDelegate new];
         window.delegate = delegate;
         canvas = [[MimocView alloc] initWithFrame:rect];
