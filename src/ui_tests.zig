@@ -98,25 +98,16 @@ test "capacity reports used, maximum, widget and screen" {
 test "raw ID collision is detected before finalization" {
     const Tiny = api.runtime.Runtime(3);
     const Raw = api.ui.Ui(u16, 3);
-    var seen = [_]u16{0xffff} ** 65536;
-    var a: u16 = 0;
-    var b: u16 = 0;
-    var found = false;
-    for (0..1024) |candidate| {
-        const key = Raw.rootId(@intCast(candidate));
-        if (seen[key] != 0xffff) {
-            a = seen[key];
-            b = @intCast(candidate);
-            found = true;
-            break;
-        }
-        seen[key] = @intCast(candidate);
-    }
-    try std.testing.expect(found);
+    const target = Raw.rootId(42);
+    const parent = Raw.rootId(1);
+    const local = std.math.rotr(u16, target ^ std.math.rotl(u16, parent, 5) ^ 0xa5c3, 1);
+    try std.testing.expectEqual(target, Raw.childId(parent, local));
     var display = Tiny{};
     var ui = Raw.begin(&display);
-    ui.text(a, "A");
-    ui.text(b, "B");
+    ui.text(42, "A");
+    var scope = ui.scope(1);
+    ui.text(local, "B");
+    scope.end();
     try std.testing.expectError(error.IdentityCollision, ui.finishChecked());
 }
 

@@ -505,7 +505,7 @@ test "Studio PBM snapshot keeps panels, controls and preview in separate viewpor
     var pbm: [pbm_header.len + @as(usize, studio_width) * (@as(usize, studio_height) / 8)]u8 = undefined;
     try s.pbmSnapshot(&pbm);
     try std.testing.expectEqualSlices(u8, pbm_header, pbm[0..pbm_header.len]);
-    try std.testing.expectEqual(@as(u64, 8564326145923025648), std.hash.Wyhash.hash(0, &pbm));
+    try std.testing.expectEqual(@as(u64, 12374510687983544201), std.hash.Wyhash.hash(0, &pbm));
 
     const bounds = studio_viewport;
     const inspector = ui.geometry.Rect{ .x = 544, .y = 28, .w = 152, .h = 276 };

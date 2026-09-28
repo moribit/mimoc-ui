@@ -10,4 +10,6 @@ Compile `src/ui_embedded_smoke.zig` with `zig build-obj src/ui_embedded_smoke.zi
 
 The linked `ch32-mimoc-ui` firmware must be measured separately. Build that project before and after an update, then run `sh tools/ch32-reference-regression.sh firmware.elf firmware.bin`. It reports binary length and ELF data+bss against the recorded reference (13,844B image, 516B static RAM). The Core does not depend on that repository.
 
+The high-level widget sample in `ch32-mimoc-ui` uses 10 nodes and zero animation tracks to fit Checkbox, Toggle, Progress, and Icon in CH32V003 Flash. Its measured ReleaseSmall image is 16,184B with 560B static RAM. The linker reserves 64B of the 16KB Flash, leaving 136B of image headroom. This is a size-constrained example, not a recommendation to place additional code in the remaining bytes without remeasurement.
+
 Static RAM omits stack peaks. For hardware validation, place a canary pattern between the linker-defined stack limit and initial stack pointer at boot, then inspect untouched bytes after repeating view rebuild, layout, update, each page render, long wrapped text, and composite widgets. Keep the watermark outside `.bss` and leave an interrupt margin; verify linker symbols and interrupt entry code in the reference firmware. A host or emulator cannot substitute for this hardware stack measurement.

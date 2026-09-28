@@ -42,12 +42,7 @@ pub const ProgressOptions = struct { width: i16 = 86, animation: animation.Anima
 /// A short, deterministic identity derived from parent scope, logical ID and part role.
 /// The builder checks every generated ID for collisions before appending a Node.
 pub fn derive(parent: u16, local: u16, role: u16) u16 {
-    var hash: u32 = 2166136261;
-    inline for (.{ parent, local, role }) |word| {
-        hash = (hash ^ @as(u8, @truncate(word))) *% 16777619;
-        hash = (hash ^ @as(u8, @truncate(word >> 8))) *% 16777619;
-    }
-    return @truncate(hash ^ (hash >> 16));
+    return std.math.rotl(u16, parent, 5) ^ std.math.rotl(u16, local, 1) ^ std.math.rotl(u16, role, 9) ^ 0xa5c3;
 }
 
 pub fn Ui(comptime Id: type, comptime config: anytype) type {
@@ -361,8 +356,12 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
             };
         }
         pub fn finish(self: *Self) void {
+            if (comptime builtin.mode == .ReleaseSmall) {
+                if (self.failure != null or self.open_scopes != 0 or self.builder.depth != 0) @trap();
+                self.runtime.finishView(&self.builder) catch @trap();
+                return;
+            }
             self.finishChecked() catch {
-                if (comptime builtin.mode == .ReleaseSmall) @trap();
                 if (comptime diagnostics_enabled) {
                     if (self.details) |detail| std.debug.panic("Mimoc UI {s}: used {d}/{d}, widget {s}, screen {s}, node {d}", .{
                         @tagName(detail.failure), detail.used, detail.capacity, detail.widget, detail.screen, detail.id,
