@@ -14,6 +14,10 @@ pub fn measure(nodes: []const v.Node, index: usize) g.Size {
     switch (node.kind) {
         .text => return .{ .w = @max(node.min_size.w, font.measure(node.font, node.text)), .h = @max(node.min_size.h, font.metrics(node.font, 0).height) },
         .button => return .{ .w = @max(node.min_size.w, add(font.measure(node.font, node.text), 12)), .h = @max(node.min_size.h, 12) },
+        .checkbox => return .{ .w = @max(node.min_size.w, add(font.measure(node.font, node.text), 16)), .h = @max(node.min_size.h, 12) },
+        .toggle => return .{ .w = @max(node.min_size.w, add(font.measure(node.font, node.text), 36)), .h = @max(node.min_size.h, 12) },
+        .progress => return .{ .w = @max(node.min_size.w, 40), .h = @max(node.min_size.h, 8) },
+        .icon, .clip, .scroll => return node.min_size,
         .rect, .filled_rect => return node.min_size,
         .divider => return .{ .w = node.min_size.w, .h = @max(node.min_size.h, 1) },
         .spacer => return node.min_size,
@@ -50,6 +54,14 @@ pub fn measure(nodes: []const v.Node, index: usize) g.Size {
 pub fn place(nodes: []v.Node, index: usize, frame: g.Rect) void {
     nodes[index].frame = frame;
     const node = nodes[index];
+    if (node.kind == .clip or node.kind == .scroll) {
+        var child_index = index + 1;
+        while (child_index < node.subtree_end) : (child_index = childNext(nodes, child_index)) {
+            const size = measure(nodes, child_index);
+            place(nodes, child_index, .{ .x = frame.x, .y = frame.y, .w = size.w, .h = size.h });
+        }
+        return;
+    }
     if (node.kind != .column and node.kind != .row and node.kind != .stack) return;
     const p: i16 = node.padding;
     const inner = g.Rect{ .x = add(frame.x, p), .y = add(frame.y, p), .w = @max(0, frame.w - 2 * p), .h = @max(0, frame.h - 2 * p) };

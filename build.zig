@@ -15,6 +15,12 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_tests.step);
 
     if (target.result.os.tag == .macos) {
+        const showcase_module = b.createModule(.{
+            .root_source_file = b.path("examples/showcase.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        showcase_module.addImport("mimoc_ui", module);
         const app = b.addExecutable(.{
             .name = "mimoc-simulator",
             .root_module = b.createModule(.{
@@ -24,6 +30,7 @@ pub fn build(b: *std.Build) void {
             }),
         });
         app.root_module.addImport("mimoc_ui", module);
+        app.root_module.addImport("showcase", showcase_module);
         app.root_module.addCSourceFile(.{ .file = b.path("src/platform/macos/window.m"), .flags = &.{"-fobjc-arc"} });
         app.root_module.linkFramework("AppKit", .{});
         app.root_module.linkFramework("Foundation", .{});
@@ -49,6 +56,7 @@ pub fn build(b: *std.Build) void {
         });
         demo_module.addImport("mimoc_ui", module);
         studio.root_module.addImport("demo_view", demo_module);
+        studio.root_module.addImport("showcase", showcase_module);
         studio.root_module.addCSourceFile(.{ .file = b.path("src/platform/macos/window.m"), .flags = &.{"-fobjc-arc"} });
         studio.root_module.linkFramework("AppKit", .{});
         studio.root_module.linkFramework("Foundation", .{});
@@ -65,6 +73,7 @@ pub fn build(b: *std.Build) void {
         }) });
         studio_tests.root_module.addImport("mimoc_ui", module);
         studio_tests.root_module.addImport("demo_view", demo_module);
+        studio_tests.root_module.addImport("showcase", showcase_module);
         studio_tests.root_module.addCSourceFile(.{ .file = b.path("src/platform/macos/window.m"), .flags = &.{"-fobjc-arc"} });
         studio_tests.root_module.linkFramework("AppKit", .{});
         studio_tests.root_module.linkFramework("Foundation", .{});

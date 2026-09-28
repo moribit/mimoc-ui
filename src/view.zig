@@ -2,7 +2,7 @@ const g = @import("geometry.zig");
 const Font = @import("font.zig").Font;
 const Animation = @import("animation.zig").Animation;
 
-pub const Kind = enum { column, row, stack, text, rect, filled_rect, spacer, button, divider };
+pub const Kind = enum { column, row, stack, text, rect, filled_rect, spacer, button, divider, icon, checkbox, toggle, progress, clip, scroll, list_item };
 pub const Align = enum { start, center, end };
 pub const Node = struct {
     text: []const u8 = "",

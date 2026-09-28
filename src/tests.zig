@@ -3,6 +3,9 @@ const v = @import("view.zig");
 const rt = @import("runtime.zig");
 const headless = @import("renderers/headless.zig");
 const animation = @import("animation.zig");
+const navigation = @import("navigation.zig");
+const scroll = @import("scroll.zig");
+const transition = @import("transition.zig");
 
 const AnimatedUi = rt.Runtime(.{ .max_nodes = 16, .max_animations = 4 });
 fn animatedScene(ui: *AnimatedUi, x: i16) !void {
@@ -48,6 +51,11 @@ test "full framebuffer equals eight independently rendered pages" {
 
 test "fixed memory footprints" {
     try std.testing.expectEqual(@as(usize, 36), @sizeOf(animation.Track));
+    const Screen = enum(u8) { home, contacts, chat };
+    try std.testing.expectEqual(@as(usize, 8), @sizeOf(navigation.Navigation(Screen, 8).Entry));
+    try std.testing.expectEqual(@as(usize, 66), @sizeOf(navigation.Navigation(Screen, 8)));
+    try std.testing.expectEqual(@as(usize, 2), @sizeOf(scroll.ScrollState));
+    try std.testing.expectEqual(@as(usize, 24), @sizeOf(transition.Transition));
     if (@sizeOf(usize) == 8) {
         try std.testing.expectEqual(@as(usize, 48), @sizeOf(v.Node));
         try std.testing.expectEqual(@as(usize, 936), @sizeOf(AnimatedUi));

@@ -56,6 +56,7 @@ static int display_scale;
     else if ([characters isEqualToString:@"t"]) mimoc_key(11);
     else if ([characters isEqualToString:@"o"]) mimoc_key(12);
     else if ([characters isEqualToString:@"z"]) mimoc_key(13);
+    else if ([characters isEqualToString:@"m"]) mimoc_key(14);
     else [super keyDown:event];
 }
 - (void)mouseDown:(NSEvent *)event {

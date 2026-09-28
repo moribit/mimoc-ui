@@ -1,9 +1,13 @@
 const std = @import("std");
 const ui = @import("mimoc_ui");
 const demo = @import("demo_view");
+const showcase = @import("showcase");
 
 const StudioUi = ui.runtime.Runtime(64);
-const Preview = ui.runtime.Runtime(.{ .max_nodes = 16, .max_animations = 4 });
+const Preview = ui.runtime.Runtime(.{ .max_nodes = 32, .max_animations = 4 });
+// RV32EC size from the existing CH32V003 integration build; the Studio host size differs.
+const ch32_runtime_bytes: usize = 808;
+const ch32_ui_budget: usize = ch32_runtime_bytes + 40 + 66 + 2 + 24 + 128;
 const profiles = [_][]const u8{ "DESKTOP", "SSD1306 FULL", "SSD1306 PAGE", "CH32V003", "ESP32-S3" };
 const rates = [_]u8{ 60, 30, 15, 10 };
 
@@ -14,6 +18,8 @@ extern fn mimoc_now_ms() u32;
 const Studio = struct {
     chrome: StudioUi = .{},
     preview: Preview = .{},
+    showcase_state: showcase.State = .{},
+    demo_mode: showcase.Mode = .classic,
     canvas: [384 * 24]u8 = [_]u8{0} ** (384 * 24),
     preview_pixels: [1024]u8 = [_]u8{0} ** 1024,
     running: bool = true,
@@ -38,6 +44,11 @@ const Studio = struct {
     buffer_label: [24]u8 = undefined,
     remaining_label: [24]u8 = undefined,
     selected_label: [24]u8 = undefined,
+    demo_label: [24]u8 = undefined,
+
+    fn rebuildPreview(self: *Studio) void {
+        if (self.demo_mode == .classic) demo.build(&self.preview, self.preview_status) else showcase.build(&self.preview, &self.showcase_state, self.demo_mode);
+    }
 
     fn label(buffer: *[24]u8, comptime fmt: []const u8, args: anytype) []const u8 {
         return std.fmt.bufPrint(buffer, fmt, args) catch unreachable;
@@ -61,21 +72,23 @@ const Studio = struct {
         addText(&b, 3, if (self.running) "RUN" else "PAUSE", 334, 4);
         b.add(.{ .id = 4, .kind = .divider, .min_size = .{ .w = 376, .h = 1 }, .offset = .{ .x = 4, .y = 15 } }) catch unreachable;
         b.add(.{ .id = 5, .kind = .rect, .min_size = .{ .w = 264, .h = 140 }, .offset = .{ .x = 4, .y = 20 } }) catch unreachable;
-        b.add(.{ .id = 6, .kind = .rect, .min_size = .{ .w = 108, .h = 140 }, .offset = .{ .x = 272, .y = 20 } }) catch unreachable;
-
-        addText(&b, 10, profiles[self.profile_index], 276, 24);
-        addText(&b, 11, "128X64 1BIT", 276, 36);
-        addText(&b, 12, label(&self.fps_label, "FPS {d}", .{rates[self.fps_index]}), 276, 48);
-        addText(&b, 13, label(&self.frame_label, "FRAME {d}", .{self.frame_number}), 276, 60);
-        addText(&b, 14, label(&self.nodes_label, "NODES {d}/16", .{self.preview.nodeCount()}), 276, 72);
-        addText(&b, 15, label(&self.anim_label, "ANIM {d}/4", .{self.preview.activeAnimationCount()}), 276, 84);
-        addText(&b, 16, label(&self.focus_label, "FOCUS {d}", .{self.preview.focused_id orelse 0}), 276, 96);
-        addText(&b, 17, label(&self.input_label, "INPUT {s}", .{self.last_action}), 276, 108);
-        addText(&b, 18, label(&self.runtime_label, "RT {d}B", .{@sizeOf(Preview)}), 276, 120);
-        addText(&b, 19, label(&self.buffer_label, "BUF {d}B", .{self.frameBufferBytes()}), 276, 132);
-        const remaining = if (self.profile_index == 3) @as(i32, 2048) - @as(i32, @intCast(@sizeOf(Preview) + @sizeOf(ui.view.InPlaceBuilder(16)) + 128)) else 0;
-        addText(&b, 20, if (self.profile_index == 3) label(&self.remaining_label, "LEFT {d}B", .{remaining}) else "RAM --", 276, 144);
-        addText(&b, 21, label(&self.selected_label, "NODE {d} {d}X", .{ self.selected_id orelse 0, self.preview_scale }), 276, 152);
+        const panel_index = b.len;
+        ui.widgets.beginPanel(&b, 200, "TARGET", .{ .w = 108, .h = 140 }, .{}) catch unreachable;
+        b.nodes[panel_index].offset = .{ .x = 272, .y = 20 };
+        ui.widgets.text(&b, 10, profiles[self.profile_index]) catch unreachable;
+        ui.widgets.text(&b, 11, "128X64 1BIT") catch unreachable;
+        ui.widgets.text(&b, 12, label(&self.fps_label, "FPS {d}", .{rates[self.fps_index]})) catch unreachable;
+        ui.widgets.text(&b, 13, label(&self.frame_label, "FRAME {d}", .{self.frame_number})) catch unreachable;
+        ui.widgets.text(&b, 14, label(&self.nodes_label, "NODES {d}/{d}", .{ self.preview.nodeCount(), if (self.profile_index == 3) @as(u8, 16) else @as(u8, 32) })) catch unreachable;
+        ui.widgets.text(&b, 15, label(&self.anim_label, "ANIM {d}/4", .{self.preview.activeAnimationCount()})) catch unreachable;
+        ui.widgets.text(&b, 16, label(&self.focus_label, "FOCUS {d}", .{self.preview.focused_id orelse 0})) catch unreachable;
+        ui.widgets.text(&b, 17, label(&self.input_label, "INPUT {s}", .{self.last_action})) catch unreachable;
+        ui.widgets.text(&b, 18, label(&self.runtime_label, "RT {d}B", .{if (self.profile_index == 3) ch32_runtime_bytes else @as(usize, @sizeOf(Preview))})) catch unreachable;
+        ui.widgets.text(&b, 19, label(&self.buffer_label, "BUF {d}B", .{self.frameBufferBytes()})) catch unreachable;
+        const remaining = if (self.profile_index == 3) @as(i32, 2048 - ch32_ui_budget) else 0;
+        ui.widgets.text(&b, 20, if (self.profile_index == 3) label(&self.remaining_label, "LEFT {d}B", .{remaining}) else "RAM --") catch unreachable;
+        ui.widgets.text(&b, 21, label(&self.selected_label, "NODE {d} {d}X", .{ self.selected_id orelse 0, self.preview_scale })) catch unreachable;
+        ui.widgets.endPanel(&b);
 
         addButton(&b, 100, "RUN", 4, 168, 40);
         addButton(&b, 101, "PAUSE", 48, 168, 46);
@@ -85,13 +98,22 @@ const Studio = struct {
         addButton(&b, 105, "TARGET", 248, 168, 54);
         addButton(&b, 106, "OVR", 306, 168, 38);
         addButton(&b, 107, "1/2X", 348, 168, 32);
+        addButton(&b, 108, "DEMO", 4, 180, 44);
+        addText(&b, 109, label(&self.demo_label, "{s}", .{switch (self.demo_mode) {
+            .classic => "CLASSIC",
+            .widgets => "WIDGETS",
+            .navigation => "NAVIGATION",
+        }}), 52, 182);
         b.end();
         self.chrome.finishView(&b) catch unreachable;
     }
     fn paint(self: *Studio) void {
         self.rebuildChrome();
         ui.headless.render(&self.chrome, &self.canvas, 384, 192) catch unreachable;
-        ui.headless.render(&self.preview, &self.preview_pixels, 128, 64) catch unreachable;
+        if (self.demo_mode == .navigation) {
+            const shifted = ui.transition.Shifted(Preview){ .runtime = &self.preview, .offset = self.showcase_state.transition.incoming };
+            ui.headless.render(&shifted, &self.preview_pixels, 128, 64) catch unreachable;
+        } else ui.headless.render(&self.preview, &self.preview_pixels, 128, 64) catch unreachable;
         var surface = ui.surface.Mono1.init(&self.canvas, 384, 192) catch unreachable;
         var r = ui.mono1.Renderer.init(&surface);
         const scale: i16 = self.preview_scale;
@@ -120,9 +142,10 @@ const Studio = struct {
     }
     fn restart(self: *Studio) void {
         self.preview = .{};
+        self.showcase_state = .{};
         self.preview.update(0);
         self.preview_status = "READY";
-        demo.build(&self.preview, self.preview_status);
+        self.rebuildPreview();
         self.clock_ms = 0;
         self.frame_number = 0;
         self.accumulated_ms = 0;
@@ -134,6 +157,7 @@ const Studio = struct {
         self.running = false;
         self.clock_ms +%= 16;
         self.preview.update(self.clock_ms);
+        self.showcase_state.transition.update(self.clock_ms);
         self.frame_number +%= 1;
         self.paint();
     }
@@ -156,19 +180,34 @@ const Studio = struct {
             105 => self.profile_index = @intCast((@as(usize, self.profile_index) + 1) % profiles.len),
             106 => self.overlay = !self.overlay,
             107 => self.preview_scale = if (self.preview_scale == 1) 2 else 1,
+            108 => {
+                self.demo_mode = switch (self.demo_mode) {
+                    .classic => .widgets,
+                    .widgets => .navigation,
+                    .navigation => .classic,
+                };
+                self.restart();
+                return;
+            },
             else => return,
         }
         self.paint();
     }
     fn input(self: *Studio, action: ui.input.Action) void {
         self.preview.update(self.clock_ms);
-        if (self.preview.action(action)) |id| {
-            self.preview_status = switch (id) {
-                10 => "CHAT OPEN",
-                11 => "CQ OPEN",
-                12 => "EHAGAKI OPEN",
-                else => "READY",
-            };
+        if (self.demo_mode == .classic) {
+            if (self.preview.action(action)) |id| {
+                self.preview_status = switch (id) {
+                    10 => "CHAT OPEN",
+                    11 => "CQ OPEN",
+                    12 => "EHAGAKI OPEN",
+                    else => "READY",
+                };
+            }
+            self.rebuildPreview();
+        } else {
+            showcase.handle(&self.preview, &self.showcase_state, self.demo_mode, action, self.clock_ms);
+            self.rebuildPreview();
         }
         self.last_action = switch (action) {
             .up => "UP",
@@ -178,7 +217,6 @@ const Studio = struct {
             .activate => "ACT",
             .back => "BACK",
         };
-        demo.build(&self.preview, self.preview_status);
         self.paint();
     }
     fn tick(self: *Studio, now_ms: u32) void {
@@ -194,6 +232,7 @@ const Studio = struct {
         self.clock_ms +%= self.accumulated_ms;
         self.accumulated_ms = 0;
         self.preview.update(self.clock_ms);
+        self.showcase_state.transition.update(self.clock_ms);
         self.frame_number +%= 1;
         self.paint();
     }
@@ -223,6 +262,7 @@ export fn mimoc_key(key: c_int) void {
             11 => studio.clickControl(105),
             12 => studio.clickControl(106),
             13 => studio.clickControl(107),
+            14 => studio.clickControl(108),
             else => {},
         }
     }
@@ -246,9 +286,9 @@ export fn mimoc_click(x: c_int, y: c_int) void {
         const node = studio.preview.nodes[i];
         if (studio.preview.presentationRect(node.id).?.contains(@intCast(px), @intCast(py))) {
             studio.selected_id = node.id;
-            if (node.kind == .button) {
+            if (node.kind == .button or node.kind == .checkbox or node.kind == .toggle or node.kind == .list_item) {
                 studio.preview.focused_id = node.id;
-                demo.build(&studio.preview, studio.preview_status);
+                studio.rebuildPreview();
             }
             studio.paint();
             return;
@@ -257,7 +297,7 @@ export fn mimoc_click(x: c_int, y: c_int) void {
 }
 pub fn main() void {
     studio.preview.update(0);
-    demo.build(&studio.preview, studio.preview_status);
+    studio.rebuildPreview();
     studio.paint();
     studio.last_real_ms = mimoc_now_ms();
     mimoc_window_run(&studio.canvas, 384, 192, 3, "Mimoc UI Studio");
@@ -265,7 +305,7 @@ pub fn main() void {
 
 test "Studio changes actual update cadence and manual steps" {
     try std.testing.expectEqual(@as(usize, 3096), @sizeOf(StudioUi));
-    try std.testing.expectEqual(@as(usize, 936), @sizeOf(Preview));
+    try std.testing.expectEqual(@as(usize, 1704), @sizeOf(Preview));
     var s = Studio{};
     s.last_real_ms = 0;
     s.tick(16);
@@ -292,4 +332,18 @@ test "Studio changes actual update cadence and manual steps" {
         cadence.tick(interval);
         try std.testing.expectEqual(@as(u32, 1), cadence.frame_number);
     }
+}
+
+test "Studio demo selector builds components and navigation screens" {
+    var s = Studio{};
+    s.clickControl(108);
+    try std.testing.expectEqual(showcase.Mode.widgets, s.demo_mode);
+    try std.testing.expect(s.preview.nodeCount() > 10);
+    s.clickControl(108);
+    try std.testing.expectEqual(showcase.Mode.navigation, s.demo_mode);
+    try std.testing.expectEqual(@as(?u16, 10), s.preview.focused_id);
+    s.input(.activate);
+    try std.testing.expectEqual(showcase.Screen.contacts, s.showcase_state.nav.current());
+    s.input(.back);
+    try std.testing.expectEqual(showcase.Screen.home, s.showcase_state.nav.current());
 }
