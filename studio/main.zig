@@ -14,8 +14,8 @@ const appkit_scale: c_int = 2;
 
 const StudioUi = ui.runtime.Runtime(64);
 const Preview = ui.runtime.Runtime(.{ .max_nodes = 64, .max_animations = 8 });
-// RV32EC size from the existing CH32V003 integration build; the Studio host size differs.
-const ch32_runtime_bytes: usize = 804;
+// Updated by `zig build resource-report` and the RV32 footprint probe.
+const ch32_runtime_bytes: usize = 968;
 const ch32_ui_budget: usize = ch32_runtime_bytes + 40 + 42 + 2 + 24 + 128;
 const profiles = [_][]const u8{ "DESKTOP", "SSD1306 FULL", "SSD1306 PAGE", "CH32V003", "ESP32-S3" };
 const rates = [_]u8{ 60, 30, 15, 10 };
@@ -44,6 +44,7 @@ pub const Studio = struct {
     last_action: []const u8 = "NONE",
     preview_status: []const u8 = "READY",
     selected_id: ?u16 = null,
+    inspect_details: bool = false,
     frame_label: [24]u8 = undefined,
     fps_label: [24]u8 = undefined,
     nodes_label: [24]u8 = undefined,
@@ -56,6 +57,8 @@ pub const Studio = struct {
     selected_label: [24]u8 = undefined,
     scale_label: [24]u8 = undefined,
     demo_label: [24]u8 = undefined,
+    nav_label: [24]u8 = undefined,
+    detail_labels: [8][24]u8 = undefined,
 
     pub fn rebuildPreview(self: *Studio) void {
         if (self.demo_mode == .classic) demo.build(&self.preview, self.preview_status) else if (self.demo_mode == .mobus) mobus.build(&self.preview, &self.mobus_state) else showcase.build(&self.preview, &self.showcase_state, self.demo_mode);
@@ -64,11 +67,11 @@ pub const Studio = struct {
     fn label(buffer: *[24]u8, comptime fmt: []const u8, args: anytype) []const u8 {
         return std.fmt.bufPrint(buffer, fmt, args) catch unreachable;
     }
-    fn addText(b: anytype, id: u16, value: []const u8, x: i16, y: i16) void {
-        b.add(.{ .id = id, .kind = .text, .text = value, .offset = .{ .x = x, .y = y } }) catch unreachable;
+    fn addText(view: anytype, id: u16, value: []const u8, x: i16, y: i16) void {
+        view.textWith(id, value, .{ .offset = .{ .x = x, .y = y } });
     }
-    fn addButton(b: anytype, id: u16, value: []const u8, x: i16, y: i16, width: i16) void {
-        b.add(.{ .id = id, .kind = .button, .text = value, .offset = .{ .x = x, .y = y }, .min_size = .{ .w = width, .h = 12 } }) catch unreachable;
+    fn addButton(view: anytype, id: u16, value: []const u8, x: i16, y: i16, width: i16) void {
+        view.buttonWith(id, value, .{ .offset = .{ .x = x, .y = y }, .size = .{ .w = width, .h = 12 } });
     }
     fn frameBufferBytes(self: *const Studio) usize {
         return switch (self.profile_index) {
@@ -77,50 +80,109 @@ pub const Studio = struct {
         };
     }
     fn rebuildChrome(self: *Studio) void {
-        var b = self.chrome.beginView();
-        b.begin(1, .stack, 0, 0, .start) catch unreachable;
-        addText(&b, 2, "MIMOC UI STUDIO", 8, 7);
-        addText(&b, 3, if (self.running) "RUNNING" else "PAUSED", 326, 7);
-        b.add(.{ .id = 4, .kind = .divider, .min_size = .{ .w = 688, .h = 1 }, .offset = .{ .x = 8, .y = 23 } }) catch unreachable;
-        b.add(.{ .id = 5, .kind = .rect, .min_size = .{ .w = 528, .h = 276 }, .offset = .{ .x = 8, .y = 28 } }) catch unreachable;
-        addText(&b, 6, "PREVIEW", 16, 34);
-        const panel_index = b.len;
-        ui.widgets.beginPanel(&b, 200, "INSPECTOR", .{ .w = 152, .h = 276 }, .{ .padding = 6, .spacing = 10 }) catch unreachable;
-        b.nodes[panel_index].offset = .{ .x = 544, .y = 28 };
-        ui.widgets.text(&b, 10, label(&self.demo_label, "TARGET {s}", .{profiles[self.profile_index]})) catch unreachable;
-        ui.widgets.text(&b, 11, "SIZE 128X64 1BIT") catch unreachable;
-        ui.widgets.text(&b, 12, label(&self.fps_label, "FPS {d}", .{rates[self.fps_index]})) catch unreachable;
-        ui.widgets.text(&b, 13, label(&self.frame_label, "FRAME {d}", .{self.frame_number})) catch unreachable;
-        ui.widgets.text(&b, 14, label(&self.nodes_label, "NODES {d}/{d}", .{ self.preview.nodeCount(), if (self.profile_index == 3) @as(u8, 16) else @as(u8, 64) })) catch unreachable;
-        ui.widgets.text(&b, 15, label(&self.anim_label, "ANIM {d}/8", .{self.preview.activeAnimationCount()})) catch unreachable;
-        ui.widgets.text(&b, 16, label(&self.focus_label, "FOCUS {d}", .{self.preview.focused_id orelse 0})) catch unreachable;
-        ui.widgets.text(&b, 17, label(&self.input_label, "INPUT {s}", .{self.last_action})) catch unreachable;
-        ui.widgets.text(&b, 18, label(&self.runtime_label, "RUNTIME {d}B", .{if (self.profile_index == 3) ch32_runtime_bytes else @as(usize, @sizeOf(Preview))})) catch unreachable;
-        ui.widgets.text(&b, 19, label(&self.buffer_label, "BUFFER {d}B", .{self.frameBufferBytes()})) catch unreachable;
-        const remaining = if (self.profile_index == 3) @as(i32, 2048 - ch32_ui_budget) else 0;
-        ui.widgets.text(&b, 20, if (self.profile_index == 3) label(&self.remaining_label, "RAM LEFT {d}B", .{remaining}) else "RAM LEFT --") catch unreachable;
-        ui.widgets.text(&b, 21, label(&self.scale_label, "SCALE {d}X", .{self.preview_scale})) catch unreachable;
-        ui.widgets.text(&b, 22, label(&self.selected_label, "NODE {d}", .{self.selected_id orelse 0})) catch unreachable;
-        ui.widgets.endPanel(&b);
-
-        addButton(&b, 100, "RUN", 414, 5, 48);
-        addButton(&b, 101, "PAUSE", 466, 5, 54);
-        addButton(&b, 102, "RESTART", 524, 5, 72);
-        addButton(&b, 103, "STEP +16MS", 600, 5, 96);
-        b.add(.{ .id = 7, .kind = .divider, .min_size = .{ .w = 688, .h = 1 }, .offset = .{ .x = 8, .y = 309 } }) catch unreachable;
-        addButton(&b, 104, "FPS", 8, 315, 46);
-        addButton(&b, 107, "SCALE", 58, 315, 54);
-        addButton(&b, 106, if (self.overlay) "OVR ON" else "OVERLAY", 116, 315, 64);
-        addButton(&b, 105, "TARGET", 184, 315, 58);
-        addButton(&b, 108, "DEMO", 246, 315, 50);
-        addText(&b, 109, switch (self.demo_mode) {
-            .classic => "CLASSIC",
-            .widgets => "WIDGETS",
-            .navigation => "NAVIGATION",
-            .mobus => "MO-BUS",
-        }, 306, 317);
-        b.end();
-        self.chrome.finishView(&b) catch unreachable;
+        const View = ui.ui.Ui(u16, StudioUi.configuration);
+        var view = View.begin(&self.chrome);
+        view.screen("Studio");
+        {
+            var root = view.stack(1, .{});
+            defer root.end();
+            addText(&view, 2, "MIMOC UI STUDIO", 8, 7);
+            addText(&view, 3, if (self.running) "RUNNING" else "PAUSED", 326, 7);
+            view.primitive(4, .divider, "", .{ .size = .{ .w = 688, .h = 1 }, .offset = .{ .x = 8, .y = 23 } });
+            view.primitive(5, .rect, "", .{ .size = .{ .w = 528, .h = 276 }, .offset = .{ .x = 8, .y = 28 } });
+            addText(&view, 6, "PREVIEW", 16, 34);
+            {
+                var panel = view.panelAt(200, "INSPECTOR", .{ .w = 152, .h = 276 }, .{ .padding = 6, .spacing = 8 }, .{ .x = 544, .y = 28 });
+                defer panel.end();
+                if (self.inspect_details) {
+                    if (self.selectedNodeIndex()) |index| {
+                        const node = self.preview.nodes[index];
+                        const presentation = self.preview.presentationRect(node.id).?;
+                        const clip = self.clipFor(index);
+                        view.text(10, label(&self.detail_labels[0], "ID {d}", .{node.id}));
+                        view.text(11, label(&self.detail_labels[1], "KIND {s}", .{@tagName(node.kind)}));
+                        view.text(12, label(&self.detail_labels[2], "RECT {d},{d} {d}X{d}", .{ node.frame.x, node.frame.y, node.frame.w, node.frame.h }));
+                        view.text(13, label(&self.detail_labels[3], "SHOW {d},{d} {d}X{d}", .{ presentation.x, presentation.y, presentation.w, presentation.h }));
+                        view.text(14, label(&self.detail_labels[4], "PARENT {d}", .{if (node.parent == 0xffff) @as(u16, 0) else self.preview.nodes[node.parent].id}));
+                        view.text(15, label(&self.detail_labels[5], "FOCUS {s}", .{if (self.focusable(node.kind)) "YES" else "NO"}));
+                        view.text(16, label(&self.detail_labels[6], "CLIP {d},{d} {d}X{d}", .{ clip.x, clip.y, clip.w, clip.h }));
+                        view.text(17, label(&self.detail_labels[7], "MOTION {s}", .{@tagName(node.animation.curve)}));
+                    } else view.text(10, "SELECT PREVIEW NODE");
+                } else {
+                    const usage = self.preview.resources();
+                    const nav_used: u8 = switch (self.demo_mode) {
+                        .navigation => self.showcase_state.nav.usage().used,
+                        .mobus => self.mobus_state.nav.usage().used,
+                        else => 0,
+                    };
+                    const nav_capacity: u8 = switch (self.demo_mode) {
+                        .navigation => self.showcase_state.nav.usage().capacity,
+                        .mobus => self.mobus_state.nav.usage().capacity,
+                        else => 0,
+                    };
+                    view.text(10, label(&self.demo_label, "TARGET {s}", .{profiles[self.profile_index]}));
+                    view.text(11, "SIZE 128X64 1BIT");
+                    view.text(12, label(&self.fps_label, "FPS {d}", .{rates[self.fps_index]}));
+                    view.text(13, label(&self.frame_label, "FRAME {d}", .{self.frame_number}));
+                    view.text(14, label(&self.nodes_label, "NODES {d}/{d}", .{ usage.nodes.used, if (self.profile_index == 3) @as(u16, 16) else usage.nodes.capacity }));
+                    view.text(15, label(&self.anim_label, "ANIM {d}/{d}", .{ usage.animations.used, usage.animations.capacity }));
+                    view.text(16, label(&self.focus_label, "FOCUS {d}", .{self.preview.focused_id orelse 0}));
+                    view.text(17, label(&self.input_label, "INPUT {s}", .{self.last_action}));
+                    view.text(18, label(&self.runtime_label, "RUNTIME {d}B", .{if (self.profile_index == 3) ch32_runtime_bytes else @as(usize, @sizeOf(Preview))}));
+                    view.text(19, label(&self.buffer_label, "BUFFER {d}B", .{self.frameBufferBytes()}));
+                    const remaining = if (self.profile_index == 3) @as(i32, 2048 - ch32_ui_budget) else 0;
+                    view.text(20, if (self.profile_index == 3) label(&self.remaining_label, "RAM LEFT {d}B", .{remaining}) else "RAM LEFT --");
+                    view.text(21, label(&self.scale_label, "SCALE {d}X", .{self.preview_scale}));
+                    view.text(22, label(&self.selected_label, "NODE {d}", .{self.selected_id orelse 0}));
+                    view.text(23, label(&self.nav_label, "NAV {d}/{d}", .{ nav_used, nav_capacity }));
+                }
+            }
+            addButton(&view, 100, "RUN", 414, 5, 48);
+            addButton(&view, 101, "PAUSE", 466, 5, 54);
+            addButton(&view, 102, "RESTART", 524, 5, 72);
+            addButton(&view, 103, "STEP +16MS", 600, 5, 96);
+            view.primitive(7, .divider, "", .{ .size = .{ .w = 688, .h = 1 }, .offset = .{ .x = 8, .y = 309 } });
+            addButton(&view, 104, "FPS", 8, 315, 46);
+            addButton(&view, 107, "SCALE", 58, 315, 54);
+            addButton(&view, 106, if (self.overlay) "OVR ON" else "OVERLAY", 116, 315, 64);
+            addButton(&view, 105, "TARGET", 184, 315, 58);
+            addButton(&view, 108, "DEMO", 246, 315, 50);
+            addText(&view, 109, switch (self.demo_mode) {
+                .classic => "CLASSIC",
+                .widgets => "WIDGETS",
+                .navigation => "NAVIGATION",
+                .mobus => "MO-BUS",
+            }, 306, 317);
+            addButton(&view, 110, if (self.inspect_details) "SUMMARY" else "DETAIL", 400, 315, 78);
+        }
+        view.finish();
+    }
+    fn selectedNodeIndex(self: *const Studio) ?usize {
+        const key = self.selected_id orelse return null;
+        for (self.preview.nodes[0..self.preview.len], 0..) |node, index| if (node.id == key) return index;
+        return null;
+    }
+    fn clipFor(self: *const Studio, index: usize) ui.geometry.Rect {
+        var clip = self.preview.viewport;
+        var parent = self.preview.nodes[index].parent;
+        while (parent != 0xffff) {
+            const ancestor = self.preview.nodes[parent];
+            if (ancestor.kind == .clip or ancestor.kind == .scroll) clip = ui.geometry.Rect.intersect(clip, self.preview.presentationRect(ancestor.id).?);
+            parent = ancestor.parent;
+        }
+        return clip;
+    }
+    fn focusable(_: *const Studio, kind: ui.view.Kind) bool {
+        return kind == .button or kind == .checkbox or kind == .toggle or kind == .list_item or kind == .tuner or kind == .knob;
+    }
+    fn controlId(key: u16) ?u16 {
+        const View = ui.ui.Ui(u16, StudioUi.configuration);
+        const root = View.rootId(1);
+        for (100..111) |candidate| {
+            const raw: u16 = @intCast(candidate);
+            if (View.childId(root, raw) == key) return raw;
+        }
+        return null;
     }
     fn previewOrigin(self: *const Studio) ui.geometry.Point {
         const scale: i16 = self.preview_scale;
@@ -151,11 +213,21 @@ pub const Studio = struct {
         if (self.overlay) {
             r.setClip(preview_area);
             r.rect(.{ .x = origin.x, .y = origin.y, .w = 128 * scale, .h = 64 * scale }, true);
-            for (self.preview.nodes[0..self.preview.len]) |node| {
+            for (self.preview.nodes[0..self.preview.len], 0..) |node, index| {
                 const f = self.preview.presentationRect(node.id).?;
                 const bounds = ui.geometry.Rect{ .x = origin.x + f.x * scale, .y = origin.y + f.y * scale, .w = f.w * scale, .h = f.h * scale };
                 r.rect(bounds, true);
+                if (node.kind == .clip or node.kind == .scroll) {
+                    r.rect(.{ .x = bounds.x + 1, .y = bounds.y + 1, .w = @max(0, bounds.w - 2), .h = @max(0, bounds.h - 2) }, true);
+                }
+                if (self.preview.focused_id != null and self.preview.focused_id.? == node.id) {
+                    r.rect(.{ .x = bounds.x - 2, .y = bounds.y - 2, .w = bounds.w + 4, .h = bounds.h + 4 }, true);
+                }
                 if (self.selected_id != null and self.selected_id.? == node.id) r.rect(.{ .x = bounds.x - 1, .y = bounds.y - 1, .w = bounds.w + 2, .h = bounds.h + 2 }, true);
+                if (self.selected_id != null and self.selected_id.? == node.id) {
+                    const clip = self.clipFor(index);
+                    r.rect(.{ .x = origin.x + clip.x * scale, .y = origin.y + clip.y * scale, .w = clip.w * scale, .h = clip.h * scale }, true);
+                }
                 var id_bytes: [8]u8 = undefined;
                 const id_text = std.fmt.bufPrint(&id_bytes, "{d}", .{node.id}) catch unreachable;
                 ui.font.draw(&r, .tiny5x7, bounds.x, bounds.y, id_text, true);
@@ -235,6 +307,7 @@ pub const Studio = struct {
                 self.restart();
                 return;
             },
+            110 => self.inspect_details = !self.inspect_details,
             else => return,
         }
         self.paint();
@@ -242,14 +315,14 @@ pub const Studio = struct {
     fn input(self: *Studio, action: ui.input.Action) void {
         self.preview.update(self.clock_ms);
         if (self.demo_mode == .classic) {
-            if (self.preview.action(action)) |id| {
-                self.preview_status = switch (id) {
-                    10 => "CHAT OPEN",
-                    11 => "CQ OPEN",
-                    12 => "EHAGAKI OPEN",
+            if (action == .activate) {
+                self.preview_status = switch (demo.activated(&self.preview) orelse .root) {
+                    .chat => "CHAT OPEN",
+                    .cq => "CQ OPEN",
+                    .ehagaki => "EHAGAKI OPEN",
                     else => "READY",
                 };
-            }
+            } else _ = self.preview.action(action);
             self.rebuildPreview();
         } else if (self.demo_mode == .mobus) {
             mobus.handle(&self.preview, &self.mobus_state, action, self.clock_ms);
@@ -323,7 +396,7 @@ export fn mimoc_tick(now_ms: u32) void {
 export fn mimoc_click(x: c_int, y: c_int) void {
     for (studio.chrome.nodes[0..studio.chrome.len]) |node| {
         if (node.kind == .button and studio.chrome.presentationRect(node.id).?.contains(@intCast(x), @intCast(y))) {
-            studio.clickControl(node.id);
+            if (Studio.controlId(node.id)) |control| studio.clickControl(control);
             return;
         }
     }
@@ -357,7 +430,7 @@ pub fn main() void {
 
 test "Studio changes actual update cadence and manual steps" {
     try std.testing.expectEqual(@as(usize, 3096), @sizeOf(StudioUi));
-    try std.testing.expectEqual(@as(usize, 3384), @sizeOf(Preview));
+    try std.testing.expectEqual(@as(usize, 4024), @sizeOf(Preview));
     var s = Studio{};
     s.last_real_ms = 0;
     s.tick(16);
@@ -393,7 +466,8 @@ test "Studio demo selector builds components and navigation screens" {
     try std.testing.expect(s.preview.nodeCount() > 10);
     s.clickControl(108);
     try std.testing.expectEqual(showcase.Mode.navigation, s.demo_mode);
-    try std.testing.expectEqual(@as(?u16, 10), s.preview.focused_id);
+    const View = ui.ui.Ui(u16, Preview.configuration);
+    try std.testing.expectEqual(@as(?u16, View.childId(View.childId(View.rootId(1), 2), 10)), s.preview.focused_id);
     s.input(.activate);
     try std.testing.expectEqual(showcase.Screen.contacts, s.showcase_state.nav.current());
     s.input(.back);
@@ -401,6 +475,25 @@ test "Studio demo selector builds components and navigation screens" {
     s.clickControl(108);
     try std.testing.expectEqual(showcase.Mode.mobus, s.demo_mode);
     try std.testing.expectEqual(mobus.Screen.home, s.mobus_state.nav.current());
+}
+
+test "Studio detail inspector and overlay leave logical preview unchanged" {
+    var s = Studio{};
+    s.preview.update(0);
+    s.rebuildPreview();
+    s.selected_id = s.preview.focused_id;
+    const selected = s.selected_id.?;
+    s.clickControl(110);
+    try std.testing.expect(s.inspect_details);
+    try std.testing.expect(s.selectedNodeIndex() != null);
+    var before: [1024]u8 = undefined;
+    try ui.headless.render(&s.preview, &before, 128, 64);
+    s.clickControl(106);
+    try std.testing.expect(s.overlay);
+    try std.testing.expectEqual(selected, s.selected_id.?);
+    var after: [1024]u8 = undefined;
+    try ui.headless.render(&s.preview, &after, 128, 64);
+    try std.testing.expectEqualSlices(u8, &before, &after);
 }
 
 test "Studio PBM snapshot keeps panels, controls and preview in separate viewports" {
@@ -412,14 +505,18 @@ test "Studio PBM snapshot keeps panels, controls and preview in separate viewpor
     var pbm: [pbm_header.len + @as(usize, studio_width) * (@as(usize, studio_height) / 8)]u8 = undefined;
     try s.pbmSnapshot(&pbm);
     try std.testing.expectEqualSlices(u8, pbm_header, pbm[0..pbm_header.len]);
-    try std.testing.expectEqual(@as(u64, 15295465726689782503), std.hash.Wyhash.hash(0, &pbm));
+    try std.testing.expectEqual(@as(u64, 8564326145923025648), std.hash.Wyhash.hash(0, &pbm));
 
     const bounds = studio_viewport;
     const inspector = ui.geometry.Rect{ .x = 544, .y = 28, .w = 152, .h = 276 };
     for (s.chrome.nodes[0..s.chrome.len]) |node| {
         const rect = s.chrome.presentationRect(node.id).?;
         try std.testing.expectEqual(rect, ui.geometry.Rect.intersect(bounds, rect));
-        if (node.id >= 10 and node.id <= 22) try std.testing.expectEqual(rect, ui.geometry.Rect.intersect(inspector, rect));
+        const View = ui.ui.Ui(u16, StudioUi.configuration);
+        const panel_id = View.childId(View.rootId(1), 200);
+        for (10..24) |logical| {
+            if (node.id == View.childId(panel_id, @intCast(logical))) try std.testing.expectEqual(rect, ui.geometry.Rect.intersect(inspector, rect));
+        }
     }
     var surface = try ui.surface.Mono1.init(&s.canvas, studio_width, studio_height);
     try std.testing.expect(surface.get(8, 28));

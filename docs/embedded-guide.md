@@ -1,0 +1,13 @@
+# Embedded guide
+
+The Core uses Zig and `std` only, requires no allocator or libc, and contains no mandatory floating point. A Runtime and its builder have fixed compile-time capacities. `profiles.tiny` is 8 nodes/1 track, `profiles.embedded` is 16/4; they are convenience configurations, not different rendering engines. The application can set capacities directly. `zig build resource-report` prints host ABI type sizes; `src/footprint_embedded.zig` exports RV32 sizes for target inspection.
+
+On RV32 ReleaseSmall, Node is 40B, Track 36B, Runtime(8,1) 460B, and Runtime(16,4) 968B. An 8-node example with 36B high-level `Ui` (including its builder), 26B three-entry Navigation, 2B ScrollState, and a 128B page buffer has a 652B subtotal. This leaves 1396B of CH32V003's 2KB before application state, driver globals, interrupt state, and stack. The 16-node/4-track representative subtotal with 52B high-level `Ui`, 42B Navigation(5), 2B ScrollState, 24B transition, and 128B page buffer is 1216B, leaving 832B before those costs. Tracks are included in Runtime. A full 1024B framebuffer is generally unsuitable for this profile.
+
+Render all eight pages from one frozen presentation snapshot: `runtime.update(now_ms)` once, rebuild if the model changed, then `renderPage` for indices 0–7. The renderer is read-only; page rendering and full rendering share the same logical view. Keep platform clock, GPIO, SSD1306 transport, and frame pacing in the application adapter.
+
+Compile `src/ui_embedded_smoke.zig` with `zig build-obj src/ui_embedded_smoke.zig -target riscv32-freestanding -O ReleaseSmall`. The high-level path contains no platform imports. ReleaseSmall omits long diagnostic strings by default when using `profiles.tiny`; use `finishChecked()` in tests, or `finish()` for a compact trap on a programming error. `diagnostics = true` retains widget and screen labels for desktop/debug inspection.
+
+The linked `ch32-mimoc-ui` firmware must be measured separately. Build that project before and after an update, then run `sh tools/ch32-reference-regression.sh firmware.elf firmware.bin`. It reports binary length and ELF data+bss against the recorded reference (13,844B image, 516B static RAM). The Core does not depend on that repository.
+
+Static RAM omits stack peaks. For hardware validation, place a canary pattern between the linker-defined stack limit and initial stack pointer at boot, then inspect untouched bytes after repeating view rebuild, layout, update, each page render, long wrapped text, and composite widgets. Keep the watermark outside `.bss` and leave an interrupt margin; verify linker symbols and interrupt entry code in the reference firmware. A host or emulator cannot substitute for this hardware stack measurement.

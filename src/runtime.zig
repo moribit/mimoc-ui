@@ -15,8 +15,16 @@ pub fn Runtime(comptime config: anytype) type {
     if (capacity > 65535 or animation_capacity > 65535) @compileError("Runtime capacities must fit in u16");
     return struct {
         const Self = @This();
+        pub const configuration = config;
+        pub const node_capacity = capacity;
+        pub const animation_capacity_limit = animation_capacity;
+        const Previous = struct { id: u16, rect: g.Rect };
+        pub const Usage = struct { used: u16, capacity: u16 };
+        pub const Resources = struct { nodes: Usage, animations: Usage };
         nodes: [capacity]v.Node = undefined,
         tracks: [animation_capacity]anim.Track = undefined,
+        previous: if (animation_capacity > 0) [capacity]Previous else void = if (animation_capacity > 0) undefined else {},
+        previous_len: if (animation_capacity > 0) u16 else void = if (animation_capacity > 0) 0 else {},
         len: u16 = 0,
         track_len: u16 = 0,
         focused_id: ?u16 = null,
@@ -24,23 +32,22 @@ pub fn Runtime(comptime config: anytype) type {
         now_ms: anim.Time = 0,
 
         pub fn beginView(self: *Self) v.InPlaceBuilder(capacity) {
-            self.captureAnimatedRects();
+            self.capturePrevious();
             return v.InPlaceBuilder(capacity).initInPlace(&self.nodes);
         }
-        pub fn finishView(self: *Self, builder: *const v.InPlaceBuilder(capacity)) error{ DuplicateId, UnclosedContainer }!void {
+        pub fn finishView(self: *Self, builder: *const v.InPlaceBuilder(capacity)) error{ DuplicateId, UnclosedContainer, AnimationCapacityExceeded }!void {
             try validate(builder.items(), builder.depth);
             self.len = builder.len;
             self.relayout();
-            self.retargetTracks();
+            try self.retargetTracks();
         }
-        pub fn setView(self: *Self, builder: *const v.Builder(capacity)) error{ DuplicateId, UnclosedContainer }!void {
+        pub fn setView(self: *Self, builder: *const v.Builder(capacity)) error{ DuplicateId, UnclosedContainer, AnimationCapacityExceeded }!void {
             try validate(builder.items(), builder.depth);
-            self.captureAnimatedRects();
-            for (builder.items()) |node| if (node.animation.enabled()) self.captureId(node.id);
+            self.capturePrevious();
             self.len = builder.len;
             @memcpy(self.nodes[0..self.len], builder.items());
             self.relayout();
-            self.retargetTracks();
+            try self.retargetTracks();
         }
         fn validate(nodes: []const v.Node, depth: u16) error{ DuplicateId, UnclosedContainer }!void {
             if (depth != 0) return error.UnclosedContainer;
@@ -80,30 +87,19 @@ pub fn Runtime(comptime config: anytype) type {
             for (self.tracks[0..self.track_len], 0..) |track, i| if (track.id == id) return i;
             return null;
         }
-        fn captureAnimatedRects(self: *Self) void {
+        fn capturePrevious(self: *Self) void {
             if (comptime animation_capacity == 0) return;
-            for (self.nodes[0..self.len]) |node| {
-                if (node.animation.enabled()) self.captureId(node.id);
+            self.previous_len = self.len;
+            for (self.nodes[0..self.len], 0..) |node, i| {
+                self.previous[i] = .{ .id = node.id, .rect = self.ownRect(i) };
             }
         }
-        fn captureId(self: *Self, id: u16) void {
-            if (comptime animation_capacity == 0) return;
-            if (self.trackIndex(id) != null or self.track_len >= animation_capacity) return;
-            for (self.nodes[0..self.len]) |node| if (node.id == id) {
-                const f = visualRect(node);
-                self.tracks[self.track_len] = .{
-                    .id = id,
-                    .from = f,
-                    .to = f,
-                    .current = f,
-                    .started_at = self.now_ms,
-                    .animation = node.animation,
-                };
-                self.track_len += 1;
-                return;
-            };
+        fn previousRect(self: *const Self, id: u16) ?g.Rect {
+            if (comptime animation_capacity == 0) return null;
+            for (self.previous[0..self.previous_len]) |entry| if (entry.id == id) return entry.rect;
+            return null;
         }
-        fn retargetTracks(self: *Self) void {
+        fn retargetTracks(self: *Self) error{AnimationCapacityExceeded}!void {
             if (comptime animation_capacity == 0) return;
             var i: usize = 0;
             while (i < self.track_len) {
@@ -128,6 +124,23 @@ pub fn Runtime(comptime config: anytype) type {
                     track.active = true;
                 }
                 i += 1;
+            }
+            for (self.nodes[0..self.len]) |node| {
+                if (!node.animation.enabled() or self.trackIndex(node.id) != null) continue;
+                const old = self.previousRect(node.id) orelse continue;
+                const target = visualRect(node);
+                if (sameRect(old, target)) continue;
+                if (self.track_len >= animation_capacity) return error.AnimationCapacityExceeded;
+                self.tracks[self.track_len] = .{
+                    .id = node.id,
+                    .from = old,
+                    .to = target,
+                    .current = old,
+                    .started_at = self.now_ms,
+                    .animation = node.animation,
+                    .active = true,
+                };
+                self.track_len += 1;
             }
         }
         pub fn update(self: *Self, now_ms: anim.Time) void {
@@ -303,6 +316,15 @@ pub fn Runtime(comptime config: anytype) type {
         }
         pub fn nodeCount(self: *const Self) u16 {
             return self.len;
+        }
+        pub fn nodeUsage(self: *const Self) Usage {
+            return .{ .used = self.len, .capacity = @intCast(capacity) };
+        }
+        pub fn animationUsage(self: *const Self) Usage {
+            return .{ .used = self.track_len, .capacity = @intCast(animation_capacity) };
+        }
+        pub fn resources(self: *const Self) Resources {
+            return .{ .nodes = self.nodeUsage(), .animations = self.animationUsage() };
         }
         fn isFocusable(kind: v.Kind) bool {
             return kind == .button or kind == .checkbox or kind == .toggle or kind == .list_item or kind == .tuner or kind == .knob;

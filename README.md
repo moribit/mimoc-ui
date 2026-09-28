@@ -6,13 +6,14 @@ Small Zig UI core for monochrome embedded displays. The implementation includes 
 zig build test
 zig build run
 zig build studio
+zig build resource-report
 ```
 
 The simulator uses arrow keys or WASD to move focus, Return/Space to activate, Escape to go back, and mouse clicks to select controls. Press M to cycle through the classic, Widgets, and Navigation demos. Its display is a 128×64, 1-bit page-order framebuffer scaled 8× with nearest-neighbor pixels.
 
 `src/root.zig` has no libc or third-party dependencies. `src/platform/macos/window.m` is the isolated AppKit window bridge. Rendering the same settled UI one page at a time uses `headless.renderPage` with a 128-byte buffer.
 
-For a small target, use `runtime.beginView()` and `runtime.finishView()` to build directly into runtime storage. `src/embedded_smoke.zig` is a freestanding page-render compilation check. The [Milestone 4 review](docs/milestone-4-review.md) records the RAM budget and the next architecture decisions.
+For application screens, use typed IDs with `ui.Ui(Id, config)`, scoped containers, and ordinary Zig component functions. [Getting started](docs/getting-started.md), [components](docs/components.md), and the [embedded guide](docs/embedded-guide.md) show the recommended API and page-render path. The low-level `runtime.beginView()` / `finishView()` API remains available. `src/ui_embedded_smoke.zig` compiles the high-level path for RV32 freestanding; `src/widget_embedded_smoke.zig` remains a low-level reference. The [API stabilization review](docs/api-stabilization-review.md) records RAM growth, validation, and current limits.
 
 Use `Runtime(.{ .max_nodes = 16, .max_animations = 4 })` and set a node's `.animation` to a compact `Animation` value. Call `runtime.update(now_ms)` once per frame, then render the full framebuffer or each page without changing the time. The [Milestone 5 review](docs/milestone-5-review.md) records measured sizes and verification.
 

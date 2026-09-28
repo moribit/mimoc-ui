@@ -59,14 +59,14 @@ export fn mimoc_key(key: c_int) void {
     };
     if (action) |a| {
         if (mode == .classic) {
-            if (display.action(a)) |id| {
-                status = switch (id) {
-                    10 => "CHAT OPEN",
-                    11 => "CQ OPEN",
-                    12 => "EHAGAKI OPEN",
+            if (a == .activate) {
+                status = switch (demo.activated(&display) orelse .root) {
+                    .chat => "CHAT OPEN",
+                    .cq => "CQ OPEN",
+                    .ehagaki => "EHAGAKI OPEN",
                     else => "READY",
                 };
-            }
+            } else _ = display.action(a);
         } else {
             showcase.handle(&display, &state, mode, a, mimoc_now_ms());
         }

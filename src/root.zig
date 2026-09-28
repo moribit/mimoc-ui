@@ -12,6 +12,8 @@ pub const scroll = @import("scroll.zig");
 pub const navigation = @import("navigation.zig");
 pub const transition = @import("transition.zig");
 pub const runtime = @import("runtime.zig");
+pub const ui = @import("ui.zig");
+pub const profiles = @import("profiles.zig");
 pub const mono1 = @import("renderers/mono1.zig");
 pub const headless = @import("renderers/headless.zig");
 
@@ -24,4 +26,5 @@ test {
     _ = @import("navigation.zig");
     _ = @import("transition.zig");
     _ = @import("mobus_widget_tests.zig");
+    _ = @import("ui_tests.zig");
 }

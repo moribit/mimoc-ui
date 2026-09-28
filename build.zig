@@ -14,6 +14,17 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run Core tests");
     test_step.dependOn(&run_tests.step);
 
+    const report = b.addExecutable(.{
+        .name = "mimoc-resource-report",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/footprint.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const resource_step = b.step("resource-report", "Print Core type sizes and representative RAM budgets");
+    resource_step.dependOn(&b.addRunArtifact(report).step);
+
     if (target.result.os.tag == .macos) {
         const showcase_module = b.createModule(.{
             .root_source_file = b.path("examples/showcase.zig"),

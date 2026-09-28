@@ -1,22 +1,38 @@
-const ui = @import("mimoc_ui");
+const mimoc = @import("mimoc_ui");
+
+pub const Id = enum(u16) { root, content, title, line, chat, cq, ehagaki, status, indicator };
 
 pub fn build(display: anytype, status: []const u8) void {
-    var b = display.beginView();
-    b.begin(0, .stack, 0, 0, .start) catch unreachable;
-    b.begin(1, .column, 2, 1, .start) catch unreachable;
-    b.add(.{ .id = 2, .kind = .text, .text = "MO-BUS" }) catch unreachable;
-    b.add(.{ .id = 3, .kind = .divider, .min_size = .{ .w = 124, .h = 1 } }) catch unreachable;
-    b.add(.{ .id = 10, .kind = .button, .text = "CHAT", .min_size = .{ .w = 124, .h = 12 } }) catch unreachable;
-    b.add(.{ .id = 11, .kind = .button, .text = "CQ", .min_size = .{ .w = 124, .h = 12 } }) catch unreachable;
-    b.add(.{ .id = 12, .kind = .button, .text = "EHAGAKI", .min_size = .{ .w = 124, .h = 12 } }) catch unreachable;
-    b.add(.{ .id = 20, .kind = .text, .text = status }) catch unreachable;
-    b.end();
-    const indicator_y: i16 = switch (display.focused_id orelse 10) {
-        11 => 25,
-        12 => 38,
-        else => 12,
-    };
-    b.add(.{ .id = 30, .kind = .filled_rect, .min_size = .{ .w = 2, .h = 10 }, .offset = .{ .x = 0, .y = indicator_y }, .animation = ui.animation.Animation.easeOut(180) }) catch unreachable;
-    b.end();
-    display.finishView(&b) catch unreachable;
+    const Display = @TypeOf(display.*);
+    const Ui = mimoc.ui.Ui(Id, Display.configuration);
+    var ui = Ui.begin(display);
+    {
+        var root = ui.stack(.root, .{});
+        defer root.end();
+        {
+            var content = ui.column(.content, .{ .padding = 2, .spacing = 1 });
+            defer content.end();
+            ui.text(.title, "MO-BUS");
+            ui.divider(.line, 124);
+            ui.buttonWith(.chat, "CHAT", .{ .size = .{ .w = 124, .h = 12 } });
+            ui.buttonWith(.cq, "CQ", .{ .size = .{ .w = 124, .h = 12 } });
+            ui.buttonWith(.ehagaki, "EHAGAKI", .{ .size = .{ .w = 124, .h = 12 } });
+            ui.text(.status, status);
+        }
+        const content_key = Ui.childId(Ui.rootId(.root), .content);
+        const indicator_y: i16 = if (display.focused_id == Ui.childId(content_key, .cq)) 25 else if (display.focused_id == Ui.childId(content_key, .ehagaki)) 38 else 12;
+        ui.filledRect(.indicator, .{ .w = 2, .h = 10 }, .{ .x = 0, .y = indicator_y }, mimoc.animation.Animation.easeOut(180));
+    }
+    ui.finish();
+}
+
+pub fn activated(display: anytype) ?Id {
+    const Display = @TypeOf(display.*);
+    const Ui = mimoc.ui.Ui(Id, Display.configuration);
+    const selected = display.action(.activate) orelse return null;
+    const content_key = Ui.childId(Ui.rootId(.root), .content);
+    inline for (.{ Id.chat, Id.cq, Id.ehagaki }) |candidate| {
+        if (selected == Ui.childId(content_key, candidate)) return candidate;
+    }
+    return null;
 }

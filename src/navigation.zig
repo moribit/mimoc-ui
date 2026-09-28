@@ -28,6 +28,9 @@ pub fn Navigation(comptime Screen: type, comptime capacity: usize) type {
         pub fn depth(self: *const Self) u8 {
             return self.len;
         }
+        pub fn usage(self: *const Self) struct { used: u8, capacity: u8 } {
+            return .{ .used = self.len, .capacity = @intCast(capacity) };
+        }
         pub fn remember(self: *Self, focus: ?u16, scroll: i16) void {
             self.entries[self.len - 1].focused_id = focus;
             self.entries[self.len - 1].scroll_offset = scroll;

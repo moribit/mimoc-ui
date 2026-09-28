@@ -1,8 +1,22 @@
 const std = @import("std");
 const ui = @import("mimoc_ui");
 const screens = @import("screens.zig");
+const ids = @import("id.zig");
 
 pub const Screen = enum(u8) { home, contacts, chat, composer, ehagaki };
+fn screenId(screen: Screen) ids.Id {
+    return switch (screen) {
+        .home => .home,
+        .contacts => .contacts,
+        .chat => .chat,
+        .composer => .composer,
+        .ehagaki => .ehagaki,
+    };
+}
+fn widgetId(comptime Display: type, screen: Screen, logical: ids.Id) u16 {
+    const View = ui.ui.Ui(ids.Id, Display.configuration);
+    return View.childId(View.childId(View.rootId(.root), screenId(screen)), logical);
+}
 pub const Nav = ui.navigation.Navigation(Screen, 5);
 
 fn mockCanvas() [16 * 58]u8 {
@@ -32,23 +46,29 @@ pub const State = struct {
 };
 
 pub fn build(display: anytype, state: *const State) void {
-    var b = display.beginView();
-    b.begin(1, .stack, 0, 0, .start) catch unreachable;
-    switch (state.nav.current()) {
-        .home => screens.buildHome(&b),
-        .contacts => screens.buildContacts(&b, state),
-        .chat => screens.buildChat(&b, state),
-        .composer => screens.buildComposer(&b, state),
-        .ehagaki => screens.buildEhagaki(&b, state),
+    const Display = @TypeOf(display.*);
+    const View = ui.ui.Ui(ids.Id, Display.configuration);
+    var view = View.begin(display);
+    {
+        var root = view.stack(.root, .{});
+        defer root.end();
+        var screen = view.scope(screenId(state.nav.current()));
+        defer screen.end();
+        switch (state.nav.current()) {
+            .home => screens.buildHome(&view),
+            .contacts => screens.buildContacts(&view, state),
+            .chat => screens.buildChat(&view, state),
+            .composer => screens.buildComposer(&view, state),
+            .ehagaki => screens.buildEhagaki(&view, state),
+        }
     }
-    b.end();
-    display.finishView(&b) catch unreachable;
+    view.finish();
 }
 
 fn push(display: anytype, state: *State, screen: Screen, now: u32) void {
     state.nav.remember(display.focused_id, if (state.nav.current() == .chat) state.chat_scroll.offset else 0);
     state.nav.push(screen) catch return;
-    display.focused_id = if (screen == .contacts) 100 else null;
+    display.focused_id = if (screen == .contacts) widgetId(@TypeOf(display.*), .contacts, .tuner) else null;
     state.transition.start(.slide_left, now, .{ .w = 128, .h = 64 });
     build(display, state);
 }
@@ -67,21 +87,22 @@ pub fn handle(display: anytype, state: *State, action: ui.input.Action, now: u32
     switch (screen) {
         .home => {
             if (action == .activate) {
-                const id = display.action(.activate) orelse return;
-                if (id == 10) push(display, state, .contacts, now) else if (id == 11) push(display, state, .ehagaki, now);
+                const selected = display.action(.activate) orelse return;
+                if (selected == widgetId(@TypeOf(display.*), .home, .home_contacts)) push(display, state, .contacts, now) else if (selected == widgetId(@TypeOf(display.*), .home, .home_ehagaki)) push(display, state, .ehagaki, now);
             } else _ = display.action(action);
         },
         .contacts => {
-            const focused = display.focused_id orelse 100;
+            const tuner_key = widgetId(@TypeOf(display.*), .contacts, .tuner);
+            const focused = display.focused_id orelse tuner_key;
             switch (action) {
                 .up, .down => _ = display.action(action),
                 .left => {
-                    if (focused == 100) {
+                    if (focused == tuner_key) {
                         if (state.selected_contact > 0) state.selected_contact -= 1;
                     } else state.mode = 0;
                 },
                 .right => {
-                    if (focused == 100) {
+                    if (focused == tuner_key) {
                         if (state.selected_contact < 9) state.selected_contact += 1;
                     } else state.mode = 1;
                 },
@@ -153,7 +174,7 @@ test "Mo-Bus navigation restores contact focus, selection and chat scroll" {
     try std.testing.expectEqual(previous_scroll, state.chat_scroll.offset);
     handle(&display, &state, .back, 0);
     try std.testing.expectEqual(Screen.contacts, state.nav.current());
-    try std.testing.expectEqual(@as(?u16, 110), display.focused_id);
+    try std.testing.expectEqual(@as(?u16, widgetId(Preview, .contacts, .knob)), display.focused_id);
     try std.testing.expectEqual(@as(u8, 1), state.selected_contact);
     handle(&display, &state, .back, 0);
     handle(&display, &state, .down, 0);
