@@ -3,6 +3,14 @@ const ui = @import("mimoc_ui");
 const demo = @import("demo_view");
 const showcase = @import("showcase");
 
+pub const studio_width: i16 = 704;
+pub const studio_height: i16 = 336;
+const studio_viewport = ui.geometry.Rect{ .w = studio_width, .h = studio_height };
+const preview_viewport = ui.geometry.Rect{ .w = 128, .h = 64 };
+const preview_area = ui.geometry.Rect{ .x = 16, .y = 44, .w = 512, .h = 256 };
+pub const pbm_header = std.fmt.comptimePrint("P4\n{d} {d}\n", .{ studio_width, studio_height });
+const appkit_scale: c_int = 2;
+
 const StudioUi = ui.runtime.Runtime(64);
 const Preview = ui.runtime.Runtime(.{ .max_nodes = 32, .max_animations = 4 });
 // RV32EC size from the existing CH32V003 integration build; the Studio host size differs.
@@ -15,12 +23,12 @@ extern fn mimoc_window_run(pixels: [*]const u8, width: c_int, height: c_int, sca
 extern fn mimoc_window_redraw() void;
 extern fn mimoc_now_ms() u32;
 
-const Studio = struct {
-    chrome: StudioUi = .{},
-    preview: Preview = .{},
+pub const Studio = struct {
+    chrome: StudioUi = .{ .viewport = studio_viewport },
+    preview: Preview = .{ .viewport = preview_viewport },
     showcase_state: showcase.State = .{},
     demo_mode: showcase.Mode = .classic,
-    canvas: [384 * 24]u8 = [_]u8{0} ** (384 * 24),
+    canvas: [@as(usize, studio_width) * (@as(usize, studio_height) / 8)]u8 = [_]u8{0} ** (@as(usize, studio_width) * (@as(usize, studio_height) / 8)),
     preview_pixels: [1024]u8 = [_]u8{0} ** 1024,
     running: bool = true,
     overlay: bool = false,
@@ -44,9 +52,10 @@ const Studio = struct {
     buffer_label: [24]u8 = undefined,
     remaining_label: [24]u8 = undefined,
     selected_label: [24]u8 = undefined,
+    scale_label: [24]u8 = undefined,
     demo_label: [24]u8 = undefined,
 
-    fn rebuildPreview(self: *Studio) void {
+    pub fn rebuildPreview(self: *Studio) void {
         if (self.demo_mode == .classic) demo.build(&self.preview, self.preview_status) else showcase.build(&self.preview, &self.showcase_state, self.demo_mode);
     }
 
@@ -68,69 +77,80 @@ const Studio = struct {
     fn rebuildChrome(self: *Studio) void {
         var b = self.chrome.beginView();
         b.begin(1, .stack, 0, 0, .start) catch unreachable;
-        addText(&b, 2, "MIMOC UI STUDIO", 4, 4);
-        addText(&b, 3, if (self.running) "RUN" else "PAUSE", 334, 4);
-        b.add(.{ .id = 4, .kind = .divider, .min_size = .{ .w = 376, .h = 1 }, .offset = .{ .x = 4, .y = 15 } }) catch unreachable;
-        b.add(.{ .id = 5, .kind = .rect, .min_size = .{ .w = 264, .h = 140 }, .offset = .{ .x = 4, .y = 20 } }) catch unreachable;
+        addText(&b, 2, "MIMOC UI STUDIO", 8, 7);
+        addText(&b, 3, if (self.running) "RUNNING" else "PAUSED", 326, 7);
+        b.add(.{ .id = 4, .kind = .divider, .min_size = .{ .w = 688, .h = 1 }, .offset = .{ .x = 8, .y = 23 } }) catch unreachable;
+        b.add(.{ .id = 5, .kind = .rect, .min_size = .{ .w = 528, .h = 276 }, .offset = .{ .x = 8, .y = 28 } }) catch unreachable;
+        addText(&b, 6, "PREVIEW", 16, 34);
         const panel_index = b.len;
-        ui.widgets.beginPanel(&b, 200, "TARGET", .{ .w = 108, .h = 140 }, .{}) catch unreachable;
-        b.nodes[panel_index].offset = .{ .x = 272, .y = 20 };
-        ui.widgets.text(&b, 10, profiles[self.profile_index]) catch unreachable;
-        ui.widgets.text(&b, 11, "128X64 1BIT") catch unreachable;
+        ui.widgets.beginPanel(&b, 200, "INSPECTOR", .{ .w = 152, .h = 276 }, .{ .padding = 6, .spacing = 10 }) catch unreachable;
+        b.nodes[panel_index].offset = .{ .x = 544, .y = 28 };
+        ui.widgets.text(&b, 10, label(&self.demo_label, "TARGET {s}", .{profiles[self.profile_index]})) catch unreachable;
+        ui.widgets.text(&b, 11, "SIZE 128X64 1BIT") catch unreachable;
         ui.widgets.text(&b, 12, label(&self.fps_label, "FPS {d}", .{rates[self.fps_index]})) catch unreachable;
         ui.widgets.text(&b, 13, label(&self.frame_label, "FRAME {d}", .{self.frame_number})) catch unreachable;
         ui.widgets.text(&b, 14, label(&self.nodes_label, "NODES {d}/{d}", .{ self.preview.nodeCount(), if (self.profile_index == 3) @as(u8, 16) else @as(u8, 32) })) catch unreachable;
         ui.widgets.text(&b, 15, label(&self.anim_label, "ANIM {d}/4", .{self.preview.activeAnimationCount()})) catch unreachable;
         ui.widgets.text(&b, 16, label(&self.focus_label, "FOCUS {d}", .{self.preview.focused_id orelse 0})) catch unreachable;
         ui.widgets.text(&b, 17, label(&self.input_label, "INPUT {s}", .{self.last_action})) catch unreachable;
-        ui.widgets.text(&b, 18, label(&self.runtime_label, "RT {d}B", .{if (self.profile_index == 3) ch32_runtime_bytes else @as(usize, @sizeOf(Preview))})) catch unreachable;
-        ui.widgets.text(&b, 19, label(&self.buffer_label, "BUF {d}B", .{self.frameBufferBytes()})) catch unreachable;
+        ui.widgets.text(&b, 18, label(&self.runtime_label, "RUNTIME {d}B", .{if (self.profile_index == 3) ch32_runtime_bytes else @as(usize, @sizeOf(Preview))})) catch unreachable;
+        ui.widgets.text(&b, 19, label(&self.buffer_label, "BUFFER {d}B", .{self.frameBufferBytes()})) catch unreachable;
         const remaining = if (self.profile_index == 3) @as(i32, 2048 - ch32_ui_budget) else 0;
-        ui.widgets.text(&b, 20, if (self.profile_index == 3) label(&self.remaining_label, "LEFT {d}B", .{remaining}) else "RAM --") catch unreachable;
-        ui.widgets.text(&b, 21, label(&self.selected_label, "NODE {d} {d}X", .{ self.selected_id orelse 0, self.preview_scale })) catch unreachable;
+        ui.widgets.text(&b, 20, if (self.profile_index == 3) label(&self.remaining_label, "RAM LEFT {d}B", .{remaining}) else "RAM LEFT --") catch unreachable;
+        ui.widgets.text(&b, 21, label(&self.scale_label, "SCALE {d}X", .{self.preview_scale})) catch unreachable;
+        ui.widgets.text(&b, 22, label(&self.selected_label, "NODE {d}", .{self.selected_id orelse 0})) catch unreachable;
         ui.widgets.endPanel(&b);
 
-        addButton(&b, 100, "RUN", 4, 168, 40);
-        addButton(&b, 101, "PAUSE", 48, 168, 46);
-        addButton(&b, 102, "RESTART", 98, 168, 54);
-        addButton(&b, 103, "STEP", 156, 168, 40);
-        addButton(&b, 104, "FPS", 200, 168, 44);
-        addButton(&b, 105, "TARGET", 248, 168, 54);
-        addButton(&b, 106, "OVR", 306, 168, 38);
-        addButton(&b, 107, "1/2X", 348, 168, 32);
-        addButton(&b, 108, "DEMO", 4, 180, 44);
-        addText(&b, 109, label(&self.demo_label, "{s}", .{switch (self.demo_mode) {
+        addButton(&b, 100, "RUN", 414, 5, 48);
+        addButton(&b, 101, "PAUSE", 466, 5, 54);
+        addButton(&b, 102, "RESTART", 524, 5, 72);
+        addButton(&b, 103, "STEP +16MS", 600, 5, 96);
+        b.add(.{ .id = 7, .kind = .divider, .min_size = .{ .w = 688, .h = 1 }, .offset = .{ .x = 8, .y = 309 } }) catch unreachable;
+        addButton(&b, 104, "FPS", 8, 315, 46);
+        addButton(&b, 107, "SCALE", 58, 315, 54);
+        addButton(&b, 106, if (self.overlay) "OVR ON" else "OVERLAY", 116, 315, 64);
+        addButton(&b, 105, "TARGET", 184, 315, 58);
+        addButton(&b, 108, "DEMO", 246, 315, 50);
+        addText(&b, 109, switch (self.demo_mode) {
             .classic => "CLASSIC",
             .widgets => "WIDGETS",
             .navigation => "NAVIGATION",
-        }}), 52, 182);
+        }, 306, 317);
         b.end();
         self.chrome.finishView(&b) catch unreachable;
     }
-    fn paint(self: *Studio) void {
+    fn previewOrigin(self: *const Studio) ui.geometry.Point {
+        const scale: i16 = self.preview_scale;
+        return .{
+            .x = preview_area.x + @divTrunc(preview_area.w - 128 * scale, 2),
+            .y = preview_area.y + @divTrunc(preview_area.h - 64 * scale, 2),
+        };
+    }
+    fn compose(self: *Studio) void {
         self.rebuildChrome();
-        ui.headless.render(&self.chrome, &self.canvas, 384, 192) catch unreachable;
+        ui.headless.render(&self.chrome, &self.canvas, studio_width, studio_height) catch unreachable;
         if (self.demo_mode == .navigation) {
             const shifted = ui.transition.Shifted(Preview){ .runtime = &self.preview, .offset = self.showcase_state.transition.incoming };
             ui.headless.render(&shifted, &self.preview_pixels, 128, 64) catch unreachable;
         } else ui.headless.render(&self.preview, &self.preview_pixels, 128, 64) catch unreachable;
-        var surface = ui.surface.Mono1.init(&self.canvas, 384, 192) catch unreachable;
+        var surface = ui.surface.Mono1.init(&self.canvas, studio_width, studio_height) catch unreachable;
         var r = ui.mono1.Renderer.init(&surface);
         const scale: i16 = self.preview_scale;
-        const origin_x: i16 = 8;
-        const origin_y: i16 = 24;
-        r.fillRect(.{ .x = origin_x, .y = origin_y, .w = 128 * scale, .h = 64 * scale }, false);
+        const origin = self.previewOrigin();
+        r.fillRect(preview_area, false);
+        r.rect(.{ .x = origin.x - 2, .y = origin.y - 2, .w = 128 * scale + 4, .h = 64 * scale + 4 }, true);
         var preview_surface = ui.surface.Mono1.init(&self.preview_pixels, 128, 64) catch unreachable;
         for (0..64) |y| for (0..128) |x| {
             if (preview_surface.get(@intCast(x), @intCast(y))) {
-                r.fillRect(.{ .x = origin_x + @as(i16, @intCast(x)) * scale, .y = origin_y + @as(i16, @intCast(y)) * scale, .w = scale, .h = scale }, true);
+                r.fillRect(.{ .x = origin.x + @as(i16, @intCast(x)) * scale, .y = origin.y + @as(i16, @intCast(y)) * scale, .w = scale, .h = scale }, true);
             }
         };
         if (self.overlay) {
-            r.rect(.{ .x = origin_x, .y = origin_y, .w = 128 * scale, .h = 64 * scale }, true);
+            r.setClip(preview_area);
+            r.rect(.{ .x = origin.x, .y = origin.y, .w = 128 * scale, .h = 64 * scale }, true);
             for (self.preview.nodes[0..self.preview.len]) |node| {
                 const f = self.preview.presentationRect(node.id).?;
-                const bounds = ui.geometry.Rect{ .x = origin_x + f.x * scale, .y = origin_y + f.y * scale, .w = f.w * scale, .h = f.h * scale };
+                const bounds = ui.geometry.Rect{ .x = origin.x + f.x * scale, .y = origin.y + f.y * scale, .w = f.w * scale, .h = f.h * scale };
                 r.rect(bounds, true);
                 if (self.selected_id != null and self.selected_id.? == node.id) r.rect(.{ .x = bounds.x - 1, .y = bounds.y - 1, .w = bounds.w + 2, .h = bounds.h + 2 }, true);
                 var id_bytes: [8]u8 = undefined;
@@ -138,10 +158,26 @@ const Studio = struct {
                 ui.font.draw(&r, .tiny5x7, bounds.x, bounds.y, id_text, true);
             }
         }
+    }
+    fn paint(self: *Studio) void {
+        self.compose();
         mimoc_window_redraw();
     }
+    pub fn pbmSnapshot(self: *Studio, output: []u8) error{InvalidSize}!void {
+        if (output.len != pbm_header.len + self.canvas.len) return error.InvalidSize;
+        self.compose();
+        @memcpy(output[0..pbm_header.len], pbm_header);
+        @memset(output[pbm_header.len..], 0);
+        var surface = ui.surface.Mono1.init(&self.canvas, studio_width, studio_height) catch unreachable;
+        for (0..@as(usize, studio_height)) |y| for (0..@as(usize, studio_width)) |x| {
+            if (surface.get(@intCast(x), @intCast(y))) {
+                const index = pbm_header.len + y * (@as(usize, studio_width) / 8) + x / 8;
+                output[index] |= @as(u8, 0x80) >> @as(u3, @intCast(x % 8));
+            }
+        };
+    }
     fn restart(self: *Studio) void {
-        self.preview = .{};
+        self.preview = .{ .viewport = preview_viewport };
         self.showcase_state = .{};
         self.preview.update(0);
         self.preview_status = "READY";
@@ -179,7 +215,11 @@ const Studio = struct {
             104 => self.fps_index = @intCast((@as(usize, self.fps_index) + 1) % rates.len),
             105 => self.profile_index = @intCast((@as(usize, self.profile_index) + 1) % profiles.len),
             106 => self.overlay = !self.overlay,
-            107 => self.preview_scale = if (self.preview_scale == 1) 2 else 1,
+            107 => self.preview_scale = switch (self.preview_scale) {
+                1 => 2,
+                2 => 4,
+                else => 1,
+            },
             108 => {
                 self.demo_mode = switch (self.demo_mode) {
                     .classic => .widgets,
@@ -277,9 +317,11 @@ export fn mimoc_click(x: c_int, y: c_int) void {
             return;
         }
     }
-    const px = @divTrunc(x - 8, studio.preview_scale);
-    const py = @divTrunc(y - 24, studio.preview_scale);
-    if (px < 0 or py < 0 or px >= 128 or py >= 64) return;
+    const origin = studio.previewOrigin();
+    const scale: c_int = studio.preview_scale;
+    if (x < origin.x or y < origin.y or x >= @as(c_int, origin.x) + 128 * scale or y >= @as(c_int, origin.y) + 64 * scale) return;
+    const px = @divTrunc(x - origin.x, scale);
+    const py = @divTrunc(y - origin.y, scale);
     var i: usize = studio.preview.len;
     while (i > 0) {
         i -= 1;
@@ -300,7 +342,7 @@ pub fn main() void {
     studio.rebuildPreview();
     studio.paint();
     studio.last_real_ms = mimoc_now_ms();
-    mimoc_window_run(&studio.canvas, 384, 192, 3, "Mimoc UI Studio");
+    mimoc_window_run(&studio.canvas, studio_width, studio_height, appkit_scale, "Mimoc UI Studio");
 }
 
 test "Studio changes actual update cadence and manual steps" {
@@ -346,4 +388,62 @@ test "Studio demo selector builds components and navigation screens" {
     try std.testing.expectEqual(showcase.Screen.contacts, s.showcase_state.nav.current());
     s.input(.back);
     try std.testing.expectEqual(showcase.Screen.home, s.showcase_state.nav.current());
+}
+
+test "Studio PBM snapshot keeps panels, controls and preview in separate viewports" {
+    var s = Studio{};
+    s.preview.update(0);
+    s.rebuildPreview();
+    try std.testing.expectEqual(studio_viewport, s.chrome.viewport);
+    try std.testing.expectEqual(preview_viewport, s.preview.viewport);
+    var pbm: [pbm_header.len + @as(usize, studio_width) * (@as(usize, studio_height) / 8)]u8 = undefined;
+    try s.pbmSnapshot(&pbm);
+    try std.testing.expectEqualSlices(u8, pbm_header, pbm[0..pbm_header.len]);
+    try std.testing.expectEqual(@as(u64, 4384244062911018104), std.hash.Wyhash.hash(0, &pbm));
+
+    const bounds = studio_viewport;
+    const inspector = ui.geometry.Rect{ .x = 544, .y = 28, .w = 152, .h = 276 };
+    for (s.chrome.nodes[0..s.chrome.len]) |node| {
+        const rect = s.chrome.presentationRect(node.id).?;
+        try std.testing.expectEqual(rect, ui.geometry.Rect.intersect(bounds, rect));
+        if (node.id >= 10 and node.id <= 22) try std.testing.expectEqual(rect, ui.geometry.Rect.intersect(inspector, rect));
+    }
+    var surface = try ui.surface.Mono1.init(&s.canvas, studio_width, studio_height);
+    try std.testing.expect(surface.get(8, 28));
+    try std.testing.expect(surface.get(544, 28));
+    try std.testing.expect(surface.get(414, 5));
+    try std.testing.expect(surface.get(600, 5));
+    try std.testing.expect(surface.get(8, 315));
+    var preview_surface = try ui.surface.Mono1.init(&s.preview_pixels, 128, 64);
+    const origin = s.previewOrigin();
+    for (0..64) |y| for (0..128) |x| {
+        const expected = preview_surface.get(@intCast(x), @intCast(y));
+        for (0..s.preview_scale) |dy| for (0..s.preview_scale) |dx| {
+            try std.testing.expectEqual(expected, surface.get(origin.x + @as(i16, @intCast(x * s.preview_scale + dx)), origin.y + @as(i16, @intCast(y * s.preview_scale + dy))));
+        };
+    };
+    var page: [128]u8 = undefined;
+    for (0..8) |index| {
+        try ui.headless.renderPage(&s.preview, &page, 128, @intCast(index));
+        try std.testing.expectEqualSlices(u8, s.preview_pixels[index * 128 ..][0..128], &page);
+    }
+}
+
+test "Preview scales 1x, 2x and 4x inside the panel" {
+    var s = Studio{};
+    s.preview.update(0);
+    s.rebuildPreview();
+    for ([_]u8{ 1, 2, 4 }) |scale| {
+        s.preview_scale = scale;
+        s.compose();
+        const origin = s.previewOrigin();
+        const image = ui.geometry.Rect{ .x = origin.x, .y = origin.y, .w = @as(i16, scale) * 128, .h = @as(i16, scale) * 64 };
+        try std.testing.expectEqual(image, ui.geometry.Rect.intersect(preview_area, image));
+        var canvas = try ui.surface.Mono1.init(&s.canvas, studio_width, studio_height);
+        var preview = try ui.surface.Mono1.init(&s.preview_pixels, 128, 64);
+        for (0..64) |y| for (0..128) |x| {
+            const on = preview.get(@intCast(x), @intCast(y));
+            try std.testing.expectEqual(on, canvas.get(origin.x + @as(i16, @intCast(x)) * scale, origin.y + @as(i16, @intCast(y)) * scale));
+        };
+    }
 }

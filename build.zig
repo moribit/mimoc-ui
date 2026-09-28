@@ -79,5 +79,25 @@ pub fn build(b: *std.Build) void {
         studio_tests.root_module.linkFramework("Foundation", .{});
         studio_tests.root_module.link_libc = true;
         test_step.dependOn(&b.addRunArtifact(studio_tests).step);
+
+        const snapshot = b.addExecutable(.{
+            .name = "mimoc-studio-snapshot",
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("studio/snapshot.zig"),
+                .target = target,
+                .optimize = optimize,
+            }),
+        });
+        snapshot.root_module.addImport("mimoc_ui", module);
+        snapshot.root_module.addImport("demo_view", demo_module);
+        snapshot.root_module.addImport("showcase", showcase_module);
+        snapshot.root_module.addCSourceFile(.{ .file = b.path("src/platform/macos/window.m"), .flags = &.{"-fobjc-arc"} });
+        snapshot.root_module.linkFramework("AppKit", .{});
+        snapshot.root_module.linkFramework("Foundation", .{});
+        snapshot.root_module.link_libc = true;
+        b.installArtifact(snapshot);
+        const run_snapshot = b.addRunArtifact(snapshot);
+        const snapshot_step = b.step("studio-snapshot", "Write the Studio PBM snapshot to stdout");
+        snapshot_step.dependOn(&run_snapshot.step);
     }
 }

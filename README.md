@@ -18,6 +18,8 @@ Use `Runtime(.{ .max_nodes = 16, .max_animations = 4 })` and set a node's `.anim
 
 [Studio](docs/milestone-6-review.md) uses Mimoc UI for its own controls and a separate preview Runtime. Its FPS setting changes the update cadence; Pause and Step use a manual clock.
 
+Studio's [viewport and composition review](docs/studio-layout-fix.md) describes its 704×336 Studio surface, separate 128×64 Preview framebuffer, integer pixel scaling, and headless PBM snapshot command.
+
 The [Widget and Navigation review](docs/widget-navigation-review.md) describes Checkbox, Toggle, Progress, Icon, Panel, Clip, ScrollView, List, fixed-capacity Navigation, and screen transitions. In Studio, the DEMO control cycles through the same three demos as the simulator.
 
 The [CH32V003 integration package](integration/ch32v003/README.md) builds against ch32fun_zig's real SSD1306 page API. [Static Flash/RAM measurements and the hardware verification gate](docs/milestone-7-progress.md) are recorded separately.
