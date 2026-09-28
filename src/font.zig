@@ -3,26 +3,63 @@ const Renderer = @import("renderers/mono1.zig").Renderer;
 pub const Metrics = struct { width: u8, height: u8, advance: u8 };
 pub const Font = enum { tiny5x7, cell8x8 };
 
-pub fn metrics(font: Font, _: u8) Metrics {
+pub fn metrics(font: Font, _: u21) Metrics {
     return switch (font) {
         .tiny5x7 => .{ .width = 5, .height = 7, .advance = 6 },
         .cell8x8 => .{ .width = 8, .height = 8, .advance = 8 },
     };
 }
 pub fn measure(font: Font, text: []const u8) i16 {
-    return @intCast(@min(text.len * metrics(font, 0).advance, 32767));
+    var width: usize = 0;
+    var index: usize = 0;
+    while (index < text.len) {
+        const decoded = decode(text, index);
+        index += decoded.length;
+        width += metrics(font, decoded.scalar).advance;
+    }
+    return @intCast(@min(width, 32767));
 }
 pub fn draw(r: *Renderer, font: Font, x: i16, y: i16, text: []const u8, on: bool) void {
-    const m = metrics(font, 0);
-    for (text, 0..) |c, i| {
+    var index: usize = 0;
+    var cursor_x: i32 = x;
+    while (index < text.len) {
+        const decoded = decode(text, index);
+        const c: u8 = if (decoded.scalar <= 0x7f) @intCast(decoded.scalar) else '?';
+        index += decoded.length;
         const columns = glyph(c);
         for (columns, 0..) |bits, col| {
             for (0..7) |row| {
                 if (bits & (@as(u8, 1) << @as(u3, @intCast(row))) != 0)
-                    r.pixel(@intCast(@as(i32, x) + @as(i32, @intCast(i * m.advance + col))), @intCast(@as(i32, y) + @as(i32, @intCast(row))), on);
+                    r.pixel(@intCast(cursor_x + @as(i32, @intCast(col))), @intCast(@as(i32, y) + @as(i32, @intCast(row))), on);
             }
         }
+        cursor_x += metrics(font, decoded.scalar).advance;
     }
+}
+
+pub const Decoded = struct { scalar: u21, length: u8 };
+
+pub fn decode(bytes: []const u8, index: usize) Decoded {
+    const length: u8 = @intCast(codepointBytes(bytes, index));
+    if (length == 1) return .{ .scalar = if (bytes[index] < 0x80) bytes[index] else '?', .length = 1 };
+    var scalar: u21 = bytes[index] & switch (length) {
+        2 => @as(u8, 0x1f),
+        3 => @as(u8, 0x0f),
+        else => @as(u8, 0x07),
+    };
+    for (bytes[index + 1 .. index + length]) |part| scalar = (scalar << 6) | @as(u21, part & 0x3f);
+    return .{ .scalar = scalar, .length = length };
+}
+
+/// Valid UTF-8 sequences stay intact. Invalid bytes are one fallback glyph each.
+pub fn codepointBytes(bytes: []const u8, index: usize) usize {
+    const first = bytes[index];
+    const length: usize = if (first < 0x80) 1 else if (first >= 0xc2 and first <= 0xdf) 2 else if (first >= 0xe0 and first <= 0xef) 3 else if (first >= 0xf0 and first <= 0xf4) 4 else return 1;
+    if (index + length > bytes.len) return 1;
+    for (bytes[index + 1 .. index + length]) |byte| if (byte & 0xc0 != 0x80) return 1;
+    if (length == 3 and ((first == 0xe0 and bytes[index + 1] < 0xa0) or (first == 0xed and bytes[index + 1] >= 0xa0))) return 1;
+    if (length == 4 and ((first == 0xf0 and bytes[index + 1] < 0x90) or (first == 0xf4 and bytes[index + 1] >= 0x90))) return 1;
+    return length;
 }
 
 // Column-major 5x7 glyphs. Unsupported bytes render as a visible question mark.

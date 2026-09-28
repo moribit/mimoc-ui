@@ -39,6 +39,7 @@ export fn mimoc_key(key: c_int) void {
             .classic => .widgets,
             .widgets => .navigation,
             .navigation => .classic,
+            .mobus => .classic,
         };
         state = .{};
         display = .{};
@@ -76,7 +77,7 @@ export fn mimoc_key(key: c_int) void {
 export fn mimoc_click(x: c_int, y: c_int) void {
     display.update(mimoc_now_ms());
     for (display.nodes[0..display.len]) |node| {
-        if ((node.kind == .button or node.kind == .checkbox or node.kind == .toggle or node.kind == .list_item) and display.presentationRect(node.id).?.contains(@intCast(x), @intCast(y))) {
+        if ((node.kind == .button or node.kind == .checkbox or node.kind == .toggle or node.kind == .list_item or node.kind == .tuner or node.kind == .knob) and display.presentationRect(node.id).?.contains(@intCast(x), @intCast(y))) {
             display.focused_id = node.id;
             if (mode == .classic) {
                 _ = display.action(.activate);

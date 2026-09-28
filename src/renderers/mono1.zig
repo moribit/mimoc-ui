@@ -3,6 +3,7 @@ const g = @import("../geometry.zig");
 const Mono1 = @import("../surface.zig").Mono1;
 
 pub const Renderer = struct {
+    pub const BitmapFormat = enum(u8) { row_msb, page_lsb };
     surface: *Mono1,
     clip: g.Rect,
 
@@ -58,13 +59,35 @@ pub const Renderer = struct {
         while (y < @as(i32, clipped.y) + clipped.h) : (y += 1) self.hline(clipped.x, @intCast(y), clipped.w, on);
     }
     pub fn bitmap(self: *Renderer, x: i16, y: i16, width: u8, height: u8, bytes: []const u8) void {
-        const stride = (@as(usize, width) + 7) / 8;
-        if (bytes.len < stride * height) return;
+        self.bitmapStrided(x, y, width, height, @intCast((@as(u16, width) + 7) / 8), bytes);
+    }
+    pub fn bitmapStrided(self: *Renderer, x: i16, y: i16, width: u8, height: u8, stride: u8, bytes: []const u8) void {
+        self.bitmapFormat(x, y, width, height, stride, bytes, .row_msb);
+    }
+    pub fn bitmapFormat(self: *Renderer, x: i16, y: i16, width: u8, height: u8, stride: u8, bytes: []const u8, format: BitmapFormat) void {
+        const rows: usize = if (format == .row_msb) height else (@as(usize, height) + 7) / 8;
+        const minimum_stride: usize = if (format == .row_msb) (@as(usize, width) + 7) / 8 else width;
+        if (stride < minimum_stride or bytes.len < @as(usize, stride) * rows) return;
         for (0..height) |row| for (0..width) |col| {
-            const bit: u3 = @intCast(7 - (col % 8));
-            if (bytes[row * stride + col / 8] & (@as(u8, 1) << bit) != 0)
+            const index: usize = if (format == .row_msb) row * @as(usize, stride) + col / 8 else (row / 8) * @as(usize, stride) + col;
+            const bit: u3 = if (format == .row_msb) @intCast(7 - (col % 8)) else @intCast(row % 8);
+            if (bytes[index] & (@as(u8, 1) << bit) != 0)
                 self.pixel(@intCast(@as(i32, x) + @as(i32, @intCast(col))), @intCast(@as(i32, y) + @as(i32, @intCast(row))), true);
         };
+    }
+    pub fn circle(self: *Renderer, cx: i16, cy: i16, radius: i16, on: bool) void {
+        if (radius < 0) return;
+        var x: i32 = radius;
+        var y: i32 = 0;
+        var err: i32 = 1 - x;
+        while (x >= y) : (y += 1) {
+            const points = [_][2]i32{ .{ x, y }, .{ y, x }, .{ -y, x }, .{ -x, y }, .{ -x, -y }, .{ -y, -x }, .{ y, -x }, .{ x, -y } };
+            for (points) |p| self.pixel(@intCast(@as(i32, cx) + p[0]), @intCast(@as(i32, cy) + p[1]), on);
+            if (err < 0) err += 2 * y + 3 else {
+                err += 2 * (y - x) + 5;
+                x -= 1;
+            }
+        }
     }
 };
 

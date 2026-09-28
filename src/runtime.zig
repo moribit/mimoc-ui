@@ -4,6 +4,7 @@ const v = @import("view.zig");
 const layout = @import("layout.zig");
 const input = @import("input.zig");
 const font = @import("font.zig");
+const wrap = @import("wrap.zig");
 const anim = @import("animation.zig");
 const widgets = @import("widgets.zig");
 const Renderer = @import("renderers/mono1.zig").Renderer;
@@ -245,10 +246,40 @@ pub fn Runtime(comptime config: anytype) type {
                 f.y = clampCoord(@as(i32, f.y) + shift.y);
                 switch (node.kind) {
                     .text => font.draw(r, node.font, f.x, f.y, node.text, true),
+                    .wrapped_text => wrap.draw(r, node.font, f.x, f.y, node.text, f.w, if (node.spacing == 0) 8 else node.spacing),
                     .rect => r.rect(f, true),
                     .filled_rect => r.fillRect(f, true),
                     .divider => r.hline(f.x, f.y, f.w, true),
                     .icon => r.bitmap(f.x, f.y, @intCast(@max(0, @min(255, f.w))), @intCast(@max(0, @min(255, f.h))), node.text),
+                    .bitmap => r.bitmapFormat(f.x, f.y, @intCast(@max(0, @min(255, f.w))), @intCast(@max(0, @min(255, f.h))), node.padding, node.text, if (node.spacing == 1) .page_lsb else .row_msb),
+                    .tuner => {
+                        const rail_y = f.y + 3;
+                        r.hline(f.x, rail_y, f.w, true);
+                        r.vline(f.x, rail_y - 3, 7, true);
+                        r.vline(f.x + f.w - 1, rail_y - 3, 7, true);
+                        for (node.text, 0..) |marker, slot| {
+                            const tx = f.x + widgets.tunerTick(f.w, node.text.len, slot);
+                            r.vline(tx, rail_y - (if (marker & 4 != 0) @as(i16, 1) else @as(i16, 2)), if (marker & 4 != 0) 3 else 5, true);
+                            if (marker & 1 != 0) r.rect(.{ .x = tx - 2, .y = rail_y - 5, .w = 5, .h = 5 }, true);
+                            if (marker & 2 != 0) r.fillRect(.{ .x = tx + 3, .y = rail_y - 6, .w = 2, .h = 2 }, true);
+                        }
+                        if (self.focused_id != null and self.focused_id.? == node.id) r.hline(f.x, f.y + 12, f.w, true);
+                    },
+                    .tuner_indicator => {
+                        r.line(f.x, f.y, f.x - 3, f.y + 4, true);
+                        r.line(f.x, f.y, f.x + 3, f.y + 4, true);
+                        r.hline(f.x - 3, f.y + 4, 7, true);
+                    },
+                    .knob => {
+                        const cx = f.x + @divTrunc(f.w, 2);
+                        const cy = f.y + @divTrunc(f.h, 2);
+                        r.circle(cx, cy, 7, true);
+                        if (self.focused_id != null and self.focused_id.? == node.id) r.circle(cx, cy, 9, true);
+                    },
+                    .knob_indicator => {
+                        const parent_rect = self.presentationAt(node.parent);
+                        r.line(parent_rect.x + @divTrunc(parent_rect.w, 2), parent_rect.y + @divTrunc(parent_rect.h, 2), f.x, f.y, true);
+                    },
                     .checkbox => widgets.drawCheckbox(r, f, node.text, node.padding != 0, self.focused_id != null and self.focused_id.? == node.id),
                     .toggle => widgets.drawToggle(r, f, node.text, self.focused_id != null and self.focused_id.? == node.id),
                     .progress => r.rect(f, true),
@@ -274,7 +305,7 @@ pub fn Runtime(comptime config: anytype) type {
             return self.len;
         }
         fn isFocusable(kind: v.Kind) bool {
-            return kind == .button or kind == .checkbox or kind == .toggle or kind == .list_item;
+            return kind == .button or kind == .checkbox or kind == .toggle or kind == .list_item or kind == .tuner or kind == .knob;
         }
         pub fn bytes() usize {
             return @sizeOf(Self);

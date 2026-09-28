@@ -10,13 +10,13 @@ pub const State = struct {
     transition: ui.transition.Transition = .{},
 };
 
-pub const Mode = enum(u8) { classic, widgets, navigation };
+pub const Mode = enum(u8) { classic, widgets, navigation, mobus };
 
 pub fn build(display: anytype, state: *const State, mode: Mode) void {
     var b = display.beginView();
     b.begin(1, .stack, 0, 0, .start) catch unreachable;
     switch (mode) {
-        .classic => {},
+        .classic, .mobus => {},
         .widgets => {
             ui.widgets.beginPanel(&b, 2, "COMPONENTS", .{ .w = 126, .h = 62 }, .{}) catch unreachable;
             ui.widgets.checkbox(&b, 20, "WI-FI", state.wifi) catch unreachable;
@@ -63,7 +63,7 @@ pub fn build(display: anytype, state: *const State, mode: Mode) void {
 }
 
 pub fn handle(display: anytype, state: *State, mode: Mode, action: ui.input.Action, now: u32) void {
-    if (mode == .classic) return;
+    if (mode == .classic or mode == .mobus) return;
     if (action == .back and mode == .navigation) {
         state.nav.remember(display.focused_id, state.scroll.offset);
         if (state.nav.pop()) {

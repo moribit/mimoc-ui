@@ -1,6 +1,7 @@
 const g = @import("geometry.zig");
 const v = @import("view.zig");
 const font = @import("font.zig");
+const wrap = @import("wrap.zig");
 
 fn add(a: i16, b: i16) i16 {
     return @intCast(@min(32767, @as(i32, a) + b));
@@ -13,11 +14,12 @@ pub fn measure(nodes: []const v.Node, index: usize) g.Size {
     const node = nodes[index];
     switch (node.kind) {
         .text => return .{ .w = @max(node.min_size.w, font.measure(node.font, node.text)), .h = @max(node.min_size.h, font.metrics(node.font, 0).height) },
+        .wrapped_text => return .{ .w = node.min_size.w, .h = @max(node.min_size.h, wrap.height(node.font, node.text, node.min_size.w, if (node.spacing == 0) 8 else node.spacing)) },
         .button => return .{ .w = @max(node.min_size.w, add(font.measure(node.font, node.text), 12)), .h = @max(node.min_size.h, 12) },
         .checkbox => return .{ .w = @max(node.min_size.w, add(font.measure(node.font, node.text), 16)), .h = @max(node.min_size.h, 12) },
         .toggle => return .{ .w = @max(node.min_size.w, add(font.measure(node.font, node.text), 36)), .h = @max(node.min_size.h, 12) },
         .progress => return .{ .w = @max(node.min_size.w, 40), .h = @max(node.min_size.h, 8) },
-        .icon, .clip, .scroll => return node.min_size,
+        .icon, .bitmap, .clip, .scroll, .tuner, .tuner_indicator, .knob, .knob_indicator => return node.min_size,
         .rect, .filled_rect => return node.min_size,
         .divider => return .{ .w = node.min_size.w, .h = @max(node.min_size.h, 1) },
         .spacer => return node.min_size,

@@ -1,6 +1,7 @@
 pub const geometry = @import("geometry.zig");
 pub const surface = @import("surface.zig");
 pub const font = @import("font.zig");
+pub const wrap = @import("wrap.zig");
 pub const view = @import("view.zig");
 pub const layout = @import("layout.zig");
 pub const input = @import("input.zig");
@@ -22,4 +23,5 @@ test {
     _ = @import("widget_tests.zig");
     _ = @import("navigation.zig");
     _ = @import("transition.zig");
+    _ = @import("mobus_widget_tests.zig");
 }

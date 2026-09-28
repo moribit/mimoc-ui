@@ -2,6 +2,7 @@ const std = @import("std");
 const ui = @import("mimoc_ui");
 const demo = @import("demo_view");
 const showcase = @import("showcase");
+const mobus = @import("mobus_demo");
 
 pub const studio_width: i16 = 704;
 pub const studio_height: i16 = 336;
@@ -12,10 +13,10 @@ pub const pbm_header = std.fmt.comptimePrint("P4\n{d} {d}\n", .{ studio_width, s
 const appkit_scale: c_int = 2;
 
 const StudioUi = ui.runtime.Runtime(64);
-const Preview = ui.runtime.Runtime(.{ .max_nodes = 32, .max_animations = 4 });
+const Preview = ui.runtime.Runtime(.{ .max_nodes = 64, .max_animations = 8 });
 // RV32EC size from the existing CH32V003 integration build; the Studio host size differs.
-const ch32_runtime_bytes: usize = 808;
-const ch32_ui_budget: usize = ch32_runtime_bytes + 40 + 66 + 2 + 24 + 128;
+const ch32_runtime_bytes: usize = 804;
+const ch32_ui_budget: usize = ch32_runtime_bytes + 40 + 42 + 2 + 24 + 128;
 const profiles = [_][]const u8{ "DESKTOP", "SSD1306 FULL", "SSD1306 PAGE", "CH32V003", "ESP32-S3" };
 const rates = [_]u8{ 60, 30, 15, 10 };
 
@@ -27,6 +28,7 @@ pub const Studio = struct {
     chrome: StudioUi = .{ .viewport = studio_viewport },
     preview: Preview = .{ .viewport = preview_viewport },
     showcase_state: showcase.State = .{},
+    mobus_state: mobus.State = .{},
     demo_mode: showcase.Mode = .classic,
     canvas: [@as(usize, studio_width) * (@as(usize, studio_height) / 8)]u8 = [_]u8{0} ** (@as(usize, studio_width) * (@as(usize, studio_height) / 8)),
     preview_pixels: [1024]u8 = [_]u8{0} ** 1024,
@@ -56,7 +58,7 @@ pub const Studio = struct {
     demo_label: [24]u8 = undefined,
 
     pub fn rebuildPreview(self: *Studio) void {
-        if (self.demo_mode == .classic) demo.build(&self.preview, self.preview_status) else showcase.build(&self.preview, &self.showcase_state, self.demo_mode);
+        if (self.demo_mode == .classic) demo.build(&self.preview, self.preview_status) else if (self.demo_mode == .mobus) mobus.build(&self.preview, &self.mobus_state) else showcase.build(&self.preview, &self.showcase_state, self.demo_mode);
     }
 
     fn label(buffer: *[24]u8, comptime fmt: []const u8, args: anytype) []const u8 {
@@ -89,8 +91,8 @@ pub const Studio = struct {
         ui.widgets.text(&b, 11, "SIZE 128X64 1BIT") catch unreachable;
         ui.widgets.text(&b, 12, label(&self.fps_label, "FPS {d}", .{rates[self.fps_index]})) catch unreachable;
         ui.widgets.text(&b, 13, label(&self.frame_label, "FRAME {d}", .{self.frame_number})) catch unreachable;
-        ui.widgets.text(&b, 14, label(&self.nodes_label, "NODES {d}/{d}", .{ self.preview.nodeCount(), if (self.profile_index == 3) @as(u8, 16) else @as(u8, 32) })) catch unreachable;
-        ui.widgets.text(&b, 15, label(&self.anim_label, "ANIM {d}/4", .{self.preview.activeAnimationCount()})) catch unreachable;
+        ui.widgets.text(&b, 14, label(&self.nodes_label, "NODES {d}/{d}", .{ self.preview.nodeCount(), if (self.profile_index == 3) @as(u8, 16) else @as(u8, 64) })) catch unreachable;
+        ui.widgets.text(&b, 15, label(&self.anim_label, "ANIM {d}/8", .{self.preview.activeAnimationCount()})) catch unreachable;
         ui.widgets.text(&b, 16, label(&self.focus_label, "FOCUS {d}", .{self.preview.focused_id orelse 0})) catch unreachable;
         ui.widgets.text(&b, 17, label(&self.input_label, "INPUT {s}", .{self.last_action})) catch unreachable;
         ui.widgets.text(&b, 18, label(&self.runtime_label, "RUNTIME {d}B", .{if (self.profile_index == 3) ch32_runtime_bytes else @as(usize, @sizeOf(Preview))})) catch unreachable;
@@ -115,6 +117,7 @@ pub const Studio = struct {
             .classic => "CLASSIC",
             .widgets => "WIDGETS",
             .navigation => "NAVIGATION",
+            .mobus => "MO-BUS",
         }, 306, 317);
         b.end();
         self.chrome.finishView(&b) catch unreachable;
@@ -129,8 +132,8 @@ pub const Studio = struct {
     fn compose(self: *Studio) void {
         self.rebuildChrome();
         ui.headless.render(&self.chrome, &self.canvas, studio_width, studio_height) catch unreachable;
-        if (self.demo_mode == .navigation) {
-            const shifted = ui.transition.Shifted(Preview){ .runtime = &self.preview, .offset = self.showcase_state.transition.incoming };
+        if (self.demo_mode == .navigation or self.demo_mode == .mobus) {
+            const shifted = ui.transition.Shifted(Preview){ .runtime = &self.preview, .offset = if (self.demo_mode == .mobus) self.mobus_state.transition.incoming else self.showcase_state.transition.incoming };
             ui.headless.render(&shifted, &self.preview_pixels, 128, 64) catch unreachable;
         } else ui.headless.render(&self.preview, &self.preview_pixels, 128, 64) catch unreachable;
         var surface = ui.surface.Mono1.init(&self.canvas, studio_width, studio_height) catch unreachable;
@@ -179,6 +182,7 @@ pub const Studio = struct {
     fn restart(self: *Studio) void {
         self.preview = .{ .viewport = preview_viewport };
         self.showcase_state = .{};
+        self.mobus_state = .{};
         self.preview.update(0);
         self.preview_status = "READY";
         self.rebuildPreview();
@@ -194,6 +198,7 @@ pub const Studio = struct {
         self.clock_ms +%= 16;
         self.preview.update(self.clock_ms);
         self.showcase_state.transition.update(self.clock_ms);
+        self.mobus_state.transition.update(self.clock_ms);
         self.frame_number +%= 1;
         self.paint();
     }
@@ -224,7 +229,8 @@ pub const Studio = struct {
                 self.demo_mode = switch (self.demo_mode) {
                     .classic => .widgets,
                     .widgets => .navigation,
-                    .navigation => .classic,
+                    .navigation => .mobus,
+                    .mobus => .classic,
                 };
                 self.restart();
                 return;
@@ -244,6 +250,9 @@ pub const Studio = struct {
                     else => "READY",
                 };
             }
+            self.rebuildPreview();
+        } else if (self.demo_mode == .mobus) {
+            mobus.handle(&self.preview, &self.mobus_state, action, self.clock_ms);
             self.rebuildPreview();
         } else {
             showcase.handle(&self.preview, &self.showcase_state, self.demo_mode, action, self.clock_ms);
@@ -273,6 +282,7 @@ pub const Studio = struct {
         self.accumulated_ms = 0;
         self.preview.update(self.clock_ms);
         self.showcase_state.transition.update(self.clock_ms);
+        self.mobus_state.transition.update(self.clock_ms);
         self.frame_number +%= 1;
         self.paint();
     }
@@ -328,7 +338,7 @@ export fn mimoc_click(x: c_int, y: c_int) void {
         const node = studio.preview.nodes[i];
         if (studio.preview.presentationRect(node.id).?.contains(@intCast(px), @intCast(py))) {
             studio.selected_id = node.id;
-            if (node.kind == .button or node.kind == .checkbox or node.kind == .toggle or node.kind == .list_item) {
+            if (node.kind == .button or node.kind == .checkbox or node.kind == .toggle or node.kind == .list_item or node.kind == .tuner or node.kind == .knob) {
                 studio.preview.focused_id = node.id;
                 studio.rebuildPreview();
             }
@@ -347,7 +357,7 @@ pub fn main() void {
 
 test "Studio changes actual update cadence and manual steps" {
     try std.testing.expectEqual(@as(usize, 3096), @sizeOf(StudioUi));
-    try std.testing.expectEqual(@as(usize, 1704), @sizeOf(Preview));
+    try std.testing.expectEqual(@as(usize, 3384), @sizeOf(Preview));
     var s = Studio{};
     s.last_real_ms = 0;
     s.tick(16);
@@ -388,6 +398,9 @@ test "Studio demo selector builds components and navigation screens" {
     try std.testing.expectEqual(showcase.Screen.contacts, s.showcase_state.nav.current());
     s.input(.back);
     try std.testing.expectEqual(showcase.Screen.home, s.showcase_state.nav.current());
+    s.clickControl(108);
+    try std.testing.expectEqual(showcase.Mode.mobus, s.demo_mode);
+    try std.testing.expectEqual(mobus.Screen.home, s.mobus_state.nav.current());
 }
 
 test "Studio PBM snapshot keeps panels, controls and preview in separate viewports" {
@@ -399,7 +412,7 @@ test "Studio PBM snapshot keeps panels, controls and preview in separate viewpor
     var pbm: [pbm_header.len + @as(usize, studio_width) * (@as(usize, studio_height) / 8)]u8 = undefined;
     try s.pbmSnapshot(&pbm);
     try std.testing.expectEqualSlices(u8, pbm_header, pbm[0..pbm_header.len]);
-    try std.testing.expectEqual(@as(u64, 4384244062911018104), std.hash.Wyhash.hash(0, &pbm));
+    try std.testing.expectEqual(@as(u64, 15295465726689782503), std.hash.Wyhash.hash(0, &pbm));
 
     const bounds = studio_viewport;
     const inspector = ui.geometry.Rect{ .x = 544, .y = 28, .w = 152, .h = 276 };
@@ -445,5 +458,41 @@ test "Preview scales 1x, 2x and 4x inside the panel" {
             const on = preview.get(@intCast(x), @intCast(y));
             try std.testing.expectEqual(on, canvas.get(origin.x + @as(i16, @intCast(x)) * scale, origin.y + @as(i16, @intCast(y)) * scale));
         };
+    }
+}
+
+test "Mo-Bus preview navigates independently inside the Studio PBM surface" {
+    var s = Studio{};
+    s.demo_mode = .mobus;
+    s.preview.update(0);
+    s.rebuildPreview();
+    try std.testing.expectEqual(preview_viewport, s.preview.viewport);
+    try std.testing.expectEqual(studio_viewport, s.chrome.viewport);
+    s.input(.activate);
+    try std.testing.expectEqual(mobus.Screen.contacts, s.mobus_state.nav.current());
+    s.input(.right);
+    s.input(.activate);
+    try std.testing.expectEqual(mobus.Screen.chat, s.mobus_state.nav.current());
+    s.input(.down);
+    s.input(.activate);
+    try std.testing.expectEqual(mobus.Screen.composer, s.mobus_state.nav.current());
+    s.input(.back);
+    try std.testing.expectEqual(mobus.Screen.chat, s.mobus_state.nav.current());
+    s.input(.back);
+    try std.testing.expectEqual(mobus.Screen.contacts, s.mobus_state.nav.current());
+    var pbm: [pbm_header.len + @as(usize, studio_width) * (@as(usize, studio_height) / 8)]u8 = undefined;
+    try s.pbmSnapshot(&pbm);
+    var surface = try ui.surface.Mono1.init(&s.canvas, studio_width, studio_height);
+    try std.testing.expect(surface.get(8, 28));
+    try std.testing.expect(surface.get(544, 28));
+    try std.testing.expect(surface.get(8, 315));
+    try std.testing.expect(s.preview.nodeCount() > 4);
+    var full: [1024]u8 = undefined;
+    const shifted = ui.transition.Shifted(Preview){ .runtime = &s.preview, .offset = s.mobus_state.transition.incoming };
+    try ui.headless.render(&shifted, &full, 128, 64);
+    for (0..8) |page| {
+        var bytes: [128]u8 = undefined;
+        try ui.headless.renderPage(&shifted, &bytes, 128, @intCast(page));
+        try std.testing.expectEqualSlices(u8, full[page * 128 ..][0..128], &bytes);
     }
 }

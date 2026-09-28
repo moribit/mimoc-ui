@@ -21,6 +21,13 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         });
         showcase_module.addImport("mimoc_ui", module);
+        const mobus_module = b.createModule(.{
+            .root_source_file = b.path("examples/mobus/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        mobus_module.addImport("mimoc_ui", module);
+        test_step.dependOn(&b.addRunArtifact(b.addTest(.{ .root_module = mobus_module })).step);
         const app = b.addExecutable(.{
             .name = "mimoc-simulator",
             .root_module = b.createModule(.{
@@ -57,6 +64,7 @@ pub fn build(b: *std.Build) void {
         demo_module.addImport("mimoc_ui", module);
         studio.root_module.addImport("demo_view", demo_module);
         studio.root_module.addImport("showcase", showcase_module);
+        studio.root_module.addImport("mobus_demo", mobus_module);
         studio.root_module.addCSourceFile(.{ .file = b.path("src/platform/macos/window.m"), .flags = &.{"-fobjc-arc"} });
         studio.root_module.linkFramework("AppKit", .{});
         studio.root_module.linkFramework("Foundation", .{});
@@ -74,6 +82,7 @@ pub fn build(b: *std.Build) void {
         studio_tests.root_module.addImport("mimoc_ui", module);
         studio_tests.root_module.addImport("demo_view", demo_module);
         studio_tests.root_module.addImport("showcase", showcase_module);
+        studio_tests.root_module.addImport("mobus_demo", mobus_module);
         studio_tests.root_module.addCSourceFile(.{ .file = b.path("src/platform/macos/window.m"), .flags = &.{"-fobjc-arc"} });
         studio_tests.root_module.linkFramework("AppKit", .{});
         studio_tests.root_module.linkFramework("Foundation", .{});
@@ -91,6 +100,7 @@ pub fn build(b: *std.Build) void {
         snapshot.root_module.addImport("mimoc_ui", module);
         snapshot.root_module.addImport("demo_view", demo_module);
         snapshot.root_module.addImport("showcase", showcase_module);
+        snapshot.root_module.addImport("mobus_demo", mobus_module);
         snapshot.root_module.addCSourceFile(.{ .file = b.path("src/platform/macos/window.m"), .flags = &.{"-fobjc-arc"} });
         snapshot.root_module.linkFramework("AppKit", .{});
         snapshot.root_module.linkFramework("Foundation", .{});
