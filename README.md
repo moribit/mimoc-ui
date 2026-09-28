@@ -18,4 +18,6 @@ Use `Runtime(.{ .max_nodes = 16, .max_animations = 4 })` and set a node's `.anim
 
 [Studio](docs/milestone-6-review.md) uses Mimoc UI for its own controls and a separate preview Runtime. Its FPS setting changes the update cadence; Pause and Step use a manual clock.
 
+The [CH32V003 integration package](integration/ch32v003/README.md) builds against ch32fun_zig's real SSD1306 page API. [Static Flash/RAM measurements and the hardware verification gate](docs/milestone-7-progress.md) are recorded separately.
+
 Current limits: ASCII bitmap text, one root view, a single focus chain, and rectangle-based animation. Transitions, hardware adapters, and browser support belong to later milestones.

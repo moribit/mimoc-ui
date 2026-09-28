@@ -1,6 +1,6 @@
 # Zig build output and local compilation artifacts
-/.zig-cache/
-/zig-out/
+.zig-cache/
+zig-out/
 *.o
 
 # macOS
