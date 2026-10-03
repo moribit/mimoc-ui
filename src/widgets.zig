@@ -26,7 +26,7 @@ pub fn bitmap(builder: anytype, id: u16, image: Bitmap) !void {
     const minimum_stride: usize = if (image.format == .row_msb) (@as(usize, image.width) + 7) / 8 else image.width;
     const rows: usize = if (image.format == .row_msb) image.height else (@as(usize, image.height) + 7) / 8;
     if (image.stride < minimum_stride or image.data.len < @as(usize, image.stride) * rows) return error.InvalidBitmap;
-    try builder.add(.{ .id = id, .kind = .bitmap, .text = image.data, .min_size = .{ .w = image.width, .h = image.height }, .padding = image.stride, .spacing = @intFromEnum(image.format) });
+    try builder.add(.{ .id = id, .kind = .bitmap, .text = image.data, .min_size = .{ .w = image.width, .h = image.height }, .padding = image.stride, .spacing = @backingInt(image.format) });
 }
 pub fn scrollbar(builder: anytype, id: u16, viewport_height: i16, content_height: i32, offset: i32, min_thumb: i16) !void {
     const thumb = scroll.scrollbar(viewport_height, content_height, offset, min_thumb);

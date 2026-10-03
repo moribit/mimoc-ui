@@ -1,6 +1,6 @@
 const ui = @import("root.zig");
 
-// Build with: zig build-obj src/embedded_smoke.zig -target riscv32-freestanding -O ReleaseSmall
+// Build with: zig build-obj src/embedded_smoke.zig -target riscv32-freestanding -O small
 // The caller passes one 128-byte SSD1306 page. No allocator or libc is required.
 pub export fn mimoc_render_page(page: [*]u8, page_index: u8) void {
     var runtime = ui.runtime.Runtime(.{ .max_nodes = 8, .max_animations = 2 }){};

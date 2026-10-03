@@ -14,6 +14,21 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run Core tests");
     test_step.dependOn(&run_tests.step);
 
+    const embedded_step = b.step("check-embedded", "Compile RV32 freestanding smoke paths and footprint probe");
+    const embedded_target = b.resolveTargetQuery(.{ .cpu_arch = .riscv32, .os_tag = .freestanding, .abi = .eabi });
+    inline for (.{ "embedded_smoke", "ui_embedded_smoke", "widget_embedded_smoke", "footprint_embedded" }) |name| {
+        const object = b.addObject(.{
+            .name = name,
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/" ++ name ++ ".zig"),
+                .target = embedded_target,
+                .optimize = .small,
+                .link_libc = false,
+            }),
+        });
+        embedded_step.dependOn(&object.step);
+    }
+
     const report = b.addExecutable(.{
         .name = "mimoc-resource-report",
         .root_module = b.createModule(.{

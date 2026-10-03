@@ -92,7 +92,7 @@ pub const Renderer = struct {
 };
 
 test "primitives and clip" {
-    var data = [_]u8{0} ** 8;
+    var data: [8]u8 = @splat(0);
     var surface = try Mono1.init(&data, 8, 8);
     var r = Renderer.init(&surface);
     r.setClip(.{ .x = 2, .y = 2, .w = 3, .h = 3 });

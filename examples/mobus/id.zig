@@ -37,5 +37,5 @@ pub const Id = enum(u16) {
 };
 
 pub fn message(index: usize, part: u1) Id {
-    return @enumFromInt(200 + index * 2 + part);
+    return @fromBackingInt(@intCast(200 + index * 2 + part));
 }

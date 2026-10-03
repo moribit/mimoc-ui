@@ -86,7 +86,7 @@ test "progress width animates with frozen page snapshot" {
 test "custom icons clip at viewport edge and support three sizes" {
     inline for (.{ 8, 12, 16 }) |size| {
         const count = ((size + 7) / 8) * size;
-        const bitmap = [_]u8{0xff} ** count;
+        const bitmap: [count]u8 = @splat(0xff);
         var b = ui.view.Builder(2).init();
         try b.begin(1, .stack, 0, 0, .start);
         try ui.widgets.icon(&b, 2, .{ .width = size, .height = size, .data = &bitmap });

@@ -1,6 +1,6 @@
 # CH32V003 + SSD1306 integration
 
-Build from this directory after cloning `mimoc-ui` and `ch32fun_zig` as siblings:
+Use Zig 0.17.0 and a Zig 0.17-compatible `ch32fun_zig` checkout. Build from this directory after cloning `mimoc-ui` and `ch32fun_zig` as siblings:
 
 ```sh
 zig build

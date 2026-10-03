@@ -6,7 +6,7 @@ On RV32 ReleaseSmall, Node is 40B, Track 36B, Runtime(8,1) 460B, and Runtime(16,
 
 Render all eight pages from one frozen presentation snapshot: `runtime.update(now_ms)` once, rebuild if the model changed, then `renderPage` for indices 0–7. The renderer is read-only; page rendering and full rendering share the same logical view. Keep platform clock, GPIO, SSD1306 transport, and frame pacing in the application adapter.
 
-Compile `src/ui_embedded_smoke.zig` with `zig build-obj src/ui_embedded_smoke.zig -target riscv32-freestanding -O ReleaseSmall`. The high-level path contains no platform imports. ReleaseSmall omits long diagnostic strings by default when using `profiles.tiny`; use `finishChecked()` in tests, or `finish()` for a compact trap on a programming error. `diagnostics = true` retains widget and screen labels for desktop/debug inspection.
+Run `zig build check-embedded` with Zig 0.17.0 to compile all smoke paths and the footprint probe, or compile `src/ui_embedded_smoke.zig` with `zig build-obj src/ui_embedded_smoke.zig -target riscv32-freestanding -O small`. The high-level path contains no platform imports. The `small` optimization mode omits long diagnostic strings by default when using `profiles.tiny`; use `finishChecked()` in tests, or `finish()` for a compact trap on a programming error. `diagnostics = true` retains widget and screen labels for desktop/debug inspection.
 
 The linked `ch32-mimoc-ui` firmware must be measured separately. Build that project before and after an update, then run `sh tools/ch32-reference-regression.sh firmware.elf firmware.bin`. It reports binary length and ELF data+bss against the recorded reference (13,844B image, 516B static RAM). The Core does not depend on that repository.
 

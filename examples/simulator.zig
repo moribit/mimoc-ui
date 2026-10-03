@@ -4,7 +4,7 @@ const showcase = @import("showcase");
 
 const Display = ui.runtime.Runtime(.{ .max_nodes = 32, .max_animations = 4 });
 var display: Display = .{};
-var framebuffer: [1024]u8 = [_]u8{0} ** 1024;
+var framebuffer: [1024]u8 = @splat(0);
 var status: []const u8 = "READY";
 var mode: showcase.Mode = .classic;
 var state = showcase.State{};

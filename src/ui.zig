@@ -47,7 +47,7 @@ pub fn derive(parent: u16, local: u16, role: u16) u16 {
 
 pub fn Ui(comptime Id: type, comptime config: anytype) type {
     const capacity: usize = if (@TypeOf(config) == comptime_int) config else config.max_nodes;
-    const diagnostics_enabled: bool = if (@TypeOf(config) == comptime_int) builtin.mode != .ReleaseSmall else if (@hasField(@TypeOf(config), "diagnostics")) config.diagnostics else builtin.mode != .ReleaseSmall;
+    const diagnostics_enabled: bool = if (@TypeOf(config) == comptime_int) builtin.mode != .small else if (@hasField(@TypeOf(config), "diagnostics")) config.diagnostics else builtin.mode != .small;
     if (capacity == 0) @compileError("Ui requires at least one node");
     if (Id != u16) {
         if (@typeInfo(Id) != .@"enum" or @typeInfo(Id).@"enum".tag_type != u16) @compileError("Ui ID must be enum(u16) or u16");
@@ -73,7 +73,7 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
             if (comptime diagnostics_enabled) self.screen_name = name;
         }
         fn raw(logical: Id) u16 {
-            return if (Id == u16) logical else @intFromEnum(logical);
+            return if (Id == u16) logical else @backingInt(logical);
         }
         pub fn rootId(logical: Id) u16 {
             return derive(root_scope, raw(logical), 0);
@@ -253,7 +253,7 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
                 self.record(.invalid_widget, key, "Bitmap");
                 return;
             }
-            self.add(.{ .id = key, .kind = .bitmap, .text = image.data, .min_size = .{ .w = image.width, .h = image.height }, .offset = position, .padding = image.stride, .spacing = @intFromEnum(image.format) }, "Bitmap");
+            self.add(.{ .id = key, .kind = .bitmap, .text = image.data, .min_size = .{ .w = image.width, .h = image.height }, .offset = position, .padding = image.stride, .spacing = @backingInt(image.format) }, "Bitmap");
         }
         pub fn listItem(self: *Self, logical: Id, label: []const u8, width: i16, trailing: bool) void {
             self.add(.{ .id = self.id(logical), .kind = .list_item, .text = label, .min_size = .{ .w = width, .h = 10 }, .padding = @intFromBool(trailing) }, "ListItem");
@@ -356,7 +356,7 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
             };
         }
         pub fn finish(self: *Self) void {
-            if (comptime builtin.mode == .ReleaseSmall) {
+            if (comptime builtin.mode == .small) {
                 if (self.failure != null or self.open_scopes != 0 or self.builder.depth != 0) @trap();
                 self.runtime.finishView(&self.builder) catch @trap();
                 return;

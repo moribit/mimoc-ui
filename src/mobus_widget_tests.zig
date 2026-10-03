@@ -60,7 +60,7 @@ test "scrollbar top middle bottom hidden and huge content" {
 }
 
 test "bitmap stride, non-byte width, clipping and page boundary" {
-    var full = [_]u8{0} ** 1024;
+    var full: [1024]u8 = @splat(0);
     var surface = try ui.surface.Mono1.init(&full, 128, 64);
     var r = ui.mono1.Renderer.init(&surface);
     const image = [_]u8{ 0x80, 0x08, 0x00, 0x01, 0x00, 0x00 };
@@ -71,7 +71,7 @@ test "bitmap stride, non-byte width, clipping and page boundary" {
     try std.testing.expect(!surface.get(17, 7));
     try std.testing.expect(surface.get(17, 8));
     try std.testing.expect(!surface.get(18, 8));
-    var page = [_]u8{0} ** 128;
+    var page: [128]u8 = @splat(0);
     var page_surface = try ui.surface.Mono1.page(&page, 128, 1);
     var page_renderer = ui.mono1.Renderer.init(&page_surface);
     page_renderer.setClip(.{ .x = 10, .y = 7, .w = 13, .h = 2 });

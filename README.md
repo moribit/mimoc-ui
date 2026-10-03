@@ -2,12 +2,18 @@
 
 Small Zig UI core for monochrome embedded displays. The implementation includes fixed-capacity declarative nodes, integer layout, action/focus navigation, SSD1306-format software rendering, headless snapshots, a macOS virtual display, time-based animation, and Mimoc UI Studio.
 
+Requires Zig 0.17.0. The desktop Simulator and Studio require macOS.
+
 ```sh
 zig build test
+zig build test -Doptimize=small
+zig build check-embedded
 zig build run
 zig build studio
 zig build resource-report
 ```
+
+Zig 0.17 optimization modes are `debug`, `safe`, `fast`, and `small`. `check-embedded` compiles the Core, high-level UI, widget smoke paths, and footprint probe for RV32 freestanding without libc.
 
 The simulator uses arrow keys or WASD to move focus, Return/Space to activate, Escape to go back, and mouse clicks to select controls. Press M to cycle through the classic, Widgets, and Navigation demos. Its display is a 128×64, 1-bit page-order framebuffer scaled 8× with nearest-neighbor pixels.
 

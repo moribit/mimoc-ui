@@ -20,7 +20,7 @@ fn widgetId(comptime Display: type, screen: Screen, logical: ids.Id) u16 {
 pub const Nav = ui.navigation.Navigation(Screen, 5);
 
 fn mockCanvas() [16 * 58]u8 {
-    var pixels = [_]u8{0} ** (16 * 58);
+    var pixels: [16 * 58]u8 = @splat(0);
     for (0..58) |row| {
         const x = 12 + row;
         pixels[row * 16 + x / 8] |= @as(u8, 0x80) >> @as(u3, @intCast(x % 8));
