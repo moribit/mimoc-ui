@@ -2,6 +2,8 @@
 
 Date: 2026-10-09. Source baseline: main `86012b4`.
 
+This report records the **unmodified official binary** experiment. The subsequent isolated upstream-source ABI patch/rebuild experiment is documented in [xtensa-c-abi-patch.md](xtensa-c-abi-patch.md). Current build gates compare all 27 primitive/typedef layouts plus a mixed aggregate, and `check-portability` now selects target-specific generation; the original stock failures below remain historical evidence.
+
 **Stage A: PASS. Stage B: FAIL (upstream target ABI incompatibility). Recommendation: NO-GO for production with the unmodified, fixed upstream Zig 0.17.0 tested here.** The shared Zig UI implementation survives C lowering and host execution, but neither the literal host C artifact nor the correctly pointer-sized Xtensa regeneration can currently produce the requested ESP32-S3 UI object with official GCC. A future upstream ABI fix would justify reevaluating this route; this report does not claim that such a fix alone proves production suitability.
 
 No Xtensa Zig fork, replacement backend, downloaded toolchain, handwritten renderer, disabled ABI assertion or Core workaround was used. Generated C stays in build output and is not committed. There was no ESP32-S3 firmware link, runtime, flashing, Mobus_ESP_IDF change, LovyanGFX, FreeRTOS integration or Japanese-font port.

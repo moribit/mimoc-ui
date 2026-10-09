@@ -1,0 +1,20 @@
+--- a/lib/std/Target.zig
++++ b/lib/std/Target.zig
+@@ -3616,8 +3616,6 @@
+             .sheb,
+             .x86,
+             .xcore,
+-            .xtensa,
+-            .xtensaeb,
+             => 4,
+ 
+             .amdgcn,
+@@ -3638,6 +3636,8 @@
+             .sparc,
+             .thumb,
+             .thumbeb,
++            .xtensa,
++            .xtensaeb,
+             => 8,
+ 
+             .aarch64,
