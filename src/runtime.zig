@@ -13,6 +13,7 @@ pub fn Runtime(comptime config: anytype) type {
     const capacity: usize = if (@TypeOf(config) == comptime_int) config else config.max_nodes;
     const animation_capacity: usize = if (@TypeOf(config) == comptime_int) 0 else config.max_animations;
     if (capacity > 65535 or animation_capacity > 65535) @compileError("Runtime capacities must fit in u16");
+    const desktop = @TypeOf(config) != comptime_int and @hasField(@TypeOf(config), "desktop_input") and config.desktop_input;
     return struct {
         const Self = @This();
         pub const configuration = config;
@@ -25,12 +26,162 @@ pub fn Runtime(comptime config: anytype) type {
         tracks: [animation_capacity]anim.Track = undefined,
         previous: if (animation_capacity > 0) [capacity]Previous else void = if (animation_capacity > 0) undefined else {},
         previous_len: if (animation_capacity > 0) u16 else void = if (animation_capacity > 0) 0 else {},
+        desktop_state: if (desktop) struct {
+            captured: ?u16 = null,
+            pressed: ?u16 = null,
+            pressed_key: bool = false,
+            provider: ?font.Provider = null,
+        } else void = if (desktop) .{} else {},
         len: u16 = 0,
         track_len: u16 = 0,
         focused_id: ?u16 = null,
         viewport: g.Rect = .{ .w = 128, .h = 64 },
         now_ms: anim.Time = 0,
 
+        pub inline fn fontProvider(self: *const Self) if (desktop) ?font.Provider else @TypeOf(null) {
+            return if (desktop) self.desktop_state.provider else null;
+        }
+        pub fn setFontProvider(self: *Self, provider: ?font.Provider) void {
+            if (!desktop) @compileError("Enable desktop_input to use a platform font");
+            self.desktop_state.provider = provider;
+            self.relayout();
+        }
+        pub fn captureFocus(self: *Self, id: u16) bool {
+            if (!desktop) @compileError("Enable desktop_input for capture");
+            for (self.nodes[0..self.len]) |node| if (node.id == id and self.focusable(node)) {
+                self.focused_id = id;
+                self.desktop_state.captured = id;
+                return true;
+            };
+            return false;
+        }
+        pub fn releaseFocus(self: *Self) void {
+            if (desktop) self.desktop_state.captured = null;
+        }
+        /// Platform focus loss cancels held pointer/key interactions without activation.
+        pub fn cancelInput(self: *Self) void {
+            self.releaseFocus();
+            if (desktop) {
+                self.desktop_state.pressed = null;
+                self.desktop_state.pressed_key = false;
+            }
+        }
+        pub fn capturedFocus(self: *const Self) ?u16 {
+            return if (desktop) self.desktop_state.captured else null;
+        }
+        fn focusable(self: *const Self, node: v.Node) bool {
+            _ = self;
+            if (node.disabled) return false;
+            if (node.kind == .text_field) return if (desktop) !field(node).disabled else false;
+            return isFocusable(node.kind);
+        }
+        fn field(node: v.Node) *const @import("text_edit.zig").Field {
+            return @ptrCast(@alignCast(node.text.ptr));
+        }
+        fn hit(self: *const Self, point: g.Point, scroll_only: bool) ?u16 {
+            var i: usize = self.len;
+            while (i > 0) {
+                i -= 1;
+                const node = self.nodes[i];
+                if (if (scroll_only) node.kind != .scroll else !self.focusable(node)) continue;
+                if (!self.presentationAt(i).contains(point.x, point.y)) continue;
+                var parent = node.parent;
+                var visible = true;
+                while (parent != 0xffff) {
+                    const n = self.nodes[parent];
+                    if ((n.kind == .clip or n.kind == .scroll) and !self.presentationAt(parent).contains(point.x, point.y)) visible = false;
+                    parent = n.parent;
+                }
+                if (visible) return node.id;
+            }
+            return null;
+        }
+        /// Returns borrowed input and a stable target; application owns all intent handling.
+        pub fn dispatch(self: *Self, event: input.InputEvent) input.Result {
+            if (!desktop) @compileError("Enable desktop_input for dispatch; embedded action remains available");
+            var result = input.Result{ .previous_focus = self.focused_id, .target = self.focused_id, .event = event };
+            switch (event) {
+                .pointer_down => |point| {
+                    result.target = self.hit(point, false);
+                    self.desktop_state.pressed = result.target;
+                    self.desktop_state.pressed_key = false;
+                    if (self.capturedFocus() != result.target) self.releaseFocus();
+                    if (result.target) |id| {
+                        self.focused_id = id;
+                        result.interaction = .pressed;
+                    }
+                },
+                .pointer_up => |point| {
+                    result.target = self.desktop_state.pressed;
+                    result.interaction = if (result.target != null and result.target == self.hit(point, false)) .activate else .released;
+                    self.desktop_state.pressed = null;
+                    if (result.target) |id| for (self.nodes[0..self.len]) |node| {
+                        if (node.id == id and node.kind == .text_field and result.interaction == .activate) {
+                            _ = self.captureFocus(id);
+                            result.interaction = .focus;
+                        }
+                    };
+                },
+                .scroll => |delta| result.target = self.hit(delta.point, true),
+                .action => |a| {
+                    if (self.capturedFocus() != null and (a == .activate or a == .back)) {
+                        self.releaseFocus();
+                        result.interaction = .blur;
+                    } else if (self.capturedFocus() == null) {
+                        result.target = self.action(a);
+                        if (result.target != null) result.interaction = .activate;
+                    }
+                },
+                .key_up => |key| {
+                    if (key == .space and self.desktop_state.pressed_key) {
+                        result.target = self.desktop_state.pressed;
+                        result.interaction = .released;
+                        if (result.target == self.focused_id and self.focusIndex() != null) result.interaction = .activate;
+                        self.desktop_state.pressed = null;
+                        self.desktop_state.pressed_key = false;
+                    }
+                },
+                .key_down => |key| {
+                    if (self.capturedFocus() == null) {
+                        if (key == .space) {
+                            if (self.focusIndex()) |index| if (self.nodes[index].kind == .button or self.nodes[index].kind == .pressable) {
+                                self.desktop_state.pressed = self.focused_id;
+                                self.desktop_state.pressed_key = true;
+                                result.interaction = .pressed;
+                            };
+                        }
+                        const a: ?input.Action = switch (key) {
+                            .up => .up,
+                            .down, .tab => .down,
+                            .left => .left,
+                            .right => .right,
+                            .enter => .activate,
+                            .escape => .back,
+                            else => null,
+                        };
+                        if (a) |action_event| {
+                            result.target = self.action(action_event);
+                            if (result.target != null) result.interaction = .activate;
+                        }
+                    } else if (key == .enter or key == .escape) {
+                        self.releaseFocus();
+                        result.interaction = .blur;
+                    }
+                },
+                else => {},
+            }
+            if (result.interaction == .activate and result.target != null) for (self.nodes[0..self.len]) |node| {
+                if (node.id == result.target.? and node.kind == .text_field) {
+                    _ = self.captureFocus(node.id);
+                    result.interaction = .focus;
+                }
+            };
+            result.activated = result.interaction == .activate;
+            if ((event == .pointer_up or event == .key_up) and result.target != null and (result.interaction == .activate or result.interaction == .released)) for (self.nodes[0..self.len]) |node| {
+                if (node.id == result.target.? and node.kind == .pressable) result.interaction = .released;
+            };
+            return result;
+        }
         pub fn beginView(self: *Self) v.InPlaceBuilder(capacity) {
             self.capturePrevious();
             return v.InPlaceBuilder(capacity).initInPlace(&self.nodes);
@@ -56,18 +207,24 @@ pub fn Runtime(comptime config: anytype) type {
             }
         }
         fn relayout(self: *Self) void {
-            if (self.len > 0) layout.place(self.nodes[0..self.len], 0, self.viewport);
-            if (self.focused_id == null or self.focusIndex() == null) self.focused_id = self.firstButton();
+            if (self.len > 0) layout.placeWith(self.fontProvider(), self.nodes[0..self.len], 0, self.viewport);
+            if (self.focused_id == null or self.focusIndex() == null) {
+                self.focused_id = self.firstButton();
+                self.releaseFocus();
+            }
+            if (desktop) {
+                if (self.desktop_state.captured != self.focused_id) self.releaseFocus();
+            }
         }
         fn firstButton(self: *const Self) ?u16 {
-            for (self.nodes[0..self.len]) |node| if (isFocusable(node.kind)) {
+            for (self.nodes[0..self.len]) |node| if (self.focusable(node)) {
                 return node.id;
             };
             return null;
         }
         fn focusIndex(self: *const Self) ?usize {
             const id = self.focused_id orelse return null;
-            for (self.nodes[0..self.len], 0..) |node, i| if (isFocusable(node.kind) and node.id == id) {
+            for (self.nodes[0..self.len], 0..) |node, i| if (self.focusable(node) and node.id == id) {
                 return i;
             };
             return null;
@@ -219,6 +376,7 @@ pub fn Runtime(comptime config: anytype) type {
             return count;
         }
         pub fn action(self: *Self, event: input.Action) ?u16 {
+            if (desktop and self.capturedFocus() != null) return null;
             if (event == .activate) return self.focused_id;
             if (event != .up and event != .down and event != .left and event != .right) return null;
             if (self.len == 0) return null;
@@ -227,7 +385,7 @@ pub fn Runtime(comptime config: anytype) type {
             var attempts: usize = 0;
             while (attempts < self.len) : (attempts += 1) {
                 index = if (forward) (index + 1) % self.len else (index + self.len - 1) % self.len;
-                if (isFocusable(self.nodes[index].kind)) {
+                if (self.focusable(self.nodes[index])) {
                     self.focused_id = self.nodes[index].id;
                     break;
                 }
@@ -258,8 +416,8 @@ pub fn Runtime(comptime config: anytype) type {
                 f.x = clampCoord(@as(i32, f.x) + shift.x);
                 f.y = clampCoord(@as(i32, f.y) + shift.y);
                 switch (node.kind) {
-                    .text => font.draw(r, node.font, f.x, f.y, node.text, true),
-                    .wrapped_text => wrap.draw(r, node.font, f.x, f.y, node.text, f.w, if (node.spacing == 0) 8 else node.spacing),
+                    .text => font.drawWith(self.fontProvider(), r, node.font, f.x, f.y, node.text, true),
+                    .wrapped_text => wrap.drawWith(self.fontProvider(), r, node.font, f.x, f.y, node.text, f.w, if (self.fontProvider()) |p| p.line_height else if (node.spacing == 0) 8 else node.spacing),
                     .rect => r.rect(f, true),
                     .filled_rect => r.fillRect(f, true),
                     .divider => r.hline(f.x, f.y, f.w, true),
@@ -298,17 +456,47 @@ pub fn Runtime(comptime config: anytype) type {
                     .progress => r.rect(f, true),
                     .list_item => {
                         const selected = self.focused_id != null and self.focused_id.? == node.id;
-                        if (selected) font.draw(r, node.font, f.x, f.y, ">", true);
-                        font.draw(r, node.font, f.x + 8, f.y, node.text, true);
-                        if (node.padding != 0) font.draw(r, node.font, f.x + f.w - 6, f.y, ">", true);
+                        if (selected) font.drawWith(self.fontProvider(), r, node.font, f.x, f.y, ">", true);
+                        font.drawWith(self.fontProvider(), r, node.font, f.x + 8, f.y, node.text, true);
+                        if (node.padding != 0) font.drawWith(self.fontProvider(), r, node.font, f.x + f.w - 6, f.y, ">", true);
                     },
-                    .button => {
+                    .text_field => {
+                        if (comptime !desktop) continue;
+                        const spec = field(node);
+                        r.rect(f, true);
+                        r.setClip(g.Rect.intersect(clip, .{ .x = f.x + 2, .y = f.y + 1, .w = @max(0, f.w - 4), .h = @max(0, f.h - 2) }));
+                        const text = if (spec.text.len == 0) spec.placeholder else spec.text;
+                        const cursor = @import("text_edit.zig").boundary(spec.text, spec.cursor);
+                        const star_width = font.measureWith(self.fontProvider(), node.font, "*");
+                        var cursor_width = font.measureWith(self.fontProvider(), node.font, spec.text[0..cursor]);
+                        if (spec.password) {
+                            cursor_width = 0;
+                            var at: usize = 0;
+                            while (at < cursor) {
+                                cursor_width +|= star_width;
+                                at += font.codepointBytes(spec.text, at);
+                            }
+                        }
+                        const inset = @max(0, @as(i32, cursor_width) - @max(0, f.w - 8));
+                        const origin = clampCoord(@as(i32, f.x) + 3 - inset);
+                        if (spec.password and spec.text.len != 0) {
+                            var at: usize = 0;
+                            var x = origin;
+                            while (at < spec.text.len) {
+                                font.drawWith(self.fontProvider(), r, node.font, x, f.y + 3, "*", true);
+                                x +|= star_width;
+                                at += font.codepointBytes(spec.text, at);
+                            }
+                        } else font.drawWith(self.fontProvider(), r, node.font, origin, f.y + 3, text, true);
+                        if (self.capturedFocus() == node.id) r.vline(origin +| cursor_width, f.y + 2, @max(0, f.h - 4), true);
+                    },
+                    .button, .pressable => {
                         const selected = self.focused_id != null and self.focused_id.? == node.id;
                         r.rect(f, true);
                         if (selected and f.w > 2 and f.h > 2) {
                             r.fillRect(.{ .x = f.x + 1, .y = f.y + 1, .w = f.w - 2, .h = f.h - 2 }, true);
-                            font.draw(r, node.font, f.x + 6, f.y + 2, node.text, false);
-                        } else font.draw(r, node.font, f.x + 6, f.y + 2, node.text, true);
+                            font.drawWith(self.fontProvider(), r, node.font, f.x + 6, f.y + 2, node.text, false);
+                        } else font.drawWith(self.fontProvider(), r, node.font, f.x + 6, f.y + 2, node.text, true);
                     },
                     else => {},
                 }
@@ -327,7 +515,7 @@ pub fn Runtime(comptime config: anytype) type {
             return .{ .nodes = self.nodeUsage(), .animations = self.animationUsage() };
         }
         fn isFocusable(kind: v.Kind) bool {
-            return kind == .button or kind == .checkbox or kind == .toggle or kind == .list_item or kind == .tuner or kind == .knob;
+            return kind == .text_field or kind == .pressable or kind == .button or kind == .checkbox or kind == .toggle or kind == .list_item or kind == .tuner or kind == .knob;
         }
         pub fn bytes() usize {
             return @sizeOf(Self);

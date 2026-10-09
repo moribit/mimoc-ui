@@ -29,6 +29,7 @@ pub const Diagnostic = struct {
     screen: []const u8,
 };
 pub const Options = struct {
+    disabled: bool = false,
     padding: u8 = 0,
     spacing: u8 = 0,
     alignment: view.Align = .start,
@@ -225,7 +226,7 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
         }
         /// Typed escape hatch for uncommon primitives; the low-level Builder remains available.
         pub fn primitive(self: *Self, logical: Id, kind: view.Kind, value: []const u8, options: Options) void {
-            self.add(.{ .id = self.id(logical), .kind = kind, .text = value, .min_size = options.size, .offset = options.offset, .animation = options.animation, .padding = options.padding, .spacing = options.spacing, .alignment = options.alignment }, @tagName(kind));
+            self.add(.{ .id = self.id(logical), .kind = kind, .disabled = options.disabled, .text = value, .min_size = options.size, .offset = options.offset, .animation = options.animation, .padding = options.padding, .spacing = options.spacing, .alignment = options.alignment }, @tagName(kind));
         }
         pub fn divider(self: *Self, logical: Id, width: i16) void {
             self.add(.{ .id = self.id(logical), .kind = .divider, .min_size = .{ .w = width, .h = 1 } }, "Divider");
@@ -234,7 +235,15 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
             self.buttonWith(logical, label, .{});
         }
         pub fn buttonWith(self: *Self, logical: Id, label: []const u8, options: Options) void {
-            self.add(.{ .id = self.id(logical), .kind = .button, .text = label, .min_size = options.size, .offset = options.offset, .animation = options.animation }, "Button");
+            self.add(.{ .id = self.id(logical), .kind = .button, .disabled = options.disabled, .text = label, .min_size = options.size, .offset = options.offset, .animation = options.animation }, "Button");
+        }
+        /// Descriptor and its text remain application-owned and valid through rendering.
+        pub fn textField(self: *Self, logical: Id, spec: *const @import("text_edit.zig").Field, options: Options) void {
+            if (@TypeOf(config) == comptime_int or !@hasField(@TypeOf(config), "desktop_input") or !config.desktop_input) @compileError("TextField requires desktop_input configuration");
+            self.add(.{ .id = self.id(logical), .kind = .text_field, .disabled = options.disabled, .text = std.mem.asBytes(spec), .min_size = .{ .w = @max(24, options.size.w), .h = @max(20, options.size.h) }, .offset = options.offset }, "TextField");
+        }
+        pub fn pressable(self: *Self, logical: Id, label: []const u8, options: Options) void {
+            self.add(.{ .id = self.id(logical), .kind = .pressable, .disabled = options.disabled, .text = label, .min_size = options.size, .offset = options.offset }, "Pressable");
         }
         pub fn checkbox(self: *Self, logical: Id, label: []const u8, checked: bool) void {
             self.add(.{ .id = self.id(logical), .kind = .checkbox, .text = label, .padding = @intFromBool(checked) }, "Checkbox");

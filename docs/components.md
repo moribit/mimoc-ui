@@ -16,3 +16,5 @@ The layers are primitive → widget → component function → screen function. 
 Prefer one unique logical ID for each sibling. `var scope = ui.row(.controls, .{}); defer scope.end();` closes a container even on early return. `ui.scope(.component)` creates an ID namespace without adding a Node. `ui.panel`, `ui.list`, `ui.toggle`, `ui.progress`, `ui.tuner`, and `ui.knob` use the same identity rule. `ui.finishChecked()` catches unclosed and double-ended scopes in tests. A failed build is a configuration/programming error; a normal `ui.finish()` panics in Debug and traps in ReleaseSmall.
 
 For application state, pass values into widget calls on every rebuild and react to `Action` IDs. Focus and presentation tracks refer to derived Node IDs; Navigation can save those IDs. A component should not retain a pointer to `Ui` beyond a rebuild. Bitmap and text slices must remain valid through rendering.
+
+Desktop widgets add `ui.textField(id, &application_field, options)` and `ui.pressable(id, label, options)`. Their borrowed state, input intents and disabled behavior are documented in [Desktop Foundation](desktop-foundation.md).

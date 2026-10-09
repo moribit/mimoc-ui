@@ -2,7 +2,7 @@ const g = @import("geometry.zig");
 const Font = @import("font.zig").Font;
 const Animation = @import("animation.zig").Animation;
 
-pub const Kind = enum { column, row, stack, text, wrapped_text, rect, filled_rect, spacer, button, divider, icon, bitmap, checkbox, toggle, progress, clip, scroll, list_item, tuner, tuner_indicator, knob, knob_indicator };
+pub const Kind = enum { column, row, stack, text, wrapped_text, rect, filled_rect, spacer, button, divider, icon, bitmap, checkbox, toggle, progress, clip, scroll, list_item, tuner, tuner_indicator, knob, knob_indicator, text_field, pressable };
 pub const Align = enum { start, center, end };
 pub const Node = struct {
     text: []const u8 = "",
@@ -18,6 +18,7 @@ pub const Node = struct {
     padding: u8 = 0,
     spacing: u8 = 0,
     alignment: Align = .start,
+    disabled: bool = false,
 };
 
 pub fn Builder(comptime capacity: usize) type {

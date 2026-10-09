@@ -41,6 +41,23 @@ pub fn build(b: *std.Build) void {
     resource_step.dependOn(&b.addRunArtifact(report).step);
 
     if (target.result.os.tag == .macos) {
+        const desktop_app = b.addExecutable(.{ .name = "mimoc-desktop-demo", .root_module = b.createModule(.{ .root_source_file = b.path("examples/desktop.zig"), .target = target, .optimize = optimize }) });
+        desktop_app.root_module.addImport("mimoc_ui", module);
+        const desktop_font = b.createModule(.{ .root_source_file = b.path("src/platform/macos/font.zig"), .target = target, .optimize = optimize });
+        desktop_font.addImport("mimoc_ui", module);
+        desktop_app.root_module.addImport("desktop_font", desktop_font);
+        const desktop_window = b.createModule(.{ .root_source_file = b.path("src/platform/macos/window.zig"), .target = target, .optimize = optimize });
+        desktop_window.addImport("mimoc_ui", module);
+        desktop_app.root_module.addImport("desktop_window", desktop_window);
+        desktop_app.root_module.addCSourceFile(.{ .file = b.path("src/platform/macos/window.m"), .flags = &.{"-fobjc-arc"} });
+        desktop_app.root_module.addCSourceFile(.{ .file = b.path("src/platform/macos/font.m"), .flags = &.{"-fobjc-arc"} });
+        inline for (.{ "AppKit", "Foundation", "CoreText", "CoreGraphics" }) |framework| desktop_app.root_module.linkFramework(framework, .{});
+        desktop_app.root_module.link_libc = true;
+        const desktop_tests = b.addTest(.{ .root_module = desktop_app.root_module });
+        test_step.dependOn(&b.addRunArtifact(desktop_tests).step);
+        b.installArtifact(desktop_app);
+        b.step("desktop-demo", "Run resizable Desktop Foundation mock").dependOn(&b.addRunArtifact(desktop_app).step);
+        b.step("check-desktop", "Compile Desktop demo without opening a window").dependOn(&desktop_app.step);
         const showcase_module = b.createModule(.{
             .root_source_file = b.path("examples/showcase.zig"),
             .target = target,

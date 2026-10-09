@@ -32,3 +32,5 @@ For a full 128×64 Mono1 image, use `var pixels: [1024]u8 = undefined; try mimoc
 `Ui` methods accept a typed application ID. Container guards close with `defer`; composite internals receive stable IDs from the framework. If a screen needs a low-level primitive, `ui.primitive(...)` is available. `runtime.beginView()` and `view.add(...)` remain supported; `src/widget_embedded_smoke.zig` is the low-level reference.
 
 Set capacities explicitly with `Runtime(.{ .max_nodes = 16, .max_animations = 4 })` or use `profiles.tiny`, `profiles.embedded`, or `profiles.desktop`. `display.resources()` reports used/max nodes and animation tracks. For error handling without a panic, call `ui.finishChecked()` and inspect `ui.diagnostic()` in diagnostic builds.
+
+Desktop input, Unicode fonts, text editing and resize are described in [Desktop Foundation](desktop-foundation.md). Run `zig build desktop-demo` for the mock application.

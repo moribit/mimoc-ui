@@ -1,5 +1,52 @@
 const Renderer = @import("renderers/mono1.zig").Renderer;
 
+/// Provider callbacks borrow context; rasterization writes a bounded row-major 1-bit mask.
+/// Core imports no platform implementation. Provider must outlive the Runtime.
+pub const Provider = struct {
+    context: ?*anyopaque = null,
+    advance_fn: *const fn (?*anyopaque, u21) u8,
+    raster_fn: *const fn (?*anyopaque, u21, *[128]u8) void,
+    line_height: u8 = 16,
+    pub fn advance(self: Provider, scalar: u21) u8 {
+        return self.advance_fn(self.context, scalar);
+    }
+    pub fn measureText(self: Provider, text: []const u8) i16 {
+        var i: usize = 0;
+        var width: u32 = 0;
+        while (i < text.len) {
+            const d = decode(text, i);
+            i += d.length;
+            width += self.advance(d.scalar);
+        }
+        return @intCast(@min(width, 32767));
+    }
+};
+pub fn measureWith(provider: anytype, kind: Font, text: []const u8) i16 {
+    return if (provider) |p| p.measureText(text) else measure(kind, text);
+}
+pub fn drawWith(provider: anytype, r: *Renderer, kind: Font, x: i16, y: i16, text: []const u8, on: bool) void {
+    const p = provider orelse {
+        draw(r, kind, x, y, text, on);
+        return;
+    };
+    var i: usize = 0;
+    var cx: i32 = x;
+    while (i < text.len) {
+        const d = decode(text, i);
+        i += d.length;
+        var mask: [128]u8 = @splat(0);
+        p.raster_fn(p.context, d.scalar, &mask);
+        for (0..32) |row| for (0..32) |col| {
+            if (mask[row * 4 + col / 8] & (@as(u8, 0x80) >> @as(u3, @intCast(col % 8))) != 0) {
+                const px = cx + @as(i32, @intCast(col));
+                const py = @as(i32, y) + @as(i32, @intCast(row));
+                if (px >= -32768 and px <= 32767 and py >= -32768 and py <= 32767) r.pixel(@intCast(px), @intCast(py), on);
+            }
+        };
+        cx += p.advance(d.scalar);
+    }
+}
+
 pub const Metrics = struct { width: u8, height: u8, advance: u8 };
 pub const Font = enum { tiny5x7, cell8x8 };
 

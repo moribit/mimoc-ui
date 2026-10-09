@@ -1,3 +1,4 @@
+pub const text_edit = @import("text_edit.zig");
 pub const geometry = @import("geometry.zig");
 pub const surface = @import("surface.zig");
 pub const font = @import("font.zig");
@@ -18,6 +19,7 @@ pub const mono1 = @import("renderers/mono1.zig");
 pub const headless = @import("renderers/headless.zig");
 
 test {
+    _ = @import("desktop_tests.zig");
     _ = @import("geometry.zig");
     _ = @import("renderers/mono1.zig");
     _ = @import("runtime.zig");

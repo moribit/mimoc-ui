@@ -57,3 +57,7 @@ The representative CH32V003 configuration is Runtime(16,4) 804 + in-place builde
 The reference font provides ASCII glyphs and a one-cell fallback for other UTF-8 codepoints. Japanese glyph shapes and variable-width font providers remain future work, though the wrap iterator passes decoded codepoints to font metrics. `ScrollState.offset` is i16; applications with content taller than its representable scroll range need a wider application-owned offset and an adapter for the view. The Chat demo culls distant items; a large jump beyond its overscan range can leave an animated intermediate frame sparse. The small-device transition capability uses one view; it does not keep two screen trees or framebuffers.
 
 Future ESP32-S3 integration should provide only clock, Action mapping, and Mono1 bitmap delivery through an application adapter. The Core and demo do not introduce an ESP-IDF or LovyanGFX boundary.
+
+## Desktop Foundation follow-up
+
+The bitmap reference above remains available unchanged. A separate Unicode/resizable Desktop mock and opt-in input/font interfaces now exist; see [Desktop Foundation](desktop-foundation.md) for current boundaries and validation. This does not add networking to the reference.
