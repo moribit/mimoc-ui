@@ -29,6 +29,105 @@ pub fn build(b: *std.Build) void {
         embedded_step.dependOn(&object.step);
     }
 
+    // C backend probes are opt-in and never enter the platform or default build.
+    const c_host_target = b.resolveTargetQuery(.{ .ofmt = .c });
+    const c_source = b.addObject(.{ .name = "mimoc_ui", .root_module = b.createModule(.{
+        .root_source_file = b.path("src/c_backend_smoke.zig"),
+        .target = c_host_target,
+        .optimize = .small,
+        .link_libc = false,
+    }) });
+    const emit_c = b.step("emit-c", "Generate host-ABI C and copy upstream zig.h to zig-out/c-backend");
+    emit_c.dependOn(&b.addInstallFile(c_source.getEmittedBin(), "c-backend/mimoc_ui.c").step);
+    emit_c.dependOn(&b.addInstallFile(std.Build.LazyPath.zig_lib.path(b, "zig.h"), "c-backend/zig.h").step);
+    b.step("c-backend", "Alias for emit-c").dependOn(emit_c);
+    const native_smoke = b.addObject(.{ .name = "mimoc_ui_native", .root_module = b.createModule(.{
+        .root_source_file = b.path("src/c_backend_smoke.zig"),
+        .target = b.graph.host,
+        .optimize = .small,
+        .link_libc = false,
+    }) });
+    const host_check = b.addSystemCommand(&.{"python3"});
+    host_check.has_side_effects = true;
+    host_check.stdio = .inherit;
+    host_check.addFileInput(b.path("integration/c_backend/smoke.h"));
+    host_check.addFileArg(b.path("tools/check_c_backend.py"));
+    host_check.addArgs(&.{ "host", "--zig", b.graph.zig_exe, "--generated" });
+    host_check.addFileArg(c_source.getEmittedBin());
+    host_check.addArg("--native");
+    host_check.addFileArg(native_smoke.getEmittedBin());
+    host_check.addArg("--driver");
+    host_check.addFileArg(b.path("integration/c_backend/compare.c"));
+    host_check.addArg("--zig-lib");
+    host_check.addDirectoryArg(std.Build.LazyPath.zig_lib);
+    if (b.option([]const u8, "c-host-cc", "Existing host C compiler (default CC/clang/cc)")) |cc| host_check.addArgs(&.{ "--cc", cc });
+    host_check.addArg("--outdir");
+    const host_output = host_check.addOutputDirectoryArg("c-backend-host");
+    const check_c = b.step("check-c-backend-host", "Host C compile/link/run and exact native framebuffer equivalence");
+    check_c.dependOn(&host_check.step);
+    b.step("check-c-backend", "Alias for host C backend equivalence").dependOn(check_c);
+    const install_host = b.step("c-backend-host", "Check and install host comparison logs/binary");
+    install_host.dependOn(&b.addInstallDirectory(.{ .source_dir = host_output, .install_dir = .prefix, .install_subdir = "c-backend/host" }).step);
+
+    const xtensa_source = b.addObject(.{ .name = "mimoc_ui_xtensa", .root_module = b.createModule(.{
+        .root_source_file = b.path("src/c_backend_smoke.zig"),
+        .target = b.resolveTargetQuery(.{ .cpu_arch = .xtensa, .cpu_model = .{ .explicit = &std.Target.xtensa.cpu.generic }, .os_tag = .freestanding, .ofmt = .c }),
+        .optimize = .small,
+        .link_libc = false,
+    }) });
+    const emit_xtensa = b.step("emit-c-xtensa", "Diagnostic: regenerate the same Zig entrypoint for the Xtensa ABI");
+    emit_xtensa.dependOn(&b.addInstallFile(xtensa_source.getEmittedBin(), "c-backend/mimoc_ui.xtensa.c").step);
+    emit_xtensa.dependOn(emit_c);
+    const minimal_abi = b.addObject(.{ .name = "xtensa_abi_minimal", .root_module = b.createModule(.{
+        .root_source_file = b.path("integration/esp32s3-c-backend/minimal.zig"),
+        .target = xtensa_source.root_module.resolved_target.?,
+        .optimize = .small,
+        .link_libc = false,
+    }) });
+    const emit_minimal = b.step("emit-c-abi-minimal", "Emit an upstream Xtensa ABI reproducer without mimoc-ui");
+    emit_minimal.dependOn(&b.addInstallFile(minimal_abi.getEmittedBin(), "c-backend/abi-minimal.c").step);
+    const idf_path = b.option([]const u8, "esp-idf", "Existing official ESP-IDF directory; never downloaded");
+    const xtensa_gcc = b.option([]const u8, "xtensa-gcc", "Existing official xtensa-esp-elf-gcc path; never downloaded");
+    const strict_esp = b.step("check-esp32s3-c", "Stage B: compile the identical Stage A C source with official ESP-IDF GCC");
+    const target_esp = b.step("check-esp32s3-c-target", "Diagnostic: compile Xtensa-regenerated C without changing ABI assertions");
+    const minimal_esp = b.step("check-esp32s3-c-abi", "Diagnose upstream ABI assertions with a one-function Zig module");
+    inline for (.{ 0, 1, 2 }) |variant| {
+        const check = b.addSystemCommand(&.{"python3"});
+        check.has_side_effects = true;
+        check.stdio = .inherit;
+        check.addFileInput(b.path("integration/esp32s3-c-backend/CMakeLists.txt"));
+        check.addFileInput(b.path("integration/esp32s3-c-backend/abi_probe.c"));
+        check.addFileArg(b.path("tools/check_c_backend.py"));
+        check.addArgs(&.{ "esp32", "--zig", b.graph.zig_exe, "--generated" });
+        check.addFileArg(switch (variant) {
+            0 => c_source.getEmittedBin(),
+            1 => xtensa_source.getEmittedBin(),
+            else => minimal_abi.getEmittedBin(),
+        });
+        check.addArg("--zig-lib");
+        check.addDirectoryArg(std.Build.LazyPath.zig_lib);
+        check.addArg("--harness");
+        check.addDirectoryArg(b.path("integration/esp32s3-c-backend"));
+        if (idf_path) |path| check.addArgs(&.{ "--idf", path });
+        if (xtensa_gcc) |path| check.addArgs(&.{ "--gcc", path });
+        check.addArg("--outdir");
+        _ = check.addOutputDirectoryArg(switch (variant) {
+            0 => "esp32s3-identical",
+            1 => "esp32s3-target",
+            else => "esp32s3-abi-minimal",
+        });
+        check.step.dependOn(&host_check.step); // Stage B starts only after Stage A PASS.
+        (switch (variant) {
+            0 => strict_esp,
+            1 => target_esp,
+            else => minimal_esp,
+        }).dependOn(&check.step);
+    }
+    const portability = b.step("check-portability", "RV32, host C equivalence and strict ESP32-S3 compile (fails on an ABI/toolchain blocker)");
+    portability.dependOn(embedded_step);
+    portability.dependOn(check_c);
+    portability.dependOn(strict_esp);
+
     const report = b.addExecutable(.{
         .name = "mimoc-resource-report",
         .root_module = b.createModule(.{

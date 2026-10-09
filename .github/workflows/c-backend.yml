@@ -1,0 +1,31 @@
+name: Upstream Zig C backend
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  host-equivalence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install official upstream Zig 0.17.0
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess, urllib.request
+          version = "0.17.0"
+          index = json.load(urllib.request.urlopen("https://ziglang.org/download/index.json"))
+          release = index[version]["x86_64-linux"]
+          assert release["tarball"].startswith("https://ziglang.org/")
+          archive = pathlib.Path(os.environ["RUNNER_TEMP"]) / "zig.tar.xz"
+          urllib.request.urlretrieve(release["tarball"], archive)
+          assert hashlib.sha256(archive.read_bytes()).hexdigest() == release["shasum"]
+          subprocess.run(["tar", "-xf", str(archive), "-C", os.environ["RUNNER_TEMP"]], check=True)
+          tool = pathlib.Path(os.environ["RUNNER_TEMP"]) / ("zig-x86_64-linux-" + version)
+          with open(os.environ["GITHUB_PATH"], "a") as path:
+              path.write(str(tool) + "\n")
+          PY
+      - name: Native tests and RV32 compile
+        run: zig build test check-embedded
+      - name: Emit C, host compile/link/run, framebuffer equality
+        run: zig build emit-c c-backend-host
+      # No ESP-IDF installation or Xtensa fork is added to CI.
