@@ -7,6 +7,16 @@ pub fn main(init: std.process.Init) !void {
     var args = std.process.Args.Iterator.init(init.minimal.args);
     _ = args.next();
     if (args.next()) |mode| {
+        if (std.mem.eql(u8, mode, "lab")) {
+            studio.lab = true;
+            studio.preview_scale = 4;
+            if (args.next()) |name| {
+                for (@import("mobus_reference").catalog.scenarios, 0..) |scenario, i| {
+                    if (std.mem.eql(u8, name, scenario.name)) studio.lab_scenario = i;
+                }
+            }
+            if (args.next()) |comparison| studio.lab_compare = std.meta.stringToEnum(scene.Compare, comparison) orelse return error.UnknownCompareMode;
+        }
         if (std.mem.eql(u8, mode, "mobus")) studio.demo_mode = .mobus;
         if (std.mem.eql(u8, mode, "contacts")) {
             studio.demo_mode = .mobus;

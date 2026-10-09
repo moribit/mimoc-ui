@@ -3,6 +3,9 @@ const ui = @import("mimoc_ui");
 const demo = @import("demo_view");
 const showcase = @import("showcase");
 const mobus = @import("mobus_demo");
+const reference = @import("mobus_reference");
+const candidate = @import("mobus_candidate");
+pub const Compare = enum { legacy, candidate, alternate, xor, side_by_side };
 
 pub const studio_width: i16 = 704;
 pub const studio_height: i16 = 336;
@@ -22,6 +25,7 @@ const rates = [_]u8{ 60, 30, 15, 10 };
 
 extern fn mimoc_window_run(pixels: [*]const u8, width: c_int, height: c_int, scale: c_int, title: [*:0]const u8) void;
 extern fn mimoc_window_redraw() void;
+extern fn mimoc_window_set_hover(callback: *const fn (c_int, c_int) callconv(.c) void) void;
 extern fn mimoc_now_ms() u32;
 
 pub const Studio = struct {
@@ -30,6 +34,15 @@ pub const Studio = struct {
     showcase_state: showcase.State = .{},
     mobus_state: mobus.State = .{},
     demo_mode: showcase.Mode = .classic,
+    lab: bool = false,
+    lab_scenario: usize = 0,
+    lab_compare: Compare = .legacy,
+    legacy_pixels: [1024]u8 = @splat(0),
+    candidate_pixels: [1024]u8 = @splat(0),
+    diff_label: [24]u8 = undefined,
+    pixel_label: [24]u8 = undefined,
+    pixel_value_label: [24]u8 = undefined,
+    hovered: ?ui.geometry.Point = null,
     canvas: [@as(usize, studio_width) * (@as(usize, studio_height) / 8)]u8 = @splat(0),
     preview_pixels: [1024]u8 = @splat(0),
     running: bool = true,
@@ -94,7 +107,31 @@ pub const Studio = struct {
             {
                 var panel = view.panelAt(200, "INSPECTOR", .{ .w = 152, .h = 276 }, .{ .padding = 6, .spacing = 8 }, .{ .x = 544, .y = 28 });
                 defer panel.end();
-                if (self.inspect_details) {
+                if (self.lab) {
+                    const scenario = reference.catalog.scenarios[self.lab_scenario];
+                    reference.render(scenario, reference.fixtures.defaults, &self.legacy_pixels);
+                    candidate.render(scenario, reference.fixtures.defaults, &self.candidate_pixels);
+                    view.text(10, "MO-BUS UI LAB");
+                    view.text(11, @tagName(scenario.screen));
+                    view.text(12, scenario.name);
+                    view.text(13, @tagName(scenario.verification));
+                    view.button(112, "NEXT SCREEN");
+                    view.button(113, "NEXT SCENARIO");
+                    view.button(114, @tagName(self.lab_compare));
+                    view.text(14, label(&self.diff_label, "DIFF {d} PIXELS", .{reference.mismatch(&self.legacy_pixels, &self.candidate_pixels)}));
+                    view.text(15, "REFERENCE FROZEN");
+                    view.text(16, "CANDIDATE: SEED");
+                    view.text(17, "UP/DOWN: SCENARIO");
+                    view.text(18, "LEFT/RIGHT: MODE");
+                    if (self.hovered) |p| {
+                        const index: usize = @as(usize, @intCast(@divTrunc(p.y, 8))) * 128 + @as(usize, @intCast(p.x));
+                        const bit = @as(u8, 1) << @as(u3, @intCast(@mod(p.y, 8)));
+                        const legacy = self.legacy_pixels[index] & bit != 0;
+                        const design = self.candidate_pixels[index] & bit != 0;
+                        view.text(19, label(&self.pixel_label, "PIXEL {d},{d}", .{ p.x, p.y }));
+                        view.text(20, label(&self.pixel_value_label, "L:{d} C:{d} DIFF:{d}", .{ @intFromBool(legacy), @intFromBool(design), @intFromBool(legacy != design) }));
+                    }
+                } else if (self.inspect_details) {
                     if (self.selectedNodeIndex()) |index| {
                         const node = self.preview.nodes[index];
                         const presentation = self.preview.presentationRect(node.id).?;
@@ -154,6 +191,7 @@ pub const Studio = struct {
                 .mobus => "MO-BUS",
             }, 306, 317);
             addButton(&view, 110, if (self.inspect_details) "SUMMARY" else "DETAIL", 400, 315, 78);
+            addButton(&view, 111, if (self.lab) "EXIT LAB" else "UI LAB", 484, 315, 80);
         }
         view.finish();
     }
@@ -178,29 +216,40 @@ pub const Studio = struct {
     fn controlId(key: u16) ?u16 {
         const View = ui.ui.Ui(u16, StudioUi.configuration);
         const root = View.rootId(1);
-        for (100..111) |candidate| {
-            const raw: u16 = @intCast(candidate);
+        for (100..115) |control| {
+            const raw: u16 = @intCast(control);
             if (View.childId(root, raw) == key) return raw;
+            if (raw >= 112 and View.childId(View.childId(root, 200), raw) == key) return raw;
         }
         return null;
     }
     fn previewOrigin(self: *const Studio) ui.geometry.Point {
-        const scale: i16 = self.preview_scale;
+        const scale: i16 = if (self.lab and self.lab_compare == .side_by_side) 2 else self.preview_scale;
         return .{
-            .x = preview_area.x + @divTrunc(preview_area.w - 128 * scale, 2),
+            .x = preview_area.x + @divTrunc(preview_area.w - (if (self.lab and self.lab_compare == .side_by_side) @as(i16, 256) else 128) * scale, 2),
             .y = preview_area.y + @divTrunc(preview_area.h - 64 * scale, 2),
         };
     }
     fn compose(self: *Studio) void {
         self.rebuildChrome();
         ui.headless.render(&self.chrome, &self.canvas, studio_width, studio_height) catch unreachable;
-        if (self.demo_mode == .navigation or self.demo_mode == .mobus) {
+        if (self.lab) {
+            switch (self.lab_compare) {
+                .legacy => self.preview_pixels = self.legacy_pixels,
+                .candidate => self.preview_pixels = self.candidate_pixels,
+                .alternate => self.preview_pixels = if ((self.clock_ms / 500) % 2 == 0) self.legacy_pixels else self.candidate_pixels,
+                .xor => for (&self.preview_pixels, self.legacy_pixels, self.candidate_pixels) |*out, a, b| {
+                    out.* = a ^ b;
+                },
+                .side_by_side => self.preview_pixels = self.legacy_pixels,
+            }
+        } else if (self.demo_mode == .navigation or self.demo_mode == .mobus) {
             const shifted = ui.transition.Shifted(Preview){ .runtime = &self.preview, .offset = if (self.demo_mode == .mobus) self.mobus_state.transition.incoming else self.showcase_state.transition.incoming };
             ui.headless.render(&shifted, &self.preview_pixels, 128, 64) catch unreachable;
         } else ui.headless.render(&self.preview, &self.preview_pixels, 128, 64) catch unreachable;
         var surface = ui.surface.Mono1.init(&self.canvas, studio_width, studio_height) catch unreachable;
         var r = ui.mono1.Renderer.init(&surface);
-        const scale: i16 = self.preview_scale;
+        const scale: i16 = if (self.lab and self.lab_compare == .side_by_side) 2 else self.preview_scale;
         const origin = self.previewOrigin();
         r.fillRect(preview_area, false);
         r.rect(.{ .x = origin.x - 2, .y = origin.y - 2, .w = 128 * scale + 4, .h = 64 * scale + 4 }, true);
@@ -210,7 +259,17 @@ pub const Studio = struct {
                 r.fillRect(.{ .x = origin.x + @as(i16, @intCast(x)) * scale, .y = origin.y + @as(i16, @intCast(y)) * scale, .w = scale, .h = scale }, true);
             }
         };
-        if (self.overlay) {
+        if (self.lab and self.lab_compare == .side_by_side) {
+            const candidate_x = origin.x + 128 * scale;
+            r.rect(.{ .x = candidate_x - 2, .y = origin.y - 2, .w = 128 * scale + 4, .h = 64 * scale + 4 }, true);
+            ui.font.draw(&r, .tiny5x7, origin.x, origin.y - 14, "LEGACY REFERENCE", true);
+            ui.font.draw(&r, .tiny5x7, candidate_x, origin.y - 14, "DESIGN CANDIDATE", true);
+            var other = ui.surface.Mono1.init(&self.candidate_pixels, 128, 64) catch unreachable;
+            for (0..64) |y| for (0..128) |x| if (other.get(@intCast(x), @intCast(y))) {
+                r.fillRect(.{ .x = candidate_x + @as(i16, @intCast(x)) * scale, .y = origin.y + @as(i16, @intCast(y)) * scale, .w = scale, .h = scale }, true);
+            };
+        }
+        if (self.overlay and !self.lab) {
             r.setClip(preview_area);
             r.rect(.{ .x = origin.x, .y = origin.y, .w = 128 * scale, .h = 64 * scale }, true);
             for (self.preview.nodes[0..self.preview.len], 0..) |node, index| {
@@ -308,11 +367,37 @@ pub const Studio = struct {
                 return;
             },
             110 => self.inspect_details = !self.inspect_details,
+            111 => {
+                self.lab = !self.lab;
+                self.overlay = false;
+                if (self.lab) self.preview_scale = 4;
+            },
+            112 => {
+                const screen = reference.catalog.scenarios[self.lab_scenario].screen;
+                const next: reference.catalog.Screen = @fromBackingInt(@intCast((@as(u8, @backingInt(screen)) + 1) % 12));
+                for (reference.catalog.scenarios, 0..) |s, i| if (s.screen == next) {
+                    self.lab_scenario = i;
+                    break;
+                };
+            },
+            113 => self.nextLabScenario(),
+            114 => self.lab_compare = @fromBackingInt(@intCast((@as(u8, @backingInt(self.lab_compare)) + 1) % 5)),
             else => return,
         }
         self.paint();
     }
     fn input(self: *Studio, action: ui.input.Action) void {
+        if (self.lab) {
+            switch (action) {
+                .up => self.previousLabScenario(),
+                .down => self.nextLabScenario(),
+                .left => self.lab_compare = @fromBackingInt(@intCast((@as(u8, @backingInt(self.lab_compare)) + 4) % 5)),
+                .right, .activate => self.lab_compare = @fromBackingInt(@intCast((@as(u8, @backingInt(self.lab_compare)) + 1) % 5)),
+                .back => self.lab = false,
+            }
+            self.paint();
+            return;
+        }
         self.preview.update(self.clock_ms);
         if (self.demo_mode == .classic) {
             if (action == .activate) {
@@ -359,6 +444,24 @@ pub const Studio = struct {
         self.frame_number +%= 1;
         self.paint();
     }
+    fn nextLabScenario(self: *Studio) void {
+        const screen = reference.catalog.scenarios[self.lab_scenario].screen;
+        var next = (self.lab_scenario + 1) % reference.catalog.scenarios.len;
+        if (reference.catalog.scenarios[next].screen != screen) {
+            next = 0;
+            while (reference.catalog.scenarios[next].screen != screen) : (next += 1) {}
+        }
+        self.lab_scenario = next;
+    }
+    fn previousLabScenario(self: *Studio) void {
+        const screen = reference.catalog.scenarios[self.lab_scenario].screen;
+        var next = (self.lab_scenario + reference.catalog.scenarios.len - 1) % reference.catalog.scenarios.len;
+        if (reference.catalog.scenarios[next].screen != screen) {
+            next = reference.catalog.scenarios.len - 1;
+            while (reference.catalog.scenarios[next].screen != screen) : (next -= 1) {}
+        }
+        self.lab_scenario = next;
+    }
 };
 
 var studio = Studio{};
@@ -386,12 +489,23 @@ export fn mimoc_key(key: c_int) void {
             12 => studio.clickControl(106),
             13 => studio.clickControl(107),
             14 => studio.clickControl(108),
+            15 => studio.clickControl(111),
             else => {},
         }
     }
 }
 export fn mimoc_tick(now_ms: u32) void {
     studio.tick(now_ms);
+}
+export fn mimoc_hover(x: c_int, y: c_int) void {
+    if (!studio.lab) return;
+    const origin = studio.previewOrigin();
+    const side = studio.lab_compare == .side_by_side;
+    const scale: i32 = if (side) 2 else studio.preview_scale;
+    const px = @divFloor(x - origin.x, scale);
+    const py = @divFloor(y - origin.y, scale);
+    studio.hovered = if (px >= 0 and px < (if (side) @as(i32, 256) else 128) and py >= 0 and py < 64) .{ .x = @intCast(@mod(px, 128)), .y = @intCast(py) } else null;
+    studio.paint();
 }
 export fn mimoc_click(x: c_int, y: c_int) void {
     for (studio.chrome.nodes[0..studio.chrome.len]) |node| {
@@ -421,6 +535,7 @@ export fn mimoc_click(x: c_int, y: c_int) void {
     }
 }
 pub fn main() void {
+    mimoc_window_set_hover(&mimoc_hover);
     studio.preview.update(0);
     studio.rebuildPreview();
     studio.paint();
@@ -505,7 +620,8 @@ test "Studio PBM snapshot keeps panels, controls and preview in separate viewpor
     var pbm: [pbm_header.len + @as(usize, studio_width) * (@as(usize, studio_height) / 8)]u8 = undefined;
     try s.pbmSnapshot(&pbm);
     try std.testing.expectEqualSlices(u8, pbm_header, pbm[0..pbm_header.len]);
-    try std.testing.expectEqual(@as(u64, 12374510687983544201), std.hash.Wyhash.hash(0, &pbm));
+    // Studio chrome gained UI LAB; this hash is not a Mo-Bus reference golden.
+    try std.testing.expectEqual(@as(u64, 17487675928722220510), std.hash.Wyhash.hash(0, &pbm));
 
     const bounds = studio_viewport;
     const inspector = ui.geometry.Rect{ .x = 544, .y = 28, .w = 152, .h = 276 };
@@ -537,6 +653,31 @@ test "Studio PBM snapshot keeps panels, controls and preview in separate viewpor
         try ui.headless.renderPage(&s.preview, &page, 128, @intCast(index));
         try std.testing.expectEqualSlices(u8, s.preview_pixels[index * 128 ..][0..128], &page);
     }
+}
+
+test "Studio Lab selects frozen scenarios and resolves scoped controls" {
+    var s = Studio{};
+    s.rebuildPreview();
+    s.clickControl(111);
+    try std.testing.expect(s.lab);
+    try std.testing.expectEqual(@as(u8, 4), s.preview_scale);
+    try std.testing.expectEqualSlices(u8, reference.catalog.scenarios[0].expected, &s.legacy_pixels);
+    const View = ui.ui.Ui(u16, StudioUi.configuration);
+    const panel = View.childId(View.rootId(1), 200);
+    try std.testing.expectEqual(@as(?u16, 112), Studio.controlId(View.childId(panel, 112)));
+    s.clickControl(112);
+    try std.testing.expectEqual(reference.catalog.Screen.contacts, reference.catalog.scenarios[s.lab_scenario].screen);
+    s.clickControl(113);
+    try std.testing.expectEqualStrings("contacts/pending", reference.catalog.scenarios[s.lab_scenario].name);
+    s.input(.up);
+    try std.testing.expectEqualStrings("contacts/default", reference.catalog.scenarios[s.lab_scenario].name);
+    s.lab_compare = .xor;
+    s.compose();
+    try std.testing.expectEqual(@as(usize, 0), reference.mismatch(&s.legacy_pixels, &s.candidate_pixels));
+    for (s.preview_pixels) |byte| try std.testing.expectEqual(@as(u8, 0), byte);
+    s.lab_compare = .side_by_side;
+    s.compose();
+    try std.testing.expectEqualSlices(u8, reference.catalog.scenarios[s.lab_scenario].expected, &s.preview_pixels);
 }
 
 test "Preview scales 1x, 2x and 4x inside the panel" {

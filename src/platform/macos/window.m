@@ -5,6 +5,8 @@
 extern void mimoc_key(int key);
 extern void mimoc_click(int x, int y);
 extern void mimoc_tick(uint32_t now_ms);
+static void (*hover_callback)(int, int);
+void mimoc_window_set_hover(void (*callback)(int, int)) { hover_callback = callback; }
 
 uint32_t mimoc_now_ms(void) {
     return (uint32_t)(uint64_t)([NSProcessInfo processInfo].systemUptime * 1000.0);
@@ -81,6 +83,7 @@ void mimoc_window_viewport(int *width, int *height) { *width = display_width; *h
     else if ([characters isEqualToString:@"o"]) mimoc_key(12);
     else if ([characters isEqualToString:@"z"]) mimoc_key(13);
     else if ([characters isEqualToString:@"m"]) mimoc_key(14);
+    else if ([characters isEqualToString:@"l"]) mimoc_key(15);
     else [super keyDown:event];
 }
 - (void)insertText:(id)value { [self insertText:value replacementRange:NSMakeRange(NSNotFound,0)]; }
@@ -106,7 +109,13 @@ void mimoc_window_viewport(int *width, int *height) { *width = display_width; *h
 - (void)doCommandBySelector:(SEL)selector { }
 - (void)keyUp:(NSEvent *)event { if (desktop_mode) desktop_event(1, desktopKey(event.keyCode), 0, 0, 0, NULL, 0); }
 - (void)mouseUp:(NSEvent *)event { if (desktop_mode) pointerEvent(self, event, 4); }
-- (void)mouseMoved:(NSEvent *)event { if (desktop_mode) pointerEvent(self, event, 5); }
+- (void)mouseMoved:(NSEvent *)event {
+    if (desktop_mode) pointerEvent(self, event, 5);
+    else if (hover_callback) {
+        NSPoint p = [self convertPoint:event.locationInWindow fromView:nil];
+        hover_callback((int)floor(p.x/display_scale), (int)floor(p.y/display_scale));
+    }
+}
 - (void)mouseDragged:(NSEvent *)event { if (desktop_mode) pointerEvent(self, event, 5); }
 - (void)scrollWheel:(NSEvent *)event {
     if (desktop_mode) { NSPoint p = [self convertPoint:event.locationInWindow fromView:nil];

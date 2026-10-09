@@ -16,12 +16,14 @@ pub const runtime = @import("runtime.zig");
 pub const ui = @import("ui.zig");
 pub const profiles = @import("profiles.zig");
 pub const mono1 = @import("renderers/mono1.zig");
+pub const raster_compat = @import("renderers/compat.zig");
 pub const headless = @import("renderers/headless.zig");
 
 test {
     _ = @import("desktop_tests.zig");
     _ = @import("geometry.zig");
     _ = @import("renderers/mono1.zig");
+    _ = @import("renderers/compat.zig");
     _ = @import("runtime.zig");
     _ = @import("tests.zig");
     _ = @import("widget_tests.zig");

@@ -1,0 +1,2513 @@
+{
+  "commit": "94873ec79bd70d2f38040d173f2f9c89853b5734",
+  "units": "logical pixels,128x64",
+  "facade": [
+    {
+      "name": "render_localized_with_ascii_fallback",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 248,
+      "signature": "int render_localized_with_ascii_fallback(const char* text, int x, int y, bool draw)",
+      "callers": [],
+      "constants": [
+        "const uint8_t c = static_cast<uint8_t>(text[pos]);"
+      ],
+      "drawing": [
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.drawString(text, x, y)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.setFont(display::renderer::localized_ui_font(&fonts::Font2, ui::Lang::Ja))",
+        "sprite.drawString(ch, pen_x, y)"
+      ],
+      "delegates": [
+        "localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "display_render_ota_progress",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 363,
+      "signature": "void display_render_ota_progress(int percent, const char* phase)",
+      "callers": [
+        {
+          "file": "components/display/include/display/display_context.hpp",
+          "line": 3
+        },
+        {
+          "file": "main/runtime/app_shell.cpp",
+          "line": 2022
+        },
+        {
+          "file": "main/runtime/ota_minimal.cpp",
+          "line": 31
+        },
+        {
+          "file": "main/runtime/ota_minimal.cpp",
+          "line": 71
+        },
+        {
+          "file": "main/runtime/ota_minimal.cpp",
+          "line": 81
+        },
+        {
+          "file": "main/runtime/ota_minimal.cpp",
+          "line": 102
+        },
+        {
+          "file": "main/runtime/ota_minimal.cpp",
+          "line": 121
+        }
+      ],
+      "constants": [
+        "constexpr uint32_t kBlack = 0x0000u;",
+        "constexpr uint32_t kWhite = 0xFFFFFFu;",
+        "const int bar_x = 10;",
+        "const int bar_y = 36;",
+        "const int bar_w = 108;",
+        "const int bar_h = 12;",
+        "const int fill_w = ((bar_w - 2) * percent) / 100;"
+      ],
+      "drawing": [
+        "lcd.fillRect(0, 0, 128, 64, kBlack)",
+        "lcd.setTextColor(kWhite, kBlack)",
+        "lcd.drawCenterString(ui::text(ui::Key::OtaUpdateTitle), 64, 2)",
+        "lcd.drawCenterString(ui::text(ui::Key::OtaStarting), 64, 18)",
+        "lcd.drawCenterString(ui::text(ui::Key::OtaRetrying), 64, 18)",
+        "lcd.drawCenterString(ui::text(ui::Key::OtaValidateFallback), 64, 18)",
+        "lcd.drawCenterString(ui::text(ui::Key::OtaServerIncompatible), 64, 18)",
+        "lcd.drawCenterString(ui::text(ui::Key::OtaRebooting), 64, 18)",
+        "lcd.drawCenterString(ui::text(ui::Key::OtaDownloadFailed), 64, 18)",
+        "lcd.drawCenterString(ui::text(ui::Key::OtaDownloading), 64, 18)",
+        "lcd.drawRect(bar_x, bar_y, bar_w, bar_h, kWhite)",
+        "lcd.fillRect(bar_x + 1, bar_y + 1, fill_w, bar_h - 2, kWhite)",
+        "lcd.setTextColor(kWhite, kBlack)",
+        "lcd.drawCenterString(pct, 64, 50)"
+      ],
+      "delegates": [
+        "set_english_ui_font",
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": [
+        "percent"
+      ]
+    },
+    {
+      "name": "render_menu_home",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 412,
+      "signature": "void render_menu_home(const MenuRenderState& state)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/menu_screen.cpp",
+          "line": 194
+        },
+        {
+          "file": "main/runtime/screens/menu_screen.cpp",
+          "line": 307
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.setFont(&fonts::Font4)",
+        "sprite.setTextWrap(false)"
+      ],
+      "delegates": [
+        "MenuIconSet",
+        "make_menu_render_api"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_center_status",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 461,
+      "signature": "void render_center_status(const char* line1, const char* line2, bool english_only)",
+      "callers": [
+        {
+          "file": "main/runtime/app_shell.cpp",
+          "line": 2102
+        },
+        {
+          "file": "main/runtime/app_shell.cpp",
+          "line": 2118
+        },
+        {
+          "file": "main/runtime/app_shell.cpp",
+          "line": 2314
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 1086
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 1095
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 1117
+        },
+        {
+          "file": "main/runtime/screens/cq_chat_screen.hpp",
+          "line": 1470
+        },
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 130
+        },
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 822
+        },
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 999
+        },
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1049
+        },
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1425
+        },
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1530
+        },
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1547
+        },
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 692
+        },
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 721
+        },
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 727
+        },
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 733
+        },
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 738
+        },
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 747
+        },
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 99
+        },
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 118
+        },
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 267
+        },
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 307
+        },
+        {
+          "file": "main/runtime/screens/open_chat_screen.hpp",
+          "line": 50
+        },
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 173
+        },
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 370
+        },
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 373
+        },
+        {
+          "file": "main/runtime/screens/text_screen.hpp",
+          "line": 26
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 98
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 118
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 733
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 738
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 743
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 749
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 776
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 780
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(line1, 64, line2 ? 18 : 26)",
+        "sprite.drawCenterString(line2, 64, 34)"
+      ],
+      "delegates": [
+        "set_english_ui_font",
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_offline_notice",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 476,
+      "signature": "void render_offline_notice()",
+      "callers": [
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 121
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 148
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 712
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 771
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 772
+        },
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1047
+        },
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1543
+        },
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 116
+        },
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 135
+        },
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 174
+        },
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 560
+        },
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 561
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.drawBitmap(52, 6, kOfflineBitmap, 24, 30, 0xFFFF, 0x0000)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setTextWrap(false)",
+        "sprite.setTextSize(1.0f, 1.0f)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelOffline), 64, 43)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_error_notice",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 488,
+      "signature": "void render_error_notice()",
+      "callers": [
+        {
+          "file": "main/runtime/screens/realtime_talk_screen.hpp",
+          "line": 809
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.drawBitmap(52, 6, kOfflineBitmap, 24, 30, 0xFFFF, 0x0000)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setTextWrap(false)",
+        "sprite.setTextSize(1.0f, 1.0f)",
+        "sprite.drawCenterString(\"Error\", 64, 43)"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_blank_screen",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 500,
+      "signature": "void render_blank_screen()",
+      "callers": [
+        {
+          "file": "main/runtime/screens/menu_screen.cpp",
+          "line": 243
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "show_watch_display",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 531,
+      "signature": "WatchScreenResult show_watch_display()",
+      "callers": [
+        {
+          "file": "main/runtime/screens/menu_screen.cpp",
+          "line": 178
+        }
+      ],
+      "constants": [],
+      "drawing": [],
+      "delegates": [
+        "WatchDisplay"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_language_select",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 533,
+      "signature": "void render_language_select(const ui::language::ViewState& state)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 689
+        },
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 399
+        }
+      ],
+      "constants": [],
+      "drawing": [],
+      "delegates": [
+        "make_language_dialog_render_api"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_setup_morse_hello",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 542,
+      "signature": "void render_setup_morse_hello(int64_t started_us, int64_t now_us, int64_t dash_us)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 684
+        }
+      ],
+      "constants": [
+        "constexpr MorseUnit kUnits[] = {",
+        "constexpr int64_t kDotUs = 60000LL;",
+        "constexpr int64_t kIntraSymbolGapUs = 40000LL;",
+        "constexpr int64_t kLetterGapUs = 120000LL;",
+        "constexpr int64_t kWordGapUs = 360000LL;",
+        "constexpr int64_t kFinalHoldUs = 200000LL;",
+        "const int64_t safe_dash_us = std::max<int64_t>(1, dash_us);",
+        "const int64_t symbol_us = (symbol == '.') ? kDotUs : safe_dash_us;",
+        "const int64_t frame_us = symbol_us + kIntraSymbolGapUs;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setTextSize(1.0f, 1.0f)",
+        "sprite.drawCenterString(line1.c_str(), 64, 18)",
+        "sprite.drawCenterString(line2.c_str(), 64, 34)"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": [
+        "now_us",
+        "started_us"
+      ]
+    },
+    {
+      "name": "render_sound_settings",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 623,
+      "signature": "void render_sound_settings(const ui::soundsettings::ViewState& state)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 442
+        }
+      ],
+      "constants": [],
+      "drawing": [],
+      "delegates": [
+        "make_sound_settings_render_api"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_contact_book",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 632,
+      "signature": "void render_contact_book(const ui::contactbook::ViewState& state)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 126
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 158
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 189
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 1232
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.setTextWrap(false)"
+      ],
+      "delegates": [
+        "make_contact_book_render_api",
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_message_box",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 654,
+      "signature": "void render_message_box(const ui::messagebox::ViewState& state, const char* notice)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 218
+        }
+      ],
+      "constants": [
+        "const int row_height = std::max(1, state.row_height);",
+        "const bool incoming =",
+        "const bool sender_changed =",
+        "const bool show_prefix = previous_entry == nullptr || sender_changed;",
+        "const int separator_height = sender_changed ? 5 : 0;",
+        "const int text_y = y + separator_height;",
+        "const int text_height =",
+        "const int block_height = separator_height + text_height;",
+        "const int clipped_y = std::max(y, 16);",
+        "const int clipped_bottom = std::min(y + block_height, 64);",
+        "const int clipped_height = std::max(0, clipped_bottom - clipped_y);",
+        "const int highlight_y = std::max(text_y, 16);",
+        "const int highlight_bottom = std::min(text_y + text_height, 64);",
+        "const int highlight_height =",
+        "const int body_h = 48;",
+        "const int thumb_h = std::max(6, (body_h * body_h) / total_height);",
+        "const int range = std::max(1, total_height - body_h);",
+        "const int progress = std::clamp(-state.offset_y, 0, range);",
+        "const int thumb_y = 16 + ((body_h - thumb_h) * progress) / range;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.fillRect(0, highlight_y, kChatHistoryPrefixWidth, highlight_height, 0xFFFF)",
+        "sprite.clearClipRect()",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(10, 20)",
+        "sprite.print(\"Loading...\")",
+        "sprite.drawFastVLine(kChatHistoryScrollbarX, 16, 48, 0xFFFF)",
+        "sprite.fillRect(kChatHistoryScrollbarX + 1, 16, 2, 48, 0x2104)",
+        "sprite.fillRect(kChatHistoryScrollbarX + 1, thumb_y, 2, thumb_h, 0xFFFF)",
+        "sprite.setTextSize(1.0f, 1.0f)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.fillRect(0, 0, 128, 15, 0)",
+        "sprite.drawCenterString(title.empty() ? \"Messages\" : title.c_str(), 64, 0)",
+        "sprite.drawFastHLine(0, 14, 128, 0xFFFF)",
+        "sprite.drawFastHLine(0, 15, 128, 0)"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": [
+        "offset_y"
+      ]
+    },
+    {
+      "name": "render_profile_info",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 760,
+      "signature": "void render_profile_info( const std::vector<std::pair<std::string, std::string>>& rows, int offset_y)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/profile_info_screen.hpp",
+          "line": 40
+        }
+      ],
+      "constants": [
+        "constexpr int kBlockHeight = 28;",
+        "constexpr int kValueOffset = 14;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setTextWrap(false)",
+        "sprite.setCursor(0, y)",
+        "sprite.print((row.first + \":\").c_str())",
+        "sprite.setCursor(0, y + kValueOffset)",
+        "sprite.print(value.c_str())"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": [
+        "offset_y"
+      ]
+    },
+    {
+      "name": "render_wifi_list",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 785,
+      "signature": "void render_wifi_list(const std::vector<std::string>& rows, int selected, const char* title, bool english_only)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 1124
+        },
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 1221
+        },
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 700
+        },
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 94
+        },
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 351
+        },
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 361
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 752
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 769
+        }
+      ],
+      "constants": [
+        "const int font_height = 13;",
+        "const int margin = 3;",
+        "const int row_height = font_height + margin;",
+        "const int visible_rows =",
+        "const int row_count = static_cast<int>(rows.size());",
+        "const int max_first = std::max(0, row_count - visible_rows);",
+        "const int last = std::min(row_count, first + visible_rows);",
+        "const int y = (row - first) * row_height;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextWrap(true)",
+        "sprite.setTextColor(0x000000u, 0xFFFFFFu)",
+        "sprite.fillRect(0, y, 128, font_height + 3, 0xFFFF)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(10, y)",
+        "sprite.print(label.c_str())"
+      ],
+      "delegates": [
+        "set_english_ui_font",
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_setting_menu",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 827,
+      "signature": "void render_setting_menu(const SettingMenuRenderRow* rows, size_t row_count, int selected)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 335
+        }
+      ],
+      "constants": [
+        "constexpr int font_height = 13;",
+        "constexpr int margin = 3;",
+        "constexpr int row_height = font_height + margin;",
+        "constexpr int status_x = 116;",
+        "constexpr int text_y_offset = 6;",
+        "const int visible_rows =",
+        "const int row_count_int = static_cast<int>(row_count);",
+        "const int max_first = std::max(0, row_count_int - visible_rows);",
+        "const int last = std::min(row_count_int, first + visible_rows);",
+        "const int cy = y + 8;",
+        "const int y = (row - first) * row_height;",
+        "const bool active = row == selected;",
+        "const uint16_t fg = active ? 0x0000u : 0xFFFFu;",
+        "const uint16_t bg = active ? 0xFFFFu : 0x0000u;",
+        "const int text_w = sprite.textWidth(rows[row].status_text.c_str());"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextWrap(false)",
+        "sprite.fillCircle(status_x, cy, 3, fg)",
+        "sprite.fillCircle(status_x, cy, 4, bg)",
+        "sprite.drawCircle(status_x, cy, 3, fg)",
+        "sprite.fillCircle(status_x - 5, cy, 1, fg)",
+        "sprite.fillCircle(status_x, cy, 1, fg)",
+        "sprite.fillCircle(status_x + 5, cy, 1, fg)",
+        "sprite.fillRect(0, y, 128, font_height + 3, 0xFFFF)",
+        "sprite.setTextColor(fg, bg)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.setTextColor(fg, bg)",
+        "sprite.drawString(rows[row].status_text.c_str(), std::max(0, 126 - text_w), y + text_y_offset)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_factory_reset_confirm",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 893,
+      "signature": "void render_factory_reset_confirm(int selected)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 187
+        },
+        {
+          "file": "main/runtime/screens/setting_screen.hpp",
+          "line": 263
+        }
+      ],
+      "constants": [
+        "const uint16_t no_fg = selected == 0 ? 0x0000 : 0xFFFF;",
+        "const uint16_t no_bg = selected == 0 ? 0xFFFF : 0x0000;",
+        "const uint16_t yes_fg = selected == 1 ? 0x0000 : 0xFFFF;",
+        "const uint16_t yes_bg = selected == 1 ? 0xFFFF : 0x0000;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(ui::text(ui::Key::FactoryResetTitle), 64, 0)",
+        "sprite.drawCenterString(ui::text(ui::Key::FactoryResetConfirm1), 64, 14)",
+        "sprite.drawCenterString(ui::text(ui::Key::FactoryResetConfirm2), 64, 26)",
+        "sprite.fillRoundRect(12, 44, 40, 18, 3, no_bg)",
+        "sprite.drawRoundRect(12, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(no_fg, no_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelNo), 32, 46)",
+        "sprite.fillRoundRect(76, 44, 40, 18, 3, yes_bg)",
+        "sprite.drawRoundRect(76, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(yes_fg, yes_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelYes), 96, 46)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_friend_request_confirm",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 918,
+      "signature": "void render_friend_request_confirm(const std::string& nickname, int selected)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 1135
+        }
+      ],
+      "constants": [
+        "const uint16_t no_fg = selected == 0 ? 0x0000 : 0xFFFF;",
+        "const uint16_t no_bg = selected == 0 ? 0xFFFF : 0x0000;",
+        "const uint16_t yes_fg = selected == 1 ? 0x0000 : 0xFFFF;",
+        "const uint16_t yes_bg = selected == 1 ? 0xFFFF : 0x0000;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(ui::text(ui::Key::FriendRequestTitle), 64, 0)",
+        "sprite.drawCenterString(name.c_str(), 64, 14)",
+        "sprite.drawCenterString(ui::text(ui::Key::ContactConfirmAccept), 64, 28)",
+        "sprite.fillRoundRect(12, 44, 40, 18, 3, no_bg)",
+        "sprite.drawRoundRect(12, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(no_fg, no_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelNo), 32, 46)",
+        "sprite.fillRoundRect(76, 44, 40, 18, 3, yes_bg)",
+        "sprite.drawRoundRect(76, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(yes_fg, yes_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelYes), 96, 46)"
+      ],
+      "delegates": [
+        "set_english_ui_font",
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_ehagaki_public_confirm",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 948,
+      "signature": "void render_ehagaki_public_confirm(int selected)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1363
+        }
+      ],
+      "constants": [
+        "const uint16_t no_fg = selected == 0 ? 0x0000 : 0xFFFF;",
+        "const uint16_t no_bg = selected == 0 ? 0xFFFF : 0x0000;",
+        "const uint16_t yes_fg = selected == 1 ? 0x0000 : 0xFFFF;",
+        "const uint16_t yes_bg = selected == 1 ? 0xFFFF : 0x0000;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(ui::text(ui::Key::EhagakiTitle), 64, 0)",
+        "sprite.drawCenterString(ui::text(ui::Key::EhagakiPublicQuestion), 64, 18)",
+        "sprite.fillRoundRect(12, 44, 40, 18, 3, no_bg)",
+        "sprite.drawRoundRect(12, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(no_fg, no_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelNo), 32, 46)",
+        "sprite.fillRoundRect(76, 44, 40, 18, 3, yes_bg)",
+        "sprite.drawRoundRect(76, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(yes_fg, yes_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelYes), 96, 46)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_ehagaki_post_confirm",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 972,
+      "signature": "void render_ehagaki_post_confirm()",
+      "callers": [
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1331
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(ui::text(ui::Key::EhagakiTitle), 64, 0)",
+        "sprite.drawCenterString(ui::text(ui::Key::EhagakiPostQuestion), 64, 20)",
+        "sprite.fillRoundRect(44, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.drawRoundRect(44, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(0x0000, 0xFFFF)",
+        "sprite.drawCenterString(\"OK\", 64, 46)"
+      ],
+      "delegates": [
+        "set_english_ui_font",
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_ehagaki_menu",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 988,
+      "signature": "void render_ehagaki_menu(int selected)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 443
+        }
+      ],
+      "constants": [
+        "const int y = 16 + row * 16;",
+        "const bool active = row == selected;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawCenterString(ui::text(ui::Key::EhagakiTitle), 64, 0)",
+        "sprite.fillRoundRect(9, y - 1, 110, 15, 2, 0xFFFF)",
+        "sprite.setTextColor(active ? 0x0000 : 0xFFFF, active ? 0xFFFF : 0x0000)",
+        "sprite.drawCenterString(ui::text(labels[row]), 64, y)"
+      ],
+      "delegates": [
+        "set_english_ui_font",
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_ehagaki_viewer",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1008,
+      "signature": "int render_ehagaki_viewer(const uint8_t* bitmap, size_t bitmap_size, const char* title, const char* body, int page, int total, bool front, int text_scroll_line, int flip_inset, bool show_page_overlay, const char* sync_notice, int64_t text_reveal_elapsed_us)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1022
+        }
+      ],
+      "constants": [
+        "int render_ehagaki_viewer(const uint8_t* bitmap, size_t bitmap_size,",
+        "static constexpr int kCanvasW = 122;",
+        "static constexpr int kCanvasH = 58;",
+        "constexpr int kTextX = 5;",
+        "constexpr int kTextWidth = 116;",
+        "constexpr int kTitleRows = 2;",
+        "constexpr int kBodyRows = 3;",
+        "constexpr int kLineHeight = 9;",
+        "const int title_lines = process_ehagaki_bounded_text(",
+        "const int body_lines = process_ehagaki_bounded_text(",
+        "const int text_width = sprite.textWidth(position);",
+        "const bool has_previous = page > 1;",
+        "const bool has_next = total > 0 && page < total;",
+        "const int label_width = text_width + 4;",
+        "const int label_x = 125 - label_width;",
+        "const int inset = std::clamp(flip_inset, 0, 62);"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.drawRect(2, 2, 124, 60, 0xFFFF)",
+        "sprite.drawPixel(3 + x, 3 + y, 0xFFFF)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.setTextWrap(false)",
+        "sprite.drawFastHLine(3, 22, 122, 0xFFFF)",
+        "sprite.drawPixel(123, 5, 0xFFFF)",
+        "sprite.drawPixel(122, 6, 0xFFFF)",
+        "sprite.drawPixel(124, 6, 0xFFFF)",
+        "sprite.drawPixel(122, 47, 0xFFFF)",
+        "sprite.drawPixel(124, 47, 0xFFFF)",
+        "sprite.drawPixel(123, 48, 0xFFFF)",
+        "sprite.fillRect(label_x, 51, label_width, 11, 0x0000)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.setCursor(label_x + 2, 51)",
+        "sprite.print(position)",
+        "sprite.fillRect(3, 27, 6, 11, 0x0000)",
+        "sprite.fillRect(119, 27, 6, 11, 0x0000)",
+        "sprite.fillRect(0, 0, inset, 64, 0x0000)",
+        "sprite.fillRect(128 - inset, 0, inset, 64, 0x0000)",
+        "sprite.drawFastVLine(inset, 2, 60, 0xFFFF)",
+        "sprite.drawFastVLine(127 - inset, 2, 60, 0xFFFF)"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": [
+        "flip_inset",
+        "text_reveal_elapsed_us",
+        "text_scroll_line"
+      ]
+    },
+    {
+      "name": "render_text_input",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1116,
+      "signature": "void render_text_input(const char* title, const std::string& value, char cursor_char, bool secret)",
+      "callers": [],
+      "constants": [
+        "static constexpr const char* kRows[] = {"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(0, 0)",
+        "sprite.print(title ? title : \"Input\")",
+        "sprite.drawFastHLine(0, 14, 128, 0xFFFF)",
+        "sprite.drawFastHLine(0, 45, 128, 0xFFFF)",
+        "sprite.setCursor(0, 15)",
+        "sprite.print(shown.c_str())"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_wifi_text_input",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1152,
+      "signature": "void render_wifi_text_input(const char* title, const std::string& value, int select_x, int select_y, bool secret)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 705
+        },
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 710
+        },
+        {
+          "file": "main/runtime/screens/factory_setup_screen.hpp",
+          "line": 715
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 758
+        },
+        {
+          "file": "main/runtime/screens/wifi_setup_screen.hpp",
+          "line": 763
+        }
+      ],
+      "constants": [
+        "static constexpr const char* kRows[] = {",
+        "const int col_count = static_cast<int>(std::strlen(kRows[row])) + 1;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(0, 0)",
+        "sprite.print(title ? title : \"Input\")",
+        "sprite.drawFastHLine(0, 14, 128, 0xFFFF)",
+        "sprite.drawFastHLine(0, 45, 128, 0xFFFF)",
+        "sprite.setCursor(0, 15)",
+        "sprite.print(shown.c_str())"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_friend_code_input",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1185,
+      "signature": "void render_friend_code_input(const std::string& value, int select_x, int select_y)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/contact_book_screen.hpp",
+          "line": 1081
+        }
+      ],
+      "constants": [
+        "static constexpr const char* kRows[] = {",
+        "const int col_count = static_cast<int>(std::strlen(kRows[row])) + 1;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(0, 0)",
+        "sprite.print(ui::text(ui::Key::ContactFriendCode))",
+        "sprite.drawFastHLine(0, 14, 128, 0xFFFF)",
+        "sprite.drawFastHLine(0, 45, 128, 0xFFFF)",
+        "sprite.setCursor(0, 15)",
+        "sprite.print(value.c_str())"
+      ],
+      "delegates": [
+        "set_english_ui_font",
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_open_chat_selector",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1218,
+      "signature": "void render_open_chat_selector( const ui::openchat::RoomSelectorViewState& state)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/open_chat_screen.hpp",
+          "line": 326
+        }
+      ],
+      "constants": [],
+      "drawing": [],
+      "delegates": [
+        "make_room_selector_render_api"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_open_chat_composer",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1227,
+      "signature": "void render_open_chat_composer(const ui::openchat::ComposerViewState& state)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/open_chat_screen.hpp",
+          "line": 330
+        }
+      ],
+      "constants": [
+        "constexpr int kFrameX = 3;",
+        "constexpr int kFrameY = 3;",
+        "constexpr int kFrameW = 122;",
+        "constexpr int kFrameH = 58;",
+        "constexpr int kContentX = kFrameX + 4;",
+        "constexpr int kContentW = kFrameW - 8;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.drawRect(kFrameX, kFrameY, kFrameW, kFrameH, 0xFFFF)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(state.header.c_str(), 64, kFrameY + 2)",
+        "sprite.drawFastHLine(kContentX, kFrameY + 14, kContentW, 0xFFFF)",
+        "sprite.drawString(state.preview.c_str(), kContentX, kFrameY + 39)",
+        "sprite.drawString(state.morse_text.c_str(), kContentX, kFrameY + 39)",
+        "sprite.drawFastHLine(kContentX, kFrameY + 46, kContentW, 0xFFFF)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.drawString(state.footer.c_str(), kContentX, kFrameY + 48)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_talk_input",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1262,
+      "signature": "void render_talk_input(const ui::talk::InputViewState& state, bool cursor_on, const std::string& status_line, bool status_persistent, int64_t language_overlay_until_us, int64_t now_us, bool invert, int x_offset)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/message_box_screen.hpp",
+          "line": 555
+        }
+      ],
+      "constants": [
+        "constexpr int kFrameX = 3;",
+        "constexpr int kFrameY = 3;",
+        "constexpr int kFrameW = 122;",
+        "constexpr int kFrameH = 58;",
+        "constexpr int kContentX = kFrameX + 4;",
+        "constexpr int kContentY = kFrameY + 4;",
+        "constexpr int kContentW = kFrameW - 8;",
+        "const uint32_t bg = invert ? 0xFFFFFFu : 0x000000u;",
+        "const uint32_t fg = invert ? 0x000000u : 0xFFFFFFu;"
+      ],
+      "drawing": [
+        "lcd.fillRect(0, 0, 128, 64, bg)",
+        "sprite.fillRect(0, 0, 128, 64, bg)",
+        "sprite.drawRect(kFrameX, kFrameY, kFrameW, kFrameH, fg)",
+        "sprite.setTextColor(fg, bg)",
+        "sprite.setTextSize(1.0f, 1.0f)",
+        "sprite.fillRect(kContentX, 49, kContentW, 10, bg)",
+        "sprite.drawFastHLine(kContentX, 48, kContentW, fg)",
+        "sprite.setTextColor(fg, bg)",
+        "sprite.drawCenterString(status_line.c_str(), 64, 50)",
+        "sprite.fillRoundRect(52, 24, 24, 18, 2, bg)",
+        "sprite.drawRoundRect(52, 24, 24, 18, 2, fg)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setTextColor(fg, bg)",
+        "sprite.drawCenterString(state.input_lang == 1 ? \"JP\" : \"EN\", 64, 25)"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": [
+        "cursor_on",
+        "language_overlay_until_us",
+        "now_us"
+      ]
+    },
+    {
+      "name": "render_ehagaki_text_input",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1309,
+      "signature": "void render_ehagaki_text_input(const ui::talk::InputViewState& state, bool cursor_on, const std::string& header_label, size_t current_chars, size_t max_chars, int64_t language_overlay_until_us, int64_t now_us)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1229
+        }
+      ],
+      "constants": [
+        "const bool japanese = ui::current_lang() == ui::Lang::Ja;",
+        "const int header_y = japanese ? 5 : 2;",
+        "const int divider_y = japanese ? 17 : 14;",
+        "const int content_y = japanese ? 19 : 16;",
+        "const int label_width = sprite.textWidth(label_text.c_str());",
+        "const int count_width = sprite.textWidth(count_text);",
+        "constexpr int kHeaderGap = 4;",
+        "static constexpr int kLineHeight = 14;",
+        "static constexpr int kVisibleLines = 3;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.drawString(label_text.c_str(), pen_x, header_y)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.drawString(count_text, pen_x, header_y)",
+        "sprite.drawFastHLine(0, divider_y, 128, 0xFFFF)",
+        "sprite.setTextSize(1.0f, 1.0f)",
+        "sprite.fillRoundRect(52, 24, 24, 18, 2, 0x0000)",
+        "sprite.drawRoundRect(52, 24, 24, 18, 2, 0xFFFF)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawCenterString(state.input_lang == 1 ? \"JP\" : \"EN\", 64, 25)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": [
+        "cursor_on",
+        "language_overlay_until_us",
+        "now_us"
+      ]
+    },
+    {
+      "name": "render_realtime_talk",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1372,
+      "signature": "void render_realtime_talk(const ui::talk::InputViewState& state, bool cursor_on, const std::string& remote_text, const std::string& status_line, int64_t language_overlay_until_us, int64_t now_us)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/cq_chat_screen.hpp",
+          "line": 1452
+        },
+        {
+          "file": "main/runtime/screens/realtime_talk_screen.hpp",
+          "line": 843
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setTextWrap(true)",
+        "sprite.drawFastHLine(0, 32, 128, 0xFFFF)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setTextWrap(true)",
+        "sprite.setCursor(0, 35)",
+        "sprite.print(status_line.c_str())",
+        "sprite.setTextWrap(false)",
+        "sprite.setTextSize(1.0f, 1.0f)",
+        "sprite.fillRoundRect(52, 24, 24, 18, 2, 0)",
+        "sprite.drawRoundRect(52, 24, 24, 18, 2, 0xFFFF)",
+        "sprite.drawCenterString(state.input_lang == 1 ? \"JP\" : \"EN\", 64, 25)"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": [
+        "cursor_on",
+        "language_overlay_until_us",
+        "now_us"
+      ]
+    },
+    {
+      "name": "render_realtime_scan",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1409,
+      "signature": "void render_realtime_scan(const std::vector<RealtimePeerRow>& rows, int selected, const std::string& status_line, const std::string& peer_name, RealtimeScanMode mode)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/cq_chat_screen.hpp",
+          "line": 1459
+        },
+        {
+          "file": "main/runtime/screens/cq_chat_screen.hpp",
+          "line": 1465
+        },
+        {
+          "file": "main/runtime/screens/realtime_talk_screen.hpp",
+          "line": 44
+        },
+        {
+          "file": "main/runtime/screens/realtime_talk_screen.hpp",
+          "line": 835
+        }
+      ],
+      "constants": [
+        "const int confirm_selected = selected == 1 ? 1 : 0;",
+        "const uint16_t no_fg = confirm_selected == 0 ? 0x0000 : 0xFFFF;",
+        "const uint16_t no_bg = confirm_selected == 0 ? 0xFFFF : 0x0000;",
+        "const uint16_t yes_fg = confirm_selected == 1 ? 0x0000 : 0xFFFF;",
+        "const uint16_t yes_bg = confirm_selected == 1 ? 0xFFFF : 0x0000;",
+        "const int phase =",
+        "const int x = 64 - sprite.textWidth(\"Scanning...\") / 2;",
+        "const int row_h = 16;",
+        "const int first = selected >= 4 ? selected - 3 : 0;",
+        "const int last = std::min(static_cast<int>(rows.size()), first + 4);",
+        "const int row = i - first;",
+        "const int y = row * row_h;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(\"Connecting\", 64, 18)",
+        "sprite.drawCenterString(name.c_str(), 64, 34)",
+        "sprite.drawCenterString(\"Connect?\", 64, 0)",
+        "sprite.drawCenterString(name.c_str(), 64, 18)",
+        "sprite.drawCenterString(status_line.c_str(), 64, 31)",
+        "sprite.fillRoundRect(12, 44, 40, 18, 3, no_bg)",
+        "sprite.drawRoundRect(12, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(no_fg, no_bg)",
+        "sprite.drawCenterString(\"No\", 32, 46)",
+        "sprite.fillRoundRect(76, 44, 40, 18, 3, yes_bg)",
+        "sprite.drawRoundRect(76, 44, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(yes_fg, yes_bg)",
+        "sprite.drawCenterString(\"Yes\", 96, 46)",
+        "sprite.drawCenterString(line.c_str(), 64, 28)",
+        "sprite.drawString(line.c_str(), x, 28)",
+        "sprite.drawCenterString(line.c_str(), 64, 28)",
+        "sprite.fillRect(0, y, 128, row_h, 0xFFFF)",
+        "sprite.setTextColor(0x000000u, 0xFFFFFFu)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(10, y)",
+        "sprite.print(label.c_str())"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_open_chat_room",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1505,
+      "signature": "void render_open_chat_room( const std::string& room_label, const std::vector<display::renderer::OpenChatRoomMessage>& messages)",
+      "callers": [
+        {
+          "file": "components/display/include/display/renderer/open_chat_renderer.hpp",
+          "line": 145
+        },
+        {
+          "file": "main/runtime/screens/open_chat_screen.hpp",
+          "line": 341
+        }
+      ],
+      "constants": [],
+      "drawing": [],
+      "delegates": [
+        "OpenChatRoomMessage",
+        "render_open_chat_room"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_step_composer",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1514,
+      "signature": "void render_step_composer(const std::vector<ComposerStepRender>& steps, int cursor, int playhead, int current_note, const std::string& instrument_label, int tempo, bool playing)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/composer_screen.hpp",
+          "line": 68
+        }
+      ],
+      "constants": [
+        "constexpr int x0 = 4;",
+        "constexpr int y0 = 20;",
+        "constexpr int step_w = 7;",
+        "const int x = x0 + i * step_w;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawString(header, 2, 0)",
+        "sprite.drawFastHLine(0, 12, 128, 0xFFFF)",
+        "sprite.fillRect(x, y0 - 5, 5, 3, 0xFFFF)",
+        "sprite.fillRect(x, y0, 5, 16, 0xFFFF)",
+        "sprite.setTextColor(0x000000u, 0xFFFFFFu)",
+        "sprite.drawRect(x, y0, 5, 16, 0xFFFF)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(label, x + 2, y0 + 2)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawRect(x - 1, y0 - 2, 7, 20, 0xFFFF)",
+        "sprite.drawCenterString(row, 64, 40)",
+        "sprite.drawCenterString(ui::text(ui::Key::ComposerFooter), 64, 52)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": [
+        "playhead",
+        "playing"
+      ]
+    },
+    {
+      "name": "render_tra_launcher",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1559,
+      "signature": "void render_tra_launcher(int selected)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/tra_screen.hpp",
+          "line": 76
+        }
+      ],
+      "constants": [
+        "constexpr int kCols = 3;",
+        "constexpr int kRows = 2;",
+        "constexpr int kBoxW = 39;",
+        "constexpr int kBoxH = 25;",
+        "constexpr int kGapX = 3;",
+        "constexpr int kGapY = 4;",
+        "constexpr int kStartX = 2;",
+        "constexpr int kStartY = 5;",
+        "static constexpr const char* kLabels[kCols * kRows] = {",
+        "static constexpr const char* kLabels2[kCols * kRows] = {",
+        "const int col = i % kCols;",
+        "const int row = i / kCols;",
+        "const int x = kStartX + col * (kBoxW + kGapX);",
+        "const int y = kStartY + row * (kBoxH + kGapY);",
+        "const bool active = i == selected;",
+        "const uint16_t fg = active ? 0x0000 : 0xFFFF;",
+        "const uint16_t bg = active ? 0xFFFF : 0x0000;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.setTextWrap(false)",
+        "sprite.fillRect(x, y, kBoxW, kBoxH, bg)",
+        "sprite.drawRect(x, y, kBoxW, kBoxH, 0xFFFF)",
+        "sprite.setTextColor(fg, bg)",
+        "sprite.drawCenterString(kLabels[i], x + kBoxW / 2, y + 3)",
+        "sprite.drawCenterString(kLabels2[i], x + kBoxW / 2, y + 13)",
+        "sprite.drawCenterString(kLabels[i], x + kBoxW / 2, y + 8)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_synth_sequencer",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1603,
+      "signature": "void render_synth_sequencer(const uint16_t track_masks[6], const uint16_t track_accents[6], int selected_track, int selected_step, int playhead, bool playing, int current_note, int tempo, uint8_t enabled_tracks, int header_focus, int dialog_mode, int pattern_slot, bool confirm_yes, int edit_page, int active_pages, uint8_t sound_preset, int page_editor_item, int sound_editor_track, int sound_editor_field)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/synth_screen.hpp",
+          "line": 173
+        }
+      ],
+      "constants": [
+        "void render_synth_sequencer(const uint16_t track_masks[6],",
+        "const uint16_t track_accents[6], int selected_track,",
+        "static constexpr const char* kNames[6] = {\"K\", \"S\", \"H\", \"B\", \"L\", \"E\"};",
+        "static constexpr const char* kNoteNames[12] = {",
+        "const int tip_y = save ? 2 : 7;",
+        "constexpr int kGridX = 14;",
+        "constexpr int kCellW = 7;",
+        "constexpr int kRowY = 16;",
+        "constexpr int kRowH = 8;",
+        "const int y = kRowY + track * kRowH;",
+        "const bool track_enabled = (enabled_tracks & (1u << track)) != 0;",
+        "const bool track_selector =",
+        "const int x = kGridX + step * kCellW;",
+        "const bool active = (track_masks[track] & (1u << step)) != 0;",
+        "const bool accent = (track_accents[track] & (1u << step)) != 0;",
+        "const bool page_dialog = dialog_mode == 5;",
+        "const bool clear_confirm = dialog_mode == 6;",
+        "const bool bpm_editor = dialog_mode == 7;",
+        "const bool sound_editor = dialog_mode == 8;",
+        "const bool confirm =",
+        "const bool save = dialog_mode == 2 || dialog_mode == 4;",
+        "const int dialog_x = page_dialog ? 3 : 14;",
+        "const int dialog_y = page_dialog ? 12 : 15;",
+        "const int dialog_w = page_dialog ? 122 : 100;",
+        "const int dialog_h = page_dialog ? 47 : 40;",
+        "static constexpr const char* kActions[4] = {\"Len\", \"Copy\", \"Paste\",",
+        "const int x = 19 + action * 30;",
+        "static constexpr const char* kTrackNames[6] = {",
+        "const int x = 31 + slot * 22;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.setTextWrap(false)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.fillRect(3, 2, 7, 7, 0xFFFF)",
+        "sprite.drawFastVLine(3, 2, 7, 0xFFFF)",
+        "sprite.drawLine(4, 3, 8, 5, 0xFFFF)",
+        "sprite.drawLine(4, 8, 8, 6, 0xFFFF)",
+        "sprite.drawPixel(9, 5, 0xFFFF)",
+        "sprite.drawPixel(9, 6, 0xFFFF)",
+        "sprite.drawCenterString(bpm_text, 25, 2)",
+        "sprite.drawCenterString(page_text, 51, 2)",
+        "sprite.drawCenterString(sound_text, 75, 2)",
+        "sprite.drawRect(x - 1, 0, 15, 10, 0xFFFF)",
+        "sprite.drawFastHLine(x + 2, 8, 10, 0xFFFF)",
+        "sprite.drawFastVLine(x + 2, 6, 3, 0xFFFF)",
+        "sprite.drawFastVLine(x + 11, 6, 3, 0xFFFF)",
+        "sprite.drawFastVLine(x + 6, 2, 6, 0xFFFF)",
+        "sprite.drawLine(x + 4, tip_y + (save ? 2 : -2), x + 6, tip_y, 0xFFFF)",
+        "sprite.drawLine(x + 8, tip_y + (save ? 2 : -2), x + 6, tip_y, 0xFFFF)",
+        "sprite.drawRect(12, 0, 26, 10, 0xFFFF)",
+        "sprite.drawRect(39, 0, 24, 10, 0xFFFF)",
+        "sprite.drawRect(64, 0, 23, 10, 0xFFFF)",
+        "sprite.drawFastHLine(0, 11, 128, 0xFFFF)",
+        "sprite.setTextColor(track_selector ? 0x0000 : 0xFFFF, track_selector ? 0xFFFF : 0x0000)",
+        "sprite.fillRect(0, y - 1, 11, 8, 0xFFFF)",
+        "sprite.drawCenterString(kNames[track], 5, y - 1)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawFastHLine(0, y + 3, 10, 0xFFFF)",
+        "sprite.drawRect(x, y, 6, 6, 0xFFFF)",
+        "sprite.fillRect(x + 2, y + 2, 2, 2, 0xFFFF)",
+        "sprite.fillRect(x + 1, y + 1, 4, 4, 0xFFFF)",
+        "sprite.drawRect(x + 1, y + 1, 4, 4, 0xFFFF)",
+        "sprite.drawRect(x, y, 7, 7, 0xFFFF)",
+        "sprite.drawFastVLine(x + 3, y, 7, 0xFFFF)",
+        "sprite.drawPixel(x + 6, dot_y, 0xFFFF)",
+        "sprite.fillRect(dialog_x, dialog_y, dialog_w, dialog_h, 0x0000)",
+        "sprite.drawRect(dialog_x, dialog_y, dialog_w, dialog_h, 0xFFFF)",
+        "sprite.drawCenterString(dialog_title, 64, page_dialog ? 16 : 19)",
+        "sprite.drawPixel(x, top_y, 0xFFFF)",
+        "sprite.drawFastHLine(x - 1, top_y + 1, 3, 0xFFFF)",
+        "sprite.drawFastHLine(x - 2, top_y + 2, 5, 0xFFFF)",
+        "sprite.drawFastHLine(x - 2, bottom_y, 5, 0xFFFF)",
+        "sprite.drawFastHLine(x - 1, bottom_y + 1, 3, 0xFFFF)",
+        "sprite.drawPixel(x, bottom_y + 2, 0xFFFF)",
+        "sprite.fillRect(x - 14, 35, 29, 12, 0xFFFF)",
+        "sprite.setTextColor(0x0000, 0xFFFF)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawCenterString(label, x, 36)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawCenterString(value, 64, 34)",
+        "sprite.fillRect(28, 33, 48, 12, 0xFFFF)",
+        "sprite.setTextColor(0x0000, 0xFFFF)",
+        "sprite.drawCenterString(track_name, 52, 34)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.fillRect(82, 33, 18, 12, 0xFFFF)",
+        "sprite.setTextColor(0x0000, 0xFFFF)",
+        "sprite.drawCenterString(preset, 91, 34)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.fillRect(x - 7, 34, 15, 13, 0xFFFF)",
+        "sprite.setTextColor(0x0000, 0xFFFF)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawCenterString(label, x, 36)",
+        "sprite.drawCenterString(question, 64, 31)",
+        "sprite.fillRect(35, 43, 24, 10, 0xFFFF)",
+        "sprite.fillRect(70, 43, 24, 10, 0xFFFF)",
+        "sprite.setTextColor(confirm_yes ? 0xFFFF : 0x0000, confirm_yes ? 0x0000 : 0xFFFF)",
+        "sprite.drawCenterString(\"No\", 47, 43)",
+        "sprite.setTextColor(confirm_yes ? 0x0000 : 0xFFFF, confirm_yes ? 0xFFFF : 0x0000)",
+        "sprite.drawCenterString(\"Yes\", 82, 43)",
+        "sprite.setTextColor(0xFFFF, 0x0000)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": [
+        "playhead",
+        "playing"
+      ]
+    },
+    {
+      "name": "render_canvas_side_menu",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1815,
+      "signature": "void render_canvas_side_menu(int menu_selected, bool white, int stroke_size, int active_draw_mode = -1, int menu_focus = 1, int left_menu_selected = 0, bool can_undo = false, bool can_redo = false, bool stroke_menu_visible = false)",
+      "callers": [],
+      "constants": [
+        "const bool enabled =",
+        "const uint16_t fg = 0xFFFF;",
+        "const uint16_t bg = active ? 0xFFFF : 0x0000;",
+        "const uint16_t fg = active ? 0x0000 : 0xFFFF;",
+        "const int y = 15 + i * 11;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 16, 64, 0x0000)",
+        "sprite.drawFastVLine(16, 0, 64, 0xFFFF)",
+        "sprite.drawRect(1, cy - 6, 14, 12, 0xFFFF)",
+        "sprite.drawLine(cx, cy - 4, cx - 5, cy, fg)",
+        "sprite.drawLine(cx - 5, cy, cx, cy + 4, fg)",
+        "sprite.drawLine(cx - 5, cy, cx + 3, cy, fg)",
+        "sprite.drawLine(cx - 2, cy - 4, cx + 3, cy, fg)",
+        "sprite.drawLine(cx + 3, cy, cx - 2, cy + 4, fg)",
+        "sprite.drawLine(cx - 5, cy, cx + 2, cy, fg)",
+        "sprite.drawRect(cx - 4, cy - 2, 8, 7, fg)",
+        "sprite.drawLine(cx - 5, cy - 3, cx + 4, cy - 3, fg)",
+        "sprite.drawLine(cx - 2, cy - 4, cx + 1, cy - 4, fg)",
+        "sprite.drawLine(cx - 2, cy, cx - 2, cy + 2, fg)",
+        "sprite.drawLine(cx + 1, cy, cx + 1, cy + 2, fg)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.setTextColor(fg, 0x0000)",
+        "sprite.drawCenterString(\"ok\", cx, cy - 4)",
+        "sprite.fillRect(112, 0, 16, 64, 0x0000)",
+        "sprite.drawFastVLine(111, 0, 64, 0xFFFF)",
+        "sprite.fillRect(114, cy - 5, 12, 10, bg)",
+        "sprite.drawRect(113, cy - 6, 14, 12, 0xFFFF)",
+        "sprite.drawPixel(cx, cy, fg)",
+        "sprite.drawLine(cx - 4, cy + 3, cx + 4, cy - 3, fg)",
+        "sprite.drawRect(cx - 4, cy - 4, 8, 8, fg)",
+        "sprite.fillRect(cx - 4, cy - 4, 8, 8, fg)",
+        "sprite.drawRect(cx - 5, cy - 4, 10, 8, fg)",
+        "sprite.fillRect(cx - 4, cy - 3, 4, 6, 0xFFFF)",
+        "sprite.fillRect(cx, cy - 3, 4, 6, 0x0000)",
+        "sprite.drawRect(cx - 6, cy - 5, 12, 10, white ? 0xFFFF : 0x7BEF)",
+        "sprite.fillRect(96, 8, 14, 40, 0x0000)",
+        "sprite.drawRect(96, 8, 14, 40, 0xFFFF)",
+        "sprite.fillRect(98, y - 4, 10, 9, 0xFFFF)",
+        "sprite.fillCircle(103, y, i + 1, stroke_size == i + 1 ? 0x0000 : 0xFFFF)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_draw_canvas",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 1913,
+      "signature": "void render_draw_canvas(const uint8_t* canvas, size_t canvas_size, int cursor_x, int cursor_y, bool has_anchor, int anchor_x, int anchor_y, const std::string& overlay_label, int64_t overlay_until_us, int64_t now_us, int draw_mode, bool menu_visible, int menu_selected, bool white, int stroke_size)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/draw_screen.hpp",
+          "line": 64
+        }
+      ],
+      "constants": [
+        "void render_draw_canvas(const uint8_t* canvas, size_t canvas_size, int cursor_x,",
+        "const uint8_t mask = static_cast<uint8_t>(1u << (bit_index % 8));",
+        "const int dx = std::abs(cursor_x - x0);",
+        "const int sx = x0 < cursor_x ? 1 : -1;",
+        "const int dy = -std::abs(cursor_y - y0);",
+        "const int sy = y0 < cursor_y ? 1 : -1;",
+        "const int e2 = 2 * err;",
+        "const int left = std::min(anchor_x, cursor_x);",
+        "const int right = std::max(anchor_x, cursor_x);",
+        "const int top = std::min(anchor_y, cursor_y);",
+        "const int bottom = std::max(anchor_y, cursor_y);"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.drawPixel(x, y, pixel_white(x, y) ? 0x0000 : 0xFFFF)",
+        "sprite.drawPixel(x, y, 0xFFFF)",
+        "sprite.fillRoundRect(34, 21, 60, 22, 3, 0xFFFF)",
+        "sprite.drawRoundRect(34, 21, 60, 22, 3, 0x0000)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setTextColor(0x0000, 0xFFFF)",
+        "sprite.drawCenterString(overlay_label.c_str(), 64, 25)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": [
+        "now_us"
+      ]
+    },
+    {
+      "name": "render_ehagaki_canvas",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 2001,
+      "signature": "void render_ehagaki_canvas(const uint8_t* canvas, size_t canvas_size, int cursor_x, int cursor_y, bool has_anchor, int anchor_x, int anchor_y, const std::string& overlay_label, int64_t overlay_until_us, int64_t now_us, int draw_mode, bool menu_visible, int menu_selected, bool white, int stroke_size, int active_draw_mode, int menu_focus, int left_menu_selected, bool can_undo, bool can_redo, bool stroke_menu_visible)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/ehagaki_screen.hpp",
+          "line": 1305
+        }
+      ],
+      "constants": [
+        "void render_ehagaki_canvas(const uint8_t* canvas, size_t canvas_size,",
+        "static constexpr int kCanvasW = 122;",
+        "static constexpr int kCanvasH = 58;",
+        "static constexpr int kOffsetX = 3;",
+        "static constexpr int kOffsetY = 3;",
+        "const uint8_t mask = static_cast<uint8_t>(0x80u >> (bit_index & 7));",
+        "const int dx = std::abs(cursor_x - x0);",
+        "const int sx = x0 < cursor_x ? 1 : -1;",
+        "const int dy = -std::abs(cursor_y - y0);",
+        "const int sy = y0 < cursor_y ? 1 : -1;",
+        "const int e2 = 2 * err;",
+        "const int left = std::min(anchor_x, cursor_x);",
+        "const int right = std::max(anchor_x, cursor_x);",
+        "const int top = std::min(anchor_y, cursor_y);",
+        "const int bottom = std::max(anchor_y, cursor_y);"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.drawRect(kOffsetX - 1, kOffsetY - 1, kCanvasW + 2, kCanvasH + 2, 0xFFFF)",
+        "sprite.drawPixel(kOffsetX + x, kOffsetY + y, pixel_white(x, y) ? 0x0000 : 0xFFFF)",
+        "sprite.drawPixel(kOffsetX + x, kOffsetY + y, 0xFFFF)",
+        "sprite.fillRoundRect(34, 21, 60, 22, 3, 0xFFFF)",
+        "sprite.drawRoundRect(34, 21, 60, 22, 3, 0x0000)",
+        "sprite.setTextColor(0x0000, 0xFFFF)",
+        "sprite.drawCenterString(overlay_label.c_str(), 64, 25)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": [
+        "now_us"
+      ]
+    },
+    {
+      "name": "render_game_trainer",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 2102,
+      "signature": "void render_game_trainer(const std::string& target, const std::string& morse, const std::string& decoded, int cleared, int total, float elapsed_s, bool show_hint, int64_t now_us)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/game_screen.cpp",
+          "line": 353
+        }
+      ],
+      "constants": [
+        "const int phase = static_cast<int>((now_us / 180000LL) % 8);",
+        "const int lift = phase <= 4 ? phase : 8 - phase;",
+        "const int x = 14;",
+        "const int y = 57 - lift;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawString(time_buf, 0, 0)",
+        "sprite.drawRightString(progress, 126, 0)",
+        "sprite.setFont(&fonts::FreeMono12pt7b)",
+        "sprite.setCursor(55, 5)",
+        "sprite.print(target.c_str())",
+        "sprite.drawFastHLine(0, 16, 48, 0xFFFF)",
+        "sprite.drawFastHLine(78, 16, 128, 0xFFFF)",
+        "sprite.drawRect(50, 2, 26, 26, 0xFFFF)",
+        "sprite.drawCenterString(display.c_str(), 64, 36, &fonts::FreeMono12pt7b)",
+        "sprite.drawLine(x, y - 18, x, y - 9, 0xFFFF)",
+        "sprite.fillTriangle(x, y - 23, x - 2, y - 18, x + 2, y - 18, 0xFFFF)",
+        "sprite.drawCircle(x, y, 5, 0xFFFF)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": [
+        "elapsed_s",
+        "now_us"
+      ]
+    },
+    {
+      "name": "render_game_clear",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 2139,
+      "signature": "void render_game_clear(float elapsed_s, const std::string& best_record, bool new_record)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/game_screen.cpp",
+          "line": 342
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(ui::text(ui::Key::GameClear, ui::Lang::En), 64, 7)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.drawCenterString(ui::text(ui::Key::GameNewRecord, ui::Lang::En), 64, 22)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.drawCenterString(time_buf, 64, 38)",
+        "sprite.drawCenterString(time_buf, 64, 22)",
+        "sprite.setTextColor(0x000000u, 0xFFFFFFu)",
+        "sprite.drawCenterString(best.c_str(), 64, 38)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)"
+      ],
+      "delegates": [
+        "set_english_ui_font"
+      ],
+      "dynamic_tokens": [
+        "elapsed_s"
+      ]
+    },
+    {
+      "name": "render_typing_select",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 2183,
+      "signature": "void render_typing_select(bool word_selected)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/game_screen.cpp",
+          "line": 326
+        }
+      ],
+      "constants": [
+        "const bool selected = i == (word_selected ? 1 : 0);",
+        "const int y = 24 + i * 20;"
+      ],
+      "drawing": [
+        "sprite.fillSprite(0)",
+        "sprite.setTextColor(0xFFFF, 0)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.drawCenterString(\"TYPING\", 64, 0)",
+        "sprite.drawFastHLine(0, 18, 128, 0xFFFF)",
+        "sprite.fillRect(16, y, 96, 18, 0xFFFF)",
+        "sprite.setTextColor(selected ? 0 : 0xFFFF, selected ? 0xFFFF : 0)",
+        "sprite.drawCenterString(i == 0 ? \"LETTER\" : \"WORD\", 64, y)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_typing_word",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 2200,
+      "signature": "void render_typing_word(const char* target, unsigned letter_index, unsigned question, const char* morse, char wrong_letter)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/game_screen.cpp",
+          "line": 332
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillSprite(0)",
+        "sprite.setTextColor(0xFFFF, 0)",
+        "sprite.setFont(&fonts::Font0)",
+        "sprite.drawString(\"WORD\", 0, 0)",
+        "sprite.drawRightString(progress, 127, 0)",
+        "sprite.drawCenterString(error, 64, 0)",
+        "sprite.setFont(&fonts::FreeMono9pt7b)",
+        "sprite.drawCenterString(target, 64, 15)",
+        "sprite.drawCenterString(completed, 64, 34)",
+        "sprite.setFont(&fonts::Font0)",
+        "sprite.drawCenterString(morse, 64, 55)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_typing_word_result",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 2227,
+      "signature": "void render_typing_word_result(unsigned score, unsigned misses, unsigned flow, unsigned best)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/game_screen.cpp",
+          "line": 328
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillSprite(0)",
+        "sprite.setTextColor(0xFFFF, 0)",
+        "sprite.setFont(&fonts::Font0)",
+        "sprite.drawCenterString(\"RESULT 10 WORDS\", 64, 0)",
+        "sprite.drawFastHLine(0, 10, 128, 0xFFFF)",
+        "sprite.drawString(labels[i], 8, 17 + i * 12)",
+        "sprite.drawRightString(value, 120, 17 + i * 12)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_low_battery_warning",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 2246,
+      "signature": "void render_low_battery_warning(int battery_mv)",
+      "callers": [
+        {
+          "file": "main/runtime/low_battery_guard.cpp",
+          "line": 215
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawCenterString(ui::text(ui::Key::LowBatteryTitle), 64, 14)",
+        "sprite.drawCenterString(line2, 64, 30)",
+        "sprite.drawCenterString(ui::text(ui::Key::LowBatteryPoweringOff), 64, 46)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_low_battery_charging_standby",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 2266,
+      "signature": "void render_low_battery_charging_standby(int battery_mv, int resume_mv)",
+      "callers": [
+        {
+          "file": "main/runtime/low_battery_guard.cpp",
+          "line": 169
+        },
+        {
+          "file": "main/runtime/low_battery_guard.cpp",
+          "line": 203
+        }
+      ],
+      "constants": [],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawCenterString(ui::text(ui::Key::LowBatteryTitle), 64, 18)",
+        "sprite.drawCenterString(ui::text(ui::Key::LowBatteryCharging), 64, 34)"
+      ],
+      "delegates": [
+        "set_localized_ui_font"
+      ],
+      "dynamic_tokens": []
+    },
+    {
+      "name": "render_arcade",
+      "source": "main/runtime/display_facade.cpp",
+      "line": 2285,
+      "signature": "void render_arcade(const mobus::runtime::arcade::Game& game, uint32_t best, bool new_record, uint32_t celebration_frame)",
+      "callers": [
+        {
+          "file": "main/runtime/screens/arcade_screen.cpp",
+          "line": 119
+        }
+      ],
+      "constants": [
+        "const bool inverted = game.phase == Phase::GameOver &&",
+        "const uint16_t foreground = inverted ? 0x0000 : 0xFFFF;",
+        "const uint16_t background = inverted ? 0xFFFF : 0x0000;",
+        "constexpr int ys[10] = {0, 50, 10, 30, 0, 50, 20, 40, 10, 50};",
+        "const int frame = game.frame;",
+        "const int wave = frame % 48;",
+        "const bool flash = new_record && celebration_frame < 24 &&",
+        "const int r = 3 + celebration_frame % 5;"
+      ],
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, background)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.setTextWrap(false)",
+        "sprite.setTextColor(foreground, background)",
+        "sprite.drawBitmap(x, y, converted, w, h, foreground, background)",
+        "sprite.drawCenterString(title(game.kind), 64, std::min<uint32_t>(20, game.frame))",
+        "sprite.drawCenterString(\"START\", 64, 45)",
+        "sprite.drawFastHLine(0, 22, 128, foreground)",
+        "sprite.drawFastHLine(0, 44, 128, foreground)",
+        "sprite.drawString(score, 3, 0)",
+        "sprite.drawRect(2, 2, 124, 60, 0xFFFF)",
+        "sprite.fillRect(4, 4, 120, 12, 0xFFFF)",
+        "sprite.setTextColor(flash ? 0 : 0xFFFF, flash ? 0xFFFF : 0)",
+        "sprite.drawCenterString(new_record ? \"NEW BEST!\" : \"GAME OVER\", 64, 6)",
+        "sprite.setTextColor(0xFFFF, 0)",
+        "sprite.drawCenterString(score, 64, 22)",
+        "sprite.drawCenterString(score, 64, 34)",
+        "sprite.drawCircle(12, 28, r, 0xFFFF)",
+        "sprite.drawCircle(115, 28, r, 0xFFFF)",
+        "sprite.drawCenterString(\"ENTER: RETRY\", 64, 50)"
+      ],
+      "delegates": [],
+      "dynamic_tokens": []
+    }
+  ],
+  "renderer_files": {
+    "components/display/include/display/renderer/contact_action_renderer.hpp": {
+      "sha256": "378b5eb845e858b7173eb3fd601e88d21b52a0061fcfab89516af1d74ce1afc3",
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(line1.c_str(), 64, y1)",
+        "sprite.drawCenterString(line2.c_str(), 64, y2)",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(msg.c_str(), 64, 22)",
+        "sprite.fillRect(0, y, 128, 18, 0xFFFF)",
+        "sprite.setTextColor(0x0000, 0xFFFF)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.setCursor(10, y)",
+        "sprite.print(line.c_str())",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawCenterString(title.c_str(), 64, 14)",
+        "sprite.fillRoundRect(12, 34, 40, 18, 3, no_bg)",
+        "sprite.drawRoundRect(12, 34, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(no_fg, no_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelNo), 32, 36)",
+        "sprite.fillRoundRect(76, 34, 40, 18, 3, yes_bg)",
+        "sprite.drawRoundRect(76, 34, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(yes_fg, yes_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelYes), 96, 36)"
+      ],
+      "constants": []
+    },
+    "components/display/include/display/renderer/contact_renderer.hpp": {
+      "sha256": "bfeff5e125385a9f86e1421f13673462271e476daa157de474388a197dd0e033",
+      "drawing": [
+        "sprite.fillScreen(0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawString(line.c_str(), 38, 26)",
+        "sprite.drawCenterString(line.c_str(), 64, 26)",
+        "sprite.drawRect(30, 2, 68, 18, 0xFFFF)",
+        "sprite.drawCenterString(title, 64, 3)",
+        "sprite.fillCircle(119, 8, 3, 0xFFFF)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawString(\"QSP\", 32, 22)",
+        "sprite.drawString(\"CQ\", 76, 22)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCircle(kKnobX, kKnobY, 7, 0xFFFF)",
+        "sprite.drawCircle(kKnobX, kKnobY, 9, 0xFFFF)",
+        "sprite.drawLine(kKnobX, kKnobY, kKnobX - 5, kKnobY - 5, 0xFFFF)",
+        "sprite.drawLine(kKnobX, kKnobY, kKnobX + 5, kKnobY - 5, 0xFFFF)",
+        "sprite.drawFastHLine(kLeft, kBarY, kRight - kLeft + 1, 0xFFFF)",
+        "sprite.drawFastVLine(kLeft, kTickTop, kTickBottom - kTickTop + 1, 0xFFFF)",
+        "sprite.drawFastVLine(kRight, kTickTop, kTickBottom - kTickTop + 1, 0xFFFF)",
+        "sprite.drawFastVLine(x, kTickTop, kTickBottom - kTickTop + 1, color)",
+        "sprite.fillTriangle(x, kTickBottom + 2, x - 4, kTickBottom + 6, x + 4, kTickBottom + 6, 0xFFFF)",
+        "sprite.drawRect(x - 2, kBarY - 2, 5, 5, 0xFFFF)",
+        "sprite.fillCircle(x + 4, kTickTop - 2, 1, 0xFFFF)"
+      ],
+      "constants": [
+        "const int selected =",
+        "constexpr int kKnobX = 64;",
+        "constexpr int kKnobY = 37;",
+        "static constexpr int kLeft = 10;",
+        "static constexpr int kRight = 118;",
+        "static constexpr int kBarY = 54;",
+        "static constexpr int kTickTop = 50;",
+        "static constexpr int kTickBottom = 58;",
+        "static constexpr int kSlotCount = 10;",
+        "const int x =",
+        "const int color = 0xC618;"
+      ]
+    },
+    "components/display/include/display/renderer/localized_font.hpp": {
+      "sha256": "2d463813e71770bc2544dc6c29939fee6b21bd33d8dc36ff3317a40e3651872c",
+      "drawing": [
+        "sprite.setFont(localized_ui_font(english_font, lang))",
+        "sprite.setFont(english_font)"
+      ],
+      "constants": []
+    },
+    "components/display/include/display/renderer/menu_renderer.hpp": {
+      "sha256": "793698ad8f863acc81b5d71de88fc61cc275998916296c83046078adcbfd8729",
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.drawString(\"Mode\", 48, 9)",
+        "sprite.drawRect(5, 5, 118, 54, 0xFFFF)",
+        "sprite.drawFastHLine(5, 20, 118, 0xFFFF)",
+        "sprite.drawRect(41, 20, 40, 23, 0xFFFF)",
+        "sprite.drawFastHLine(5, 42, 118, 0xFFFF)",
+        "sprite.drawLine(10, 47, 22, 55, 0xFFFF)",
+        "sprite.drawLine(22, 47, 10, 55, 0xFFFF)",
+        "sprite.fillRect(rx, ry, 2, rh, 0xFFFF)",
+        "sprite.drawRoundRect(10, 49, 14, 8, 2, 0xFFFF)",
+        "sprite.fillRect(11, 49, battery_pix, 8, 0xFFFF)",
+        "sprite.fillRect(5, 49, 2, 2, 0xFFFF)",
+        "sprite.fillRect(24, 49, 1, 4, 0xFFFF)",
+        "sprite.drawString(percent_text, text_x, 49)",
+        "sprite.drawString(time_text, 73, 49)",
+        "sprite.drawString(\"??:??:??\", 73, 49)",
+        "sprite.drawString(\"[ ]\", kIconPosX[index] - 6, kIconPosY[index])",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.drawString(icon_text, kIconPosX[index], kIconPosY[index])",
+        "sprite.drawString(icon_text, kIconPosX[index], kIconPosY[index])",
+        "sprite.fillCircle(37, 25, 4, selected_menu ? 0 : 0xFFFF)"
+      ],
+      "constants": [
+        "static constexpr int kIconPosX[3] = {15, 53, 93};",
+        "static constexpr int kIconPosY[3] = {29, 29, 29};",
+        "constexpr int kBatteryLeftX = 50;",
+        "constexpr int kPercentGapPx = 4;",
+        "const int text_w = sprite.textWidth(percent_text);",
+        "const int text_x = kBatteryLeftX - kPercentGapPx - text_w;"
+      ]
+    },
+    "components/display/include/display/renderer/open_chat_renderer.hpp": {
+      "sha256": "ed10c762685376cd12d58a34e500752b67b8b8b76e22f74c559773e83c6215c8",
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(text.c_str(), 64, 0)",
+        "sprite.drawFastHLine(0, 12, 128, 0xFFFF)",
+        "sprite.setCursor(0, 16)",
+        "sprite.setTextWrap(true)",
+        "sprite.print(message_text.c_str())",
+        "sprite.setTextWrap(false)",
+        "sprite.setCursor(0, 44)",
+        "sprite.print(morse_text.c_str())",
+        "sprite.setCursor(0, 52)",
+        "sprite.print(preview.c_str())",
+        "sprite.setCursor(0, 56)",
+        "sprite.print(footer.c_str())",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(title.c_str(), 64, 0)",
+        "sprite.drawFastHLine(0, 12, 128, 0xFFFF)",
+        "sprite.fillRect(0, y - 2, 128, kRoomHeight, 0xFFFF)",
+        "sprite.setTextColor(0x000000u, 0xFFFFFFu)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(4, y)",
+        "sprite.print(label.c_str())",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(0, 56)",
+        "sprite.print(footer.c_str())",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(room_label.c_str(), 64, 0)",
+        "sprite.drawFastHLine(0, 12, 128, 0xFFFF)",
+        "sprite.setTextColor(0x000000u, 0xFFFFu)",
+        "sprite.fillRect(0, y - 2, 128, line_height, 0xFFFF)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(0, y)",
+        "sprite.setTextWrap(false)",
+        "sprite.print(row.text.c_str())",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.setCursor(0, 56)",
+        "sprite.print(ui::text(ui::Key::OpenChatRoomFooter))"
+      ],
+      "constants": [
+        "constexpr int kRoomHeight = 12;",
+        "const int y = 16 + index * kRoomHeight;",
+        "constexpr int kBodyTop = 16;",
+        "constexpr int kBodyBottom = 52;",
+        "constexpr int kBodyWidth = 128;",
+        "const int line_height =",
+        "const int max_rows ="
+      ]
+    },
+    "components/display/include/display/renderer/setting_dialog_renderer.hpp": {
+      "sha256": "d99e45e292aa9fba47e2d2065d66a40105618b38e2aa818de1fbc76a95a1da2b",
+      "drawing": [
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(title.c_str(), 64, cursor_y)",
+        "sprite.fillRect(8, highlight_y, 112, rect_height, 0xFFFF)",
+        "sprite.setTextColor(0x000000u, 0xFFFFFFu)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(text.c_str(), 64, text_y)",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(text.c_str(), 64, 6)",
+        "sprite.drawCenterString(text.c_str(), 64, 18)",
+        "sprite.drawCenterString(text.c_str(), 64, 30)",
+        "sprite.drawCenterString(text.c_str(), 64, 42)",
+        "sprite.drawCenterString(text.c_str(), 64, 52)",
+        "sprite.drawCenterString(text.c_str(), 64, 60)",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(text.c_str(), 64, 6)",
+        "sprite.drawCenterString(text.c_str(), 64, 24)",
+        "sprite.drawCenterString(text.c_str(), 64, 40)",
+        "sprite.drawCenterString(text.c_str(), 64, 52)",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(text.c_str(), 64, 4)",
+        "sprite.drawCenterString(text.c_str(), 64, y)",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(text.c_str(), 64, 0)",
+        "sprite.drawString(text.c_str(), 2, y)",
+        "sprite.drawString(text.c_str(), 2, 54)",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(title.c_str(), 64, 10)",
+        "sprite.fillRoundRect(12, 34, 40, 18, 3, no_bg)",
+        "sprite.drawRoundRect(12, 34, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(no_fg, no_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelNo), 32, 36)",
+        "sprite.fillRoundRect(76, 34, 40, 18, 3, yes_bg)",
+        "sprite.drawRoundRect(76, 34, 40, 18, 3, 0xFFFF)",
+        "sprite.setTextColor(yes_fg, yes_bg)",
+        "sprite.drawCenterString(ui::text(ui::Key::LabelYes), 96, 36)",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.drawCenterString(line1.c_str(), 64, y1)",
+        "sprite.drawCenterString(line2.c_str(), 64, y2)"
+      ],
+      "constants": [
+        "const int cursor_y = english ? 1 : 6;",
+        "const int base_y = 24 + i * 16;",
+        "const int text_y = base_y + (english ? -4 : 0);",
+        "const int highlight_y = english ? base_y - 4 : text_y - 2;",
+        "const int rect_height = english ? 16 : 14;"
+      ]
+    },
+    "components/display/include/display/renderer/setting_renderer.hpp": {
+      "sha256": "fff36ae6f1d762beeba843dd2b463624e694ea9af60fd243dfec71a285e6ef1b",
+      "drawing": [
+        "sprite.fillScreen(0)",
+        "sprite.setCursor(10, y)",
+        "sprite.setTextColor(0x000000u, 0xFFFFFFu)",
+        "sprite.fillRect(0, y, 128, state.font_height + 3, 0xFFFF)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.print(row.label.c_str())"
+      ],
+      "constants": []
+    },
+    "components/display/src/legacy/runtime/prelude.hpp": {
+      "sha256": "e6c07f16f2970ef025204dad7daf40b802580dbc7a673a56c95301b5ae45beda",
+      "drawing": [
+        "sprite.setCursor(draw_x, y)",
+        "sprite.setTextColor(0x000000u, 0xFFFFFFu)",
+        "sprite.setTextColor(0xFFFFFFu, 0x000000u)",
+        "sprite.print(row_chars[i])",
+        "sprite.fillRect(btn_left, btn_top, btn_right - btn_left + 1, btn_bottom - btn_top + 1, bg)",
+        "sprite.fillTriangle(tip_x, tip_y, btn_left, btn_top, btn_left, btn_bottom, bg)",
+        "sprite.drawLine(btn_left, btn_top, btn_right, btn_top, fg)",
+        "sprite.drawLine(btn_right, btn_top, btn_right, btn_bottom, fg)",
+        "sprite.drawLine(btn_right, btn_bottom, btn_left, btn_bottom, fg)",
+        "sprite.drawLine(btn_left, btn_top, tip_x, tip_y, fg)",
+        "sprite.drawLine(tip_x, tip_y, btn_left, btn_bottom, fg)",
+        "sprite.drawLine(cx - 2, cy - 2, cx + 2, cy + 2, fg)",
+        "sprite.drawLine(cx + 2, cy - 2, cx - 2, cy + 2, fg)",
+        "sprite.pushSprite(&lcd, x, y)"
+      ],
+      "constants": [
+        "constexpr EventBits_t kWifiConnectedBit = BIT0;",
+        "const int selectable_count = row_len + (enable_delete_button ? 1 : 0);",
+        "const int row_len = static_cast<int>(strlen(row_chars));",
+        "const int kCharSpacing = 8;",
+        "const int row_len = static_cast<int>(strlen(row_chars));",
+        "const int btn_top = y - 1;  // keep top aligned with previous design",
+        "const int btn_bottom = 60;  // slightly shorter for better balance",
+        "const int btn_left = 118;",
+        "const int btn_right = 127;",
+        "const int tip_x = 114;",
+        "const int tip_y = (btn_top + btn_bottom) / 2;",
+        "const int cx = (btn_left + btn_right) / 2;",
+        "const int cy = tip_y;",
+        "constexpr Attempt attempts[] = {",
+        "constexpr size_t kRebootLargestInternalThreshold = 14 * 1024;",
+        "constexpr size_t kRebootFreeInternalThreshold = 36 * 1024;",
+        "constexpr uint32_t kRequiredLowMemHits = 5;",
+        "constexpr int64_t kMinUptimeUs = 10LL * 60LL * 1000LL * 1000LL;",
+        "constexpr int64_t kSampleIntervalUs = 3LL * 1000LL * 1000LL;",
+        "const int64_t now_us = esp_timer_get_time();",
+        "const int64_t start_us = esp_timer_get_time();",
+        "const int64_t start_us = esp_timer_get_time();"
+      ]
+    },
+    "components/display/src/legacy/screens/oled_view.hpp": {
+      "sha256": "5965ba0fcb66c4faf4205346594246feb05c4a1562c33f0649ad3c426126f678",
+      "drawing": [
+        "sprite.fillScreen(0x000000u)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.drawCenterString(date_text, 64, 15)",
+        "sprite.setFont(&fonts::Font4)",
+        "sprite.drawCenterString(time_text, 64, 29)",
+        "sprite.setFont(&fonts::Font4)",
+        "sprite.drawCenterString(\"--:--:--\", 64, 25)",
+        "sprite.drawBitmap(32, 0, mimocLogo, 64, 64, TFT_WHITE, TFT_BLACK)",
+        "lcd.fillScreen(0x000000u)",
+        "sprite.fillScreen(0x000000u)",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.drawString(\"Mode\", 48, 9)",
+        "sprite.drawRect(5, 5, 118, 49, 0xFFFF)",
+        "sprite.drawFastHLine(5, 20, 118, 0xFFFF)",
+        "sprite.drawRect(40, 20, 40, 20, 0xFFFF)",
+        "sprite.drawFastHLine(5, 39, 118, 0xFFFF)",
+        "sprite.drawLine(10, 47, 22, 55, 0xFFFF)",
+        "sprite.drawLine(22, 47, 10, 55, 0xFFFF)",
+        "sprite.fillRect(rx, ry, 2, rh, 0xFFFF)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.drawString(percent_text, text_x, 44)",
+        "sprite.drawString(time_text, 73, 44)",
+        "sprite.drawString(\"??:??:??\", 73, 44)",
+        "sprite.drawString(\"[ ]\", icon_pos_x[index] - 6, icon_pos_y[index])",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.setFont(&mobus_fonts::MobusCustom7())",
+        "sprite.drawString(icon_text, icon_pos_x[index], icon_pos_y[index])",
+        "sprite.drawString(icon_text, icon_pos_x[index], icon_pos_y[index])",
+        "sprite.fillRect(0, visible_top, 128, visible_height, 0x0000)",
+        "sprite.setTextColor(0xFFFF, 0x0000)",
+        "sprite.setFont(&fonts::Font2)",
+        "sprite.drawCenterString(date_text, 64, offset_y + kLockDateY)",
+        "sprite.setFont(&fonts::Font4)",
+        "sprite.drawCenterString(time_text, 64, offset_y + kLockTimeY)",
+        "sprite.drawBitmap((128 - kTimeUnavailableBitmapW) / 2, offset_y + ((64 - kTimeUnavailableBitmapH) / 2), kTimeUnavailableBitmap, kTimeUnavailableBitmapW, kTimeUnavailableBitmapH, TFT_WHITE, TFT_BLACK)",
+        "sprite.fillScreen(0x000000u)",
+        "sprite.fillRect(0, 0, 128, 64, 0)",
+        "sprite.setCursor(25, i)",
+        "sprite.print(notif_text)",
+        "sprite.setCursor(25, i)",
+        "sprite.print(notif_text)",
+        "lcd.fillScreen(0x000000u)",
+        "sprite.fillScreen(0x000000u)",
+        "sprite.drawPixel(64, 32)",
+        "sprite.drawBitmap(55, 25, img, 16, 22, TFT_WHITE, TFT_BLACK)",
+        "sprite.drawBitmap(32, 0, mimocLogo, 64, 64, TFT_WHITE, // TFT_BLACK)"
+      ],
+      "constants": [
+        "constexpr int kMinTimezoneMinutes = -14 * 60;",
+        "constexpr int kMaxTimezoneMinutes = 14 * 60;",
+        "const int safe_offset_minutes =",
+        "constexpr int kBootWidth = 128;",
+        "constexpr int kBootHeight = 64;",
+        "static constexpr int64_t kLockScreenIdleTimeoutUs = 10LL * 1000 * 1000;",
+        "static constexpr TickType_t kLockScreenPollDelay = pdMS_TO_TICKS(100);",
+        "static constexpr TickType_t kUnlockAnimationDelay = pdMS_TO_TICKS(18);",
+        "static constexpr int kLockDateY = 15;",
+        "static constexpr int kLockTimeY = 29;",
+        "static constexpr int kTimeUnavailableBitmapW = 32;",
+        "static constexpr int kTimeUnavailableBitmapH = 32;",
+        "static constexpr unsigned char kTimeUnavailableBitmap[] PROGMEM = {",
+        "const int icon_pos_x[3] = {9, 51, 93};",
+        "const int icon_pos_y[3] = {22, 22, 22};",
+        "constexpr int kBatteryLeftX = 50;",
+        "constexpr int kPercentGapPx = 4;",
+        "const int text_w = sprite.textWidth(percent_text);",
+        "const int text_x =",
+        "const int visible_top = std::max(0, offset_y);",
+        "const int visible_height =",
+        "static constexpr char notif_text[] = \"Recv!!\";"
+      ]
+    }
+  },
+  "screen_files": [
+    "main/runtime/screens/app_shell_screens.hpp",
+    "main/runtime/screens/arcade_screen.cpp",
+    "main/runtime/screens/arcade_screen.hpp",
+    "main/runtime/screens/composer_screen.hpp",
+    "main/runtime/screens/contact_book_screen.hpp",
+    "main/runtime/screens/cq_chat_screen.hpp",
+    "main/runtime/screens/draw_screen.hpp",
+    "main/runtime/screens/ehagaki_screen.hpp",
+    "main/runtime/screens/factory_setup_screen.hpp",
+    "main/runtime/screens/game_screen.cpp",
+    "main/runtime/screens/game_screen.hpp",
+    "main/runtime/screens/menu_screen.cpp",
+    "main/runtime/screens/menu_screen.hpp",
+    "main/runtime/screens/message_box_screen.hpp",
+    "main/runtime/screens/open_chat_screen.hpp",
+    "main/runtime/screens/profile_info_screen.hpp",
+    "main/runtime/screens/realtime_talk_screen.hpp",
+    "main/runtime/screens/setting_screen.hpp",
+    "main/runtime/screens/synth_screen.hpp",
+    "main/runtime/screens/text_screen.hpp",
+    "main/runtime/screens/tra_screen.hpp",
+    "main/runtime/screens/wifi_setup_screen.hpp"
+  ],
+  "ui_model_files": [
+    "components/ui/include/ui/common/choice_dialog_mvp.hpp",
+    "components/ui/include/ui/common/confirm_dialog.hpp",
+    "components/ui/include/ui/common/status_panel.hpp",
+    "components/ui/include/ui/common/text_modal.hpp",
+    "components/ui/include/ui/contact/book_mvp.hpp",
+    "components/ui/include/ui/contact/message_box_mvp.hpp",
+    "components/ui/include/ui/contact/pending_mvp.hpp",
+    "components/ui/include/ui/core/input.hpp",
+    "components/ui/include/ui/core/input_adapter.hpp",
+    "components/ui/include/ui/core/input_guard.hpp",
+    "components/ui/include/ui/core/input_reader.hpp",
+    "components/ui/include/ui/core/iscreen.hpp",
+    "components/ui/include/ui/core/morse_alphabet.hpp",
+    "components/ui/include/ui/core/morse_timing.hpp",
+    "components/ui/include/ui/core/navigator.hpp",
+    "components/ui/include/ui/core/screen.hpp",
+    "components/ui/include/ui/core/screen_host.hpp",
+    "components/ui/include/ui/core/screen_intent.hpp",
+    "components/ui/include/ui/menu/display_mvp.hpp",
+    "components/ui/include/ui/open_chat/open_chat_mvp.hpp",
+    "components/ui/include/ui/setting/boot_sound_dialog.hpp",
+    "components/ui/include/ui/setting/firmware_info_dialog.hpp",
+    "components/ui/include/ui/setting/language_dialog.hpp",
+    "components/ui/include/ui/setting/menu_mvp.hpp",
+    "components/ui/include/ui/setting/sound_settings_mvp.hpp",
+    "components/ui/include/ui/talk/input_mvp.hpp",
+    "components/ui/include/ui/talk/romaji_kana.hpp",
+    "components/ui/include/ui/widgets/choice_dialog_mvp.hpp",
+    "components/ui/include/ui/widgets/confirm_dialog.hpp",
+    "components/ui/include/ui/widgets/status_panel.hpp",
+    "components/ui/include/ui/widgets/text_modal.hpp",
+    "components/ui/include/ui/widgets/theme.hpp",
+    "components/ui/include/ui/wifi/setting_mvp.hpp",
+    "components/ui/src/core/input_reader.cpp",
+    "components/ui/src/core/navigator.cpp",
+    "components/ui/src/core/screen_host.cpp",
+    "components/ui/src/widgets/theme.cpp"
+  ],
+  "all_source_sha256": {
+    "components/display/include/display/device/display_host.hpp": "c552dad4e3e110181c15351740dc29084c8aaeb1945babba0390905fb51b30d8",
+    "components/display/include/display/display_context.hpp": "6b8e01c4affc3b03d2ed0f2a6fc84c1660b4aa4334d85dfaf9ceb885b28a8ae5",
+    "components/display/include/display/oled_screen.hpp": "dc45a77d8e5587d5d58d17ba0fe8c6d8673b5b9486320944e522d0f7f31e82b0",
+    "components/display/include/display/renderer/contact_action_renderer.hpp": "378b5eb845e858b7173eb3fd601e88d21b52a0061fcfab89516af1d74ce1afc3",
+    "components/display/include/display/renderer/contact_renderer.hpp": "bfeff5e125385a9f86e1421f13673462271e476daa157de474388a197dd0e033",
+    "components/display/include/display/renderer/localized_font.hpp": "2d463813e71770bc2544dc6c29939fee6b21bd33d8dc36ff3317a40e3651872c",
+    "components/display/include/display/renderer/menu_renderer.hpp": "793698ad8f863acc81b5d71de88fc61cc275998916296c83046078adcbfd8729",
+    "components/display/include/display/renderer/open_chat_renderer.hpp": "ed10c762685376cd12d58a34e500752b67b8b8b76e22f74c559773e83c6215c8",
+    "components/display/include/display/renderer/setting_dialog_renderer.hpp": "d99e45e292aa9fba47e2d2065d66a40105618b38e2aa818de1fbc76a95a1da2b",
+    "components/display/include/display/renderer/setting_renderer.hpp": "fff36ae6f1d762beeba843dd2b463624e694ea9af60fd243dfec71a285e6ef1b",
+    "components/display/include/headupdaisy_font.hpp": "8a0ff87d5ba8cf8298aecf9a7992530b96632efd51e7910f0c12f0f21e035da2",
+    "components/display/include/images.hpp": "5704053ef487255676b2cc658480af1152087c0ac2a7a7619e510f54e98335c5",
+    "components/display/include/misaki_font.hpp": "a1ec568301146b7ab975dc4a3fa2b4917174a937ff2e74a60a1a98435783f774",
+    "components/display/include/mobus_custom_font.hpp": "8934c7e0ab59331f655e94f04716f9146f59d92b0aff24cc1c504c46e76e4d59",
+    "components/display/include/u8g2_b12_japanese1_font.hpp": "7330e26bce936920e0591f273d6480b21284fed4337225c81685232b8aaa693f",
+    "components/display/include/ui_strings.hpp": "5ddb49324c0307f1d63212882ce6d9a2e5dff975f1752abc114a5380fb4d8f4f",
+    "components/display/include/unifont_japanese1_font.hpp": "1e2c163889a6833056f763c47b006be6ac9380b7919ffabf2707e319aa6e7d23",
+    "components/display/src/device/display_host.cpp": "de35ecca900fce290d1e0a2ca736c16f31016a1befdec23e0b800a725b31b2cd",
+    "components/display/src/font_headupdaisy14x16.cpp": "5bc2add54f6b6936e591c362d1146d487a05ba13a9f50aaaf85126d1f1c9f84b",
+    "components/display/src/font_headupdaisy14x8.cpp": "0220a1c06cde6a6f8a63369f405ad4dfe4daf6f68d89cb3e350f0befa7bb91e6",
+    "components/display/src/font_misaki_gothic16.cpp": "1ac8ace24e5971b3de5817660444f14e1068d7f6eb2950f2e211f2bfd042cd21",
+    "components/display/src/font_misaki_gothic8.cpp": "cc04091275edafa20b19f60eaefc546af8fbda0f379066f6da8ebb3b4109c0c5",
+    "components/display/src/font_mobus_custom14.cpp": "77297f828149ca1d4baf88f1c7395e3fbddf1b96f87663dabfd081eb4a9d7f83",
+    "components/display/src/font_mobus_custom7.cpp": "a9a5aacdfcb31b56683e7d02e41ce4c9b44106c8f86fa4e52c230deb5d71eb3e",
+    "components/display/src/font_u8g2_b12_japanese1.cpp": "4221757e3ffcd4b0e041e43d6135bb38d30bd56fd7d3908521d5bdd0b9af1467",
+    "components/display/src/font_unifont_japanese1.cpp": "d9da8821656293faaed7af1ddc108cd31a6d075699bb2a155c8cfcaf4a7c8f8a",
+    "components/display/src/legacy/runtime/prelude.hpp": "e6c07f16f2970ef025204dad7daf40b802580dbc7a673a56c95301b5ae45beda",
+    "components/display/src/legacy/screens/oled_view.hpp": "5965ba0fcb66c4faf4205346594246feb05c4a1562c33f0649ad3c426126f678",
+    "components/ui/include/ui/common/choice_dialog_mvp.hpp": "b57043db6a998e7ba328d100b33f8860f21e7449d53e29f85130a4bc8b40d8eb",
+    "components/ui/include/ui/common/confirm_dialog.hpp": "e0988a914e6592a7d4ee3423c1bd69532d3aff647c66b4ad1c25d830c35bde24",
+    "components/ui/include/ui/common/status_panel.hpp": "e34d0002fc26881d5aa30915bace97d26bc4d547eaad6902d43c784ae98dec01",
+    "components/ui/include/ui/common/text_modal.hpp": "c3139b3191c0f0f214e5d94896c0f47e99cef3e8da25861fd9c4eef94cc8aa90",
+    "components/ui/include/ui/contact/book_mvp.hpp": "816b50a9329c45f27d36eedab03619d1811cea159db2197ef75cb41c3505769c",
+    "components/ui/include/ui/contact/message_box_mvp.hpp": "7ab8df1c12334e7d03fd897f23ad9410ebf726429f6ee481b6bdabe6a04f001e",
+    "components/ui/include/ui/contact/pending_mvp.hpp": "2406f2770330cdfa5695e0d76a910dd611f5b35ac0bae907905c3628cdd6b173",
+    "components/ui/include/ui/core/input.hpp": "f651c02088f8348d3f0c008dfb1f680199d54a660a76b0114156de9a5c92e5ae",
+    "components/ui/include/ui/core/input_adapter.hpp": "291984f0985b68de7aa6bc37ff492ca1e9a8ddcb4cb12df60f48ff73a876a63d",
+    "components/ui/include/ui/core/input_guard.hpp": "ae1e2ad94664e6110f2a835186e798b7889a553f881eb519f103a85ebd95bf78",
+    "components/ui/include/ui/core/input_reader.hpp": "30f550771c39c30679bb60b8ca5a8853c38ffd0534e7d11da790416986f2d0bf",
+    "components/ui/include/ui/core/iscreen.hpp": "097bc1e8c231623092c07b8c08be6c4b803dff0bfd9fc481788e9a44592826cd",
+    "components/ui/include/ui/core/morse_alphabet.hpp": "e8da97add8f7e527ff8c5873a1c46f73ec9fc164a914fbe0c7fa6f5cba9e11c9",
+    "components/ui/include/ui/core/morse_timing.hpp": "16aa589b3955cb7c284157cfca648b8599b66bcab8ea7eed052a53c7ff7bcdd7",
+    "components/ui/include/ui/core/navigator.hpp": "ff41c86dfc41988e821867a1907e6355af818f99b7988717e3474ddcf3a69651",
+    "components/ui/include/ui/core/screen.hpp": "ee9f7ae9ee62237610f2f04c31f858822b763338c8b393b8effb82384ef73b42",
+    "components/ui/include/ui/core/screen_host.hpp": "87f8117d8c33eb2c6119c22330c9d78bfcea91908d534139bd3cc15bcd4f5a3f",
+    "components/ui/include/ui/core/screen_intent.hpp": "b59901319464f8500434e1171f3621fec7e9daa6969f89c6ad0cd0166b119eb4",
+    "components/ui/include/ui/menu/display_mvp.hpp": "86961a8890b2d40a89c88ea0a2d5308544353d6a0335a16529be818363f99347",
+    "components/ui/include/ui/open_chat/open_chat_mvp.hpp": "11900670a6a94dd16441a45c7e67a428bec546f5af70bdbc672ca0478573a342",
+    "components/ui/include/ui/setting/boot_sound_dialog.hpp": "529764f1e6d7082a6acac2af642ecd47017488fb48fdfe6f3933eae1e8749263",
+    "components/ui/include/ui/setting/firmware_info_dialog.hpp": "841a1f094d8630034a76e3a87727db897cf9184d95ded6e2dd0113f0934c7c06",
+    "components/ui/include/ui/setting/language_dialog.hpp": "25a858489040ad219fef3b1d1394aa68a9ec75ba0ef24a71c5808f6f3ba3e737",
+    "components/ui/include/ui/setting/menu_mvp.hpp": "5447849c120eb0b704e7c50dec99c5ff1871505408969cb350a760570ac2b36b",
+    "components/ui/include/ui/setting/sound_settings_mvp.hpp": "431a9ada9cb68c4b16839e647e3416bb5688d5b97d631f8e5ebdc9b0d8a76b62",
+    "components/ui/include/ui/talk/input_mvp.hpp": "3a0ab863fb9447813f84011429178ca6df060e5ff31a3a3cc42085d94cc34e30",
+    "components/ui/include/ui/talk/romaji_kana.hpp": "81583c68d0e897e33b97861091c6e27829dc6468535d9156c3d0aa7782f897ad",
+    "components/ui/include/ui/widgets/choice_dialog_mvp.hpp": "2edb412086c1fff8adf14a2b682d18b4ee7a9894b315d47ee556dc6ff0954c50",
+    "components/ui/include/ui/widgets/confirm_dialog.hpp": "f0ceb387223be789fdf291ff1e29f9947c1551255c6b559528c54925446c0a57",
+    "components/ui/include/ui/widgets/status_panel.hpp": "d0f35ad92b329ef0856667c9ff0b509bc0d397722c75d2b1f34351c2f6fe9f62",
+    "components/ui/include/ui/widgets/text_modal.hpp": "8491fc9ae0ab4542cb9011f896adb5232ef2bf884768c11f05782d403a7dafa6",
+    "components/ui/include/ui/widgets/theme.hpp": "db57d9d4ce9a7b30df27675fb981dfc42bf3aa13e25b95a4ee45dc44d1c71fae",
+    "components/ui/include/ui/wifi/setting_mvp.hpp": "c47ad0fb658a45740a574c738093ffcdc1928f5631296bba974610c00b0b3080",
+    "components/ui/src/core/input_reader.cpp": "1e77fc2ffdde2aba0bb061316f15ea259eb892d0cbc2147c255efecad0eea7c3",
+    "components/ui/src/core/navigator.cpp": "5d21b92c46b54288b145d4291399f387c9d6ff039e3937e0116834bb3c9768b6",
+    "components/ui/src/core/screen_host.cpp": "0ad26ab9286b6c0f146165d16876d6d2477ac78fbce4060e48853229bd3e4b48",
+    "components/ui/src/widgets/theme.cpp": "160269174eafce3126b995502e6d61adcf561a89a4c01f231c44b5f89348d57c",
+    "main/runtime/app_shell.cpp": "54436ca5e7a2b93819ac1cf75469c4df0a797cbecc82a9d5dc91df414309ad27",
+    "main/runtime/app_shell.hpp": "144c47b374dc0991757ec303570c445068933998f6db8e73b9366ca59571bf07",
+    "main/runtime/app_worker.cpp": "d794ded7f9b823953670e756c592e69a513576dc004e666942a1a077fdf5ee58",
+    "main/runtime/app_worker.hpp": "7ca0a5c95e1435eeb7f2788adc35ce20d48fa58bd5e1b8d71baa6a50ac9e272c",
+    "main/runtime/app_worker_connectivity_policy.hpp": "0ed44b7f4455c6e32d44dc6cfc5a55161ac9fa9b81a8090250546cc32ef301a2",
+    "main/runtime/app_worker_network_policy.hpp": "ef25a1e9b05e0c92e5b05e1196f1b2407340bc98e5da7b880055f9099d5ee5de",
+    "main/runtime/arcade/assets.hpp": "1fdcdc3bd517d580d2d170d76d493c9efb2445c6c13163bbadfc603a6c57c4ce",
+    "main/runtime/arcade/game.hpp": "e0d555e68eab8945645c71853c97dda2648f698ae314082d84dda6fdcf4ce638",
+    "main/runtime/arcade/score_kind.hpp": "e6f328917906457ddd3fadfd046b10b76124be2b78c7aad8835f376a47591529",
+    "main/runtime/arcade/score_store.hpp": "c834347349e6815d574a94456410a68bb8d9f4bfca3b9b02b1c9bae2422ab883",
+    "main/runtime/arcade/typing_word_game.hpp": "f59043cf491d320d49c4d4187bedbe4635e333023bd1f740305b7942a630c519",
+    "main/runtime/ble_background_guard.cpp": "b79ff9ab174b3d5df9ad5950f2472bd15fe2b9467a921676f19760832903f435",
+    "main/runtime/ble_background_guard.hpp": "07e9dfc174080af9cffee1025bad173793d5e627d99186cf0dea84aef5c771d1",
+    "main/runtime/boot_flags.cpp": "d295f0a476832e81eb4875d3e213abe5c2235e024d4bee45e084c4c1425de3b8",
+    "main/runtime/boot_flags.hpp": "ba27de725d150384b9c3d64de859601b944d4efc7737624dbd49dc7d5a15d2c6",
+    "main/runtime/boot_flow.cpp": "b17866accae7d7ad3acc457be23ceac3afd36f53e172a1973f24477490ac241c",
+    "main/runtime/boot_flow.hpp": "114189f67cf03727965c8afbb8f0a07389132744dbba5a0819ecd18eb24c94e8",
+    "main/runtime/canvas_base64_policy.hpp": "03255fe9711dfeed54a4c111faa94ac00d392eef582884fc2778222b81a44872",
+    "main/runtime/chat_history_policy.hpp": "a03c35697935d0d3f22c8f98d020b53f1a64e7ed112f61a0e2060255839ac5f5",
+    "main/runtime/cq_action_retry_policy.hpp": "837de6cc41553077345f4a682b71212a8144c37e6bb47f24e440d2e37e6644d7",
+    "main/runtime/cq_status_failure_policy.hpp": "b7e5633292865db029cf05943c6cd52d1a94ec99cb5aec1476c46f01bafa9d45",
+    "main/runtime/cq_text_retry_policy.hpp": "a5a295c7f835666d8b209e6e3e20d37dd8295bd30087e39ef25b71848fde6f4e",
+    "main/runtime/crash_report_stream_policy.hpp": "3e1eea0d8736c28335dae78990c8768356c5ac33379a7aeaea920bc74ca84a14",
+    "main/runtime/crash_reporter.cpp": "63c77e9b108dc29362badb640cc45af2a04e031e925255e08edb03a75ec03117",
+    "main/runtime/crash_reporter.hpp": "b24ee0b38e89f054a508f9d5cccc8d8689e976d11426085f9bfaebca8903b8d5",
+    "main/runtime/debug_harness.cpp": "7cf7eafa218b941b4dfe6a2b439e9b269fa99efe8e0572f617fb09b61c0af920",
+    "main/runtime/debug_harness.hpp": "b3904d2e53a9f00fc519351aaade8167cb5b3d6c14e5c8f8fa86fc7b1a3d43e5",
+    "main/runtime/diagnostic_log.cpp": "cadfadc974b98d534661310996d761183b2c2b54c6badcbb9e13f219c397e84b",
+    "main/runtime/diagnostic_log_model.hpp": "2c1daf738a22644cc5976614e21f77d223c1ffca6d1af804f40a2f63f933f802",
+    "main/runtime/display_facade.cpp": "8e340908419d1f3f0fbb7ccc155a6fdd5af4c8027918feb2fbedaf0a17763184",
+    "main/runtime/display_facade.hpp": "d7226a5a561f6fbec011dd356662e1b32e33802691b02ad186539426103314b1",
+    "main/runtime/ehagaki_browse_policy.hpp": "c773dd403c4435e5c3c8e2f0188cc3a41513f85c20651ca7523eeac862451112",
+    "main/runtime/ehagaki_draft_store.cpp": "872637cc19ba4fea8a4d139470d3c63d1c90886fc60d128737a6bc046d8f77b0",
+    "main/runtime/ehagaki_draft_store.hpp": "3efe8ce1f459fa3efb0bc11f1b53019258391a900d78387016b81b3bbeeb18ef",
+    "main/runtime/ehagaki_persistent_cache.cpp": "2ba8509a67df83070704970e7ba1338674b1c52e68ab063496fc904bb4487732",
+    "main/runtime/ehagaki_persistent_cache.hpp": "3a0e4d757432094438283da12795522deed24fb1d56d9f0a1e95f59a544e1122",
+    "main/runtime/ehagaki_post.hpp": "27543defac53394dc3a67a03441870e53f145e67645f245ef935d9c9e0d4c3b8",
+    "main/runtime/ehagaki_text_reveal.hpp": "314ee493b44271c4405dc8035601509e0f2646578965c2eca507b53b6738a12a",
+    "main/runtime/heap_checkpoint.hpp": "af97e39ca7ce3f916bc94664a014a74a92c9682251d2f70370bfb89db2a00231",
+    "main/runtime/low_battery_guard.cpp": "d5167b45ae3327e55796d974c3eb649382fdc8601eacb0240be293f598426332",
+    "main/runtime/low_battery_guard.hpp": "f3dd2bb49516679b88b6d1137d47781c7c2d7839056a3f223beb7a99ff9ceade",
+    "main/runtime/memory_profiler.hpp": "786627c23b021886c18b6b1efe222a1fb839f45542d52fcbb138c024777a3b78",
+    "main/runtime/morse_audio_dma.cpp": "d9fbd86c76b22f139022a3ab755c86bc5278ec56bf1f6627ae13bb8461acac42",
+    "main/runtime/morse_timing_store.cpp": "3dbad472f8db268d281969d0e27ed80adacf059b232533abb5e4ba1328187991",
+    "main/runtime/morse_timing_store.hpp": "02cf4f5851b227823adab59ac59682b07b41279b6a20f866200893d989e49172",
+    "main/runtime/notification_runtime.cpp": "0c00eb445ff38e27c9a2b671e5687dc3d471c0938f541f7ba2ae4a500be2db07",
+    "main/runtime/notification_runtime.hpp": "5b2bbe619b603c1995bc3520ae1f93465f8dab8e4ab87e67d115082205d59fb5",
+    "main/runtime/ota_minimal.cpp": "0c20281b3a10f0a601af31daf5413bc458e32bd264708a6ebb69d8fb7d4aa184",
+    "main/runtime/ota_minimal.hpp": "b01aff924635bb463ec91260037b11db3ec8f46c2d49a0904c32fe23c48f62b3",
+    "main/runtime/panic_handler.cpp": "163b8f828f0addc3624cd500dcf5d5af83301c520435c9d6903d1f528cfeace3",
+    "main/runtime/panic_handler.hpp": "6c21ff475bbd0deeba7ae6f074d2cb80eb871b7a73a004032ef084cf973af636",
+    "main/runtime/power_save_runtime.cpp": "730f71c0b48045d45b18dc639187e2823315d8b01895c0e1b7920c6cce4915a9",
+    "main/runtime/power_save_runtime.hpp": "bb8c8f80bcf8bb6137837501990c69f876124b2c6996ac942b7db838c57cb414",
+    "main/runtime/read_cache_codec.hpp": "0db57e9fc130e62121a8c0acbe35d27bf08e85d01faf5548443735caf9bd7992",
+    "main/runtime/read_cache_store.cpp": "c6e42b24287b5a9f5d141369ab2fd234b10c507e5d4836d7a81298516743df30",
+    "main/runtime/read_cache_store.hpp": "fba5820d1eacb3baa5f055a574ae487c73cba04b9b17db86d467f7e04ea1cecb",
+    "main/runtime/realtime_control_retry_policy.hpp": "d9d5d948e3ee65ec9e495b6078ee6154f6b9b18cd7cc8eaca2542cd533ed8a25",
+    "main/runtime/runtime_diagnostics.cpp": "5af80c4ac347518150cc7c00c887583c9423ce566fb9e233832be7be4c765d56",
+    "main/runtime/runtime_diagnostics.hpp": "ee61cf54cac00efcbec1c3e76243b01c495f8f0c688238f6745ab2685e71b542",
+    "main/runtime/screens/app_shell_screens.hpp": "c45df1762aed522d12b93274fadb3a7f133c4de25104756578714bd7bf4091f9",
+    "main/runtime/screens/arcade_screen.cpp": "b9bcc4021a888b99c1a74a668272334417c471a1e218841876246f6012c7fb05",
+    "main/runtime/screens/arcade_screen.hpp": "3a14c16c44ce1eb834c7858117569ce2994f893e1f5a3e804b04e32a35949806",
+    "main/runtime/screens/composer_screen.hpp": "31eeae1e475baa2fab0e0898bb357ad99f434bf29ab148fad66e0f2dca0f7cca",
+    "main/runtime/screens/contact_book_screen.hpp": "7e64c62c4749cc8dca7a9a633438f3dec5d9e109c25cbc0c0ac82dfed70e012c",
+    "main/runtime/screens/cq_chat_screen.hpp": "795cf148240b289e699122c862b2bbd55b4d4d5d19946ea37f5ccdaa6f09b8c6",
+    "main/runtime/screens/draw_screen.hpp": "33fe612eec3011261b1127d08a3eb3f2f3c4f1cd61b10ccf88ffa78db3bba261",
+    "main/runtime/screens/ehagaki_screen.hpp": "d43fea90193f964d9a7db6931bf436103ae4e0c114393247c9e21111451eecf1",
+    "main/runtime/screens/factory_setup_screen.hpp": "9408384344cd7303c916b163fb728cc7964744da628bb1b4ddd3bf80e86cf9cf",
+    "main/runtime/screens/game_screen.cpp": "e33b3dc52760e5289f075207dc99be6c52a13a8dacfd0c6f7303094b1755038e",
+    "main/runtime/screens/game_screen.hpp": "2db286a9462a346e5bbab6c5aa079631057d9fd3eb64a713ad52cd6ed439fc54",
+    "main/runtime/screens/menu_screen.cpp": "aa74b89363d5f8b2ce84fb37583290d8feccb1ab454c67d4edf99f3982afc1e8",
+    "main/runtime/screens/menu_screen.hpp": "a7f1f5f33b787768dbf9fcbba89cd2f2026dbb795c33062ded72685d96ce47aa",
+    "main/runtime/screens/message_box_screen.hpp": "64c4e6fcc5d8b717df537cb2f5dc6c16832349e1263f80b30cd40e54f11fc414",
+    "main/runtime/screens/open_chat_screen.hpp": "90cc3f92fbf64ed08e7c1dc329115b87e1af3d9f13570bbc91494d22cca6bb79",
+    "main/runtime/screens/profile_info_screen.hpp": "2464e3dec864ab8d07d45b4a5bdc1a3c2c2c20aa5cedc6928a9a2bd7905816f9",
+    "main/runtime/screens/realtime_talk_screen.hpp": "2e791763fcc4f8f53e1bf3a59574e883c9771cdce9950f41642a297de025e810",
+    "main/runtime/screens/setting_screen.hpp": "570cd47c1374cb47bf994e864c66513fa263a11107154ba5cce944180f4459c4",
+    "main/runtime/screens/synth_screen.hpp": "bbbf41f77031e53fbb78353cf161bd7a721073db7b30140d2485f00682b1678c",
+    "main/runtime/screens/text_screen.hpp": "f920f27b81176ca7c7a29f42878c243319c8782311371eda9a45493c80cf1bcd",
+    "main/runtime/screens/tra_screen.hpp": "cdb5367a61d4dd76bdbcb157103b966e1caad76f3594706bb47867a35f813e0f",
+    "main/runtime/screens/wifi_setup_screen.hpp": "dfd464933bdbfd45269eef5ed85e3879d827c491840e567a4bad4853b4ebaa99",
+    "main/runtime/storage_service.cpp": "796959ac3ec5853111029dc67ba16fbb7082119d6c1e33c0a58b5a89af71a328",
+    "main/runtime/storage_service.hpp": "4bdb637d831a3957ab74ea877cb17bd4d1c866b5bdfc724c48b1d765095ef8df",
+    "main/runtime/wakeup_source_utils.hpp": "bc1dca25cfe6171ad5837ec0e16fa6705f479e1dd4cb4d6d83f7d059aa481ee9",
+    "main/runtime/wifi_event_group.cpp": "dfef8faeb0fe6c76179155d74de05c384ef376525d6f38bb8427cdcdfe745f69"
+  }
+}

@@ -1,0 +1,17 @@
+font_misaki_gothic8.cpp
+
+/*
+  Fontname: -FreeType-misaki_gothic-Regular-R-Normal--8-80-72-72-C-0-ISO10646-1
+  Copyright: (null)
+  Glyphs: 96/96
+  BBX Build Mode: 0
+*/
+
+font_mobus_custom7.cpp
+
+/*
+  Fontname: -Mobus-MobusCustom7-Regular-R-Normal--7-70-72-72-C-0-ISO10646-1
+  Copyright: (null)
+  Glyphs: 96/159
+  BBX Build Mode: 0
+*/

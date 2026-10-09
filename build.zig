@@ -14,6 +14,27 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run Core tests");
     test_step.dependOn(&run_tests.step);
 
+    const reference_module = b.createModule(.{ .root_source_file = b.path("examples/mobus/reference/main.zig"), .target = target, .optimize = optimize });
+    reference_module.addImport("mimoc_ui", module);
+    const reference_tests = b.addRunArtifact(b.addTest(.{ .root_module = reference_module }));
+    test_step.dependOn(&reference_tests.step);
+    b.step("check-mobus-reference", "Independent OLED equality and deterministic scenarios").dependOn(&reference_tests.step);
+    const reference_snapshot = b.addExecutable(.{ .name = "mobus-reference-snapshot", .root_module = b.createModule(.{ .root_source_file = b.path("examples/mobus/reference/snapshot.zig"), .target = target, .optimize = optimize }) });
+    reference_snapshot.root_module.addImport("mimoc_ui", module);
+    b.installArtifact(reference_snapshot);
+    const reference_run = b.addRunArtifact(reference_snapshot);
+    reference_run.addPassthruArgs();
+    b.step("mobus-reference-snapshot", "Write pinned Mo-Bus scenario as PBM or raw Mono1").dependOn(&reference_run.step);
+
+    const candidate_module = b.createModule(.{ .root_source_file = b.path("examples/mobus/design/main.zig"), .target = target, .optimize = optimize });
+    candidate_module.addImport("mobus_reference", reference_module);
+    const reference_diff = b.addSystemCommand(&.{"python3"});
+    reference_diff.addFileArg(b.path("tools/mobus_reference_diff.py"));
+    reference_diff.addArg("--snapshot");
+    reference_diff.addArtifactArg(reference_snapshot);
+    reference_diff.addPassthruArgs();
+    b.step("mobus-reference-diff", "Exact OLED pixel diff with expected/actual/XOR PBM").dependOn(&reference_diff.step);
+
     const embedded_step = b.step("check-embedded", "Compile RV32 freestanding smoke paths and footprint probe");
     const embedded_target = b.resolveTargetQuery(.{ .cpu_arch = .riscv32, .os_tag = .freestanding, .abi = .eabi });
     inline for (.{ "embedded_smoke", "ui_embedded_smoke", "widget_embedded_smoke", "footprint_embedded" }) |name| {
@@ -28,6 +49,29 @@ pub fn build(b: *std.Build) void {
         });
         embedded_step.dependOn(&object.step);
     }
+
+    const ref_c_target = b.resolveTargetQuery(.{ .ofmt = .c });
+    const ref_c_core = b.createModule(.{ .root_source_file = b.path("src/root.zig"), .target = ref_c_target, .optimize = .small, .link_libc = false });
+    const ref_c_view = b.createModule(.{ .root_source_file = b.path("examples/mobus/reference/main.zig"), .target = ref_c_target, .optimize = .small, .link_libc = false });
+    ref_c_view.addImport("mimoc_ui", ref_c_core);
+    const ref_c_module = b.createModule(.{ .root_source_file = b.path("examples/mobus/reference/portable_smoke.zig"), .target = ref_c_target, .optimize = .small, .link_libc = false });
+    ref_c_module.addImport("mobus_reference", ref_c_view);
+    const ref_c_object = b.addObject(.{ .name = "mobus_reference_c", .root_module = ref_c_module });
+    const ref_c_check = b.addSystemCommand(&.{"python3"});
+    ref_c_check.stdio = .inherit;
+    ref_c_check.has_side_effects = true;
+    ref_c_check.addFileArg(b.path("tools/check_mobus_reference_c.py"));
+    ref_c_check.addArg("--generated");
+    ref_c_check.addFileArg(ref_c_object.getEmittedBin());
+    ref_c_check.addArg("--zig-lib");
+    ref_c_check.addDirectoryArg(.zig_lib);
+    ref_c_check.addArg("--snapshot");
+    ref_c_check.addArtifactArg(reference_snapshot);
+    ref_c_check.addArg("--driver");
+    ref_c_check.addFileArg(b.path("integration/c_backend/reference_driver.c"));
+    ref_c_check.addArg("--outdir");
+    _ = ref_c_check.addOutputDirectoryArg("mobus-reference-c");
+    b.step("check-mobus-reference-c", "Compile original reference Zig as C and compare all native frames").dependOn(&ref_c_check.step);
 
     // C backend probes are opt-in and never enter the platform or default build.
     const c_zig_option = b.option([]const u8, "zig-c-backend", "Absolute path to isolated upstream 0.17.0 compiler with the ABI patch");
@@ -214,6 +258,8 @@ pub fn build(b: *std.Build) void {
             }),
         });
         studio.root_module.addImport("mimoc_ui", module);
+        studio.root_module.addImport("mobus_reference", reference_module);
+        studio.root_module.addImport("mobus_candidate", candidate_module);
         const demo_module = b.createModule(.{
             .root_source_file = b.path("examples/demo_view.zig"),
             .target = target,
@@ -238,6 +284,8 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }) });
         studio_tests.root_module.addImport("mimoc_ui", module);
+        studio_tests.root_module.addImport("mobus_reference", reference_module);
+        studio_tests.root_module.addImport("mobus_candidate", candidate_module);
         studio_tests.root_module.addImport("demo_view", demo_module);
         studio_tests.root_module.addImport("showcase", showcase_module);
         studio_tests.root_module.addImport("mobus_demo", mobus_module);
@@ -256,6 +304,10 @@ pub fn build(b: *std.Build) void {
             }),
         });
         snapshot.root_module.addImport("mimoc_ui", module);
+        snapshot.root_module.addImport("mobus_reference", reference_module);
+        snapshot.root_module.addImport("mobus_candidate", candidate_module);
+        const studio_snapshot_run = b.addRunArtifact(snapshot);
+        studio_snapshot_run.addPassthruArgs();
         snapshot.root_module.addImport("demo_view", demo_module);
         snapshot.root_module.addImport("showcase", showcase_module);
         snapshot.root_module.addImport("mobus_demo", mobus_module);
@@ -264,7 +316,7 @@ pub fn build(b: *std.Build) void {
         snapshot.root_module.linkFramework("Foundation", .{});
         snapshot.root_module.link_libc = true;
         b.installArtifact(snapshot);
-        const run_snapshot = b.addRunArtifact(snapshot);
+        const run_snapshot = studio_snapshot_run;
         const snapshot_step = b.step("studio-snapshot", "Write the Studio PBM snapshot to stdout");
         snapshot_step.dependOn(&run_snapshot.step);
     }
