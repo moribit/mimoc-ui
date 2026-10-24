@@ -1,3 +1,4 @@
+pub const presentation = @import("presentation.zig");
 pub const text_edit = @import("text_edit.zig");
 pub const geometry = @import("geometry.zig");
 pub const surface = @import("surface.zig");
@@ -20,6 +21,7 @@ pub const raster_compat = @import("renderers/compat.zig");
 pub const headless = @import("renderers/headless.zig");
 
 test {
+    _ = presentation;
     _ = @import("desktop_tests.zig");
     _ = @import("geometry.zig");
     _ = @import("renderers/mono1.zig");

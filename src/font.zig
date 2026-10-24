@@ -164,3 +164,30 @@ pub fn glyph(c_: u8) [5]u8 {
         else => glyph('?'),
     };
 }
+
+/// Pixel font composition with rotation about the text bounding rectangle.
+pub fn drawRotated(r: *Renderer, kind: Font, x: i16, y: i16, text: []const u8, on: bool, rotation: @import("presentation.zig").Rotation, opaque_bg: bool) void {
+    const width = measure(kind, text);
+    const height: i16 = metrics(kind, 0).height;
+    var cursor: i16 = 0;
+    var index: usize = 0;
+    while (index < text.len) {
+        const decoded = decode(text, index);
+        index += decoded.length;
+        const columns = glyph(if (decoded.scalar <= 127) @intCast(decoded.scalar) else '?');
+        const advance = metrics(kind, decoded.scalar).advance;
+        for (0..@intCast(height)) |yy| for (0..advance) |xx| {
+            const sx = cursor + @as(i16, @intCast(xx));
+            const sy: i16 = @intCast(yy);
+            const bit = xx < 5 and yy < 7 and columns[xx] & (@as(u8, 1) << @as(u3, @intCast(yy))) != 0;
+            const p: [2]i16 = switch (rotation) {
+                .deg0 => .{ sx, sy },
+                .deg90 => .{ height - 1 - sy, sx },
+                .deg180 => .{ width - 1 - sx, height - 1 - sy },
+                .deg270 => .{ sy, width - 1 - sx },
+            };
+            if (bit or opaque_bg) r.pixel(x + p[0], y + p[1], if (bit) on else !on);
+        };
+        cursor += advance;
+    }
+}

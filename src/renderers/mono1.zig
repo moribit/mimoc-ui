@@ -75,6 +75,40 @@ pub const Renderer = struct {
                 self.pixel(@intCast(@as(i32, x) + @as(i32, @intCast(col))), @intCast(@as(i32, y) + @as(i32, @intCast(row))), true);
         };
     }
+    /// Row-MSB bitmap with rotation and optional replacement of zero bits.
+    pub fn bitmapRotated(self: *Renderer, x: i16, y: i16, width: u8, height: u8, bytes: []const u8, rotation: @import("../presentation.zig").Rotation, replace: bool) void {
+        const stride = (@as(usize, width) + 7) / 8;
+        if (bytes.len < stride * height) return;
+        for (0..height) |yy| for (0..width) |xx| {
+            const sx: i16 = @intCast(xx);
+            const sy: i16 = @intCast(yy);
+            const on = bytes[yy * stride + xx / 8] & (@as(u8, 128) >> @as(u3, @intCast(xx % 8))) != 0;
+            const p: [2]i16 = switch (rotation) {
+                .deg0 => .{ sx, sy },
+                .deg90 => .{ @as(i16, height) - 1 - sy, sx },
+                .deg180 => .{ @as(i16, width) - 1 - sx, @as(i16, height) - 1 - sy },
+                .deg270 => .{ sy, @as(i16, width) - 1 - sx },
+            };
+            if (on or replace) self.pixel(x + p[0], y + p[1], on);
+        };
+    }
+    pub fn fillCircle(self: *Renderer, cx: i16, cy: i16, radius: i16, on: bool) void {
+        if (radius < 0) return;
+        var x = radius;
+        var y: i16 = 0;
+        var err: i16 = 1 - radius;
+        while (x >= y) {
+            self.hline(cx - x, cy + y, 2 * x + 1, on);
+            self.hline(cx - x, cy - y, 2 * x + 1, on);
+            self.hline(cx - y, cy + x, 2 * y + 1, on);
+            self.hline(cx - y, cy - x, 2 * y + 1, on);
+            y += 1;
+            if (err < 0) err += 2 * y + 1 else {
+                x -= 1;
+                err += 2 * (y - x) + 1;
+            }
+        }
+    }
     pub fn circle(self: *Renderer, cx: i16, cy: i16, radius: i16, on: bool) void {
         if (radius < 0) return;
         var x: i32 = radius;
@@ -101,4 +135,19 @@ test "primitives and clip" {
     try std.testing.expect(surface.get(2, 2));
     try std.testing.expect(surface.get(4, 4));
     try std.testing.expect(!surface.get(5, 4));
+}
+
+test "rotated bitmap replacement clips and preserves existing landscape path" {
+    var data: [1024]u8 = @splat(0);
+    var surface = try Mono1.init(&data, 64, 128);
+    var r = Renderer.init(&surface);
+    r.bitmapRotated(3, 4, 2, 3, &.{ 0x80, 0x40, 0xc0 }, .deg90, true);
+    try std.testing.expect(surface.get(5, 4));
+    try std.testing.expect(!surface.get(5, 5));
+    try std.testing.expect(surface.get(4, 5));
+    r.setClip(.{ .x = 0, .y = 0, .w = 4, .h = 5 });
+    r.bitmapRotated(3, 4, 2, 3, &.{ 0, 0, 0 }, .deg90, true);
+    try std.testing.expect(surface.get(5, 4));
+    try std.testing.expect(!surface.get(3, 4));
+    r.bitmapRotated(0, 0, 2, 3, &.{}, .deg0, true);
 }

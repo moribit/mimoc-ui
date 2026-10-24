@@ -9,6 +9,15 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    if (b.option(bool, "sdl", "Build optional cross-platform SDL3 bridge") orelse false) {
+        const desktop = b.createModule(.{ .root_source_file = b.path("src/platform/sdl/desktop.zig"), .target = target, .optimize = optimize });
+        const smoke = b.addExecutable(.{ .name = "mimoc-sdl-smoke", .root_module = b.createModule(.{ .root_source_file = b.path("examples/sdl_smoke.zig"), .target = target, .optimize = optimize, .link_libc = true }) });
+        smoke.root_module.addImport("desktop", desktop);
+        smoke.root_module.addCSourceFile(.{ .file = b.path("src/platform/sdl/desktop.c"), .flags = &.{ "-std=c11", "-DMIMOC_SDL_TEST" } });
+        smoke.root_module.linkSystemLibrary("SDL3", .{});
+        b.step("check-sdl", "Compile SDL3 window bridge").dependOn(&smoke.step);
+        b.step("test-sdl", "Run SDL3 window integration probe").dependOn(&b.addRunArtifact(smoke).step);
+    }
     const tests = b.addTest(.{ .root_module = module });
     const run_tests = b.addRunArtifact(tests);
     const test_step = b.step("test", "Run Core tests");

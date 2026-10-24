@@ -34,3 +34,8 @@ The [Mo-Bus UI review](docs/mobus-ui-review.md) covers variable-height lists, UT
 The [CH32V003 integration package](integration/ch32v003/README.md) builds against ch32fun_zig's real SSD1306 page API. [Static Flash/RAM measurements and the hardware verification gate](docs/milestone-7-progress.md) are recorded separately.
 
 Current limits: ASCII bitmap glyphs with one fallback glyph per unsupported UTF-8 codepoint, one root view, a single focus chain, vertical scrolling, and rectangle-based animation. Hardware integration is still pending physical verification; browser support remains future work.
+
+## SDL3 desktop presentation
+
+Optional macOS/Linux SDL3 window bridge and pixel-exact portrait presentation:
+[API, build options and headless integration probe](docs/sdl-desktop.md).
