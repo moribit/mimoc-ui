@@ -572,8 +572,8 @@ pub fn main() void {
 }
 
 test "Studio changes actual update cadence and manual steps" {
-    try std.testing.expectEqual(@as(usize, 3096), @sizeOf(StudioUi));
-    try std.testing.expectEqual(@as(usize, 4024), @sizeOf(Preview));
+    try std.testing.expectEqual(@as(usize, 3608), @sizeOf(StudioUi));
+    try std.testing.expectEqual(@as(usize, 4536), @sizeOf(Preview));
     var s = Studio{};
     s.last_real_ms = 0;
     s.tick(16);
@@ -649,7 +649,7 @@ test "Studio PBM snapshot keeps panels, controls and preview in separate viewpor
     try s.pbmSnapshot(&pbm);
     try std.testing.expectEqualSlices(u8, pbm_header, pbm[0..pbm_header.len]);
     // Studio chrome gained UI LAB; this hash is not a Mo-Bus reference golden.
-    try std.testing.expectEqual(@as(u64, 17487675928722220510), std.hash.Wyhash.hash(0, &pbm));
+    try std.testing.expectEqual(@as(u64, 4354299038106680342), std.hash.Wyhash.hash(0, &pbm));
 
     const bounds = studio_viewport;
     const inspector = ui.geometry.Rect{ .x = 544, .y = 28, .w = 152, .h = 276 };

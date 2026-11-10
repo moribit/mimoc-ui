@@ -18,6 +18,8 @@ pub const Node = struct {
     padding: u8 = 0,
     spacing: u8 = 0,
     alignment: Align = .start,
+    main_alignment: Align = .start,
+    stretch: bool = false,
     disabled: bool = false,
 };
 

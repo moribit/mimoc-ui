@@ -60,10 +60,10 @@ test "fixed memory footprints" {
     try std.testing.expectEqual(@as(usize, 8), @sizeOf(widgets.Knob));
     try std.testing.expectEqual(@as(usize, 24), @sizeOf(transition.Transition));
     if (@sizeOf(usize) == 8) {
-        try std.testing.expectEqual(@as(usize, 48), @sizeOf(v.Node));
-        try std.testing.expectEqual(@as(usize, 1096), @sizeOf(AnimatedUi));
+        try std.testing.expectEqual(@as(usize, 56), @sizeOf(v.Node));
+        try std.testing.expectEqual(@as(usize, 1224), @sizeOf(AnimatedUi));
         try std.testing.expectEqual(@as(usize, 48), @sizeOf(v.InPlaceBuilder(16)));
-        try std.testing.expectEqual(@as(usize, 2024), @sizeOf(rt.Runtime(.{ .max_nodes = 32, .max_animations = 4 })));
+        try std.testing.expectEqual(@as(usize, 2280), @sizeOf(rt.Runtime(.{ .max_nodes = 32, .max_animations = 4 })));
         try std.testing.expectEqual(@as(usize, 32), @sizeOf(scroll.VariableRange));
         try std.testing.expectEqual(@as(usize, 24), @sizeOf(widgets.Tuner));
     }
@@ -175,4 +175,50 @@ test "duplicate IDs are rejected" {
     try b.add(.{ .id = 2, .kind = .text, .text = "B" });
     b.end();
     try std.testing.expectError(error.DuplicateId, ui.finishView(&b));
+}
+
+test "row main centering and cross stretch respect padding and spacing" {
+    var b = v.Builder(4).init();
+    try b.begin(1, .row, 2, 3, .start);
+    b.nodes[0].main_alignment = .center;
+    b.nodes[0].stretch = true;
+    try b.add(.{ .id = 2, .kind = .rect, .min_size = .{ .w = 10, .h = 4 } });
+    try b.add(.{ .id = 3, .kind = .rect, .min_size = .{ .w = 7, .h = 6 } });
+    b.end();
+    @import("layout.zig").place(b.nodes[0..b.len], 0, .{ .w = 40, .h = 20 });
+    try std.testing.expectEqual(@as(i16, 10), b.nodes[1].frame.x);
+    try std.testing.expectEqual(@as(i16, 23), b.nodes[2].frame.x);
+    try std.testing.expectEqual(@as(i16, 2), b.nodes[1].frame.y);
+    try std.testing.expectEqual(@as(i16, 16), b.nodes[1].frame.h);
+}
+
+test "button centers text in both axes and matches explicit placement on every page" {
+    var b = v.Builder(4).init();
+    try b.begin(1, .stack, 0, 0, .start);
+    try b.add(.{ .id = 2, .kind = .button, .text = "OK", .min_size = .{ .w = 40, .h = 24 }, .alignment = .center, .main_alignment = .center });
+    b.end();
+    var ui = rt.Runtime(4){};
+    ui.viewport = .{ .w = 40, .h = 24 };
+    try ui.setView(&b);
+    ui.focused_id = null;
+    var actual: [120]u8 = undefined;
+    try headless.render(&ui, &actual, 40, 24);
+
+    var reference = v.Builder(4).init();
+    try reference.begin(1, .stack, 0, 0, .start);
+    try reference.add(.{ .id = 2, .kind = .rect, .min_size = .{ .w = 40, .h = 24 } });
+    const width = @import("font.zig").measure(.tiny5x7, "OK");
+    try reference.add(.{ .id = 3, .kind = .text, .text = "OK", .offset = .{ .x = @divTrunc(40 - width, 2), .y = 8 } });
+    reference.end();
+    var expected_ui = rt.Runtime(4){};
+    expected_ui.viewport = ui.viewport;
+    try expected_ui.setView(&reference);
+    var expected: [120]u8 = undefined;
+    try headless.render(&expected_ui, &expected, 40, 24);
+    try std.testing.expectEqualSlices(u8, &expected, &actual);
+    for (0..3) |page| {
+        var pixels: [40]u8 = undefined;
+        try headless.renderPage(&ui, &pixels, 40, @intCast(page));
+        try std.testing.expectEqualSlices(u8, actual[page * 40 ..][0..40], &pixels);
+    }
 }

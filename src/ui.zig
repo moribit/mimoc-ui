@@ -33,6 +33,10 @@ pub const Options = struct {
     padding: u8 = 0,
     spacing: u8 = 0,
     alignment: view.Align = .start,
+    main_alignment: view.Align = .start,
+    stretch: bool = false,
+    text_alignment: ?view.Align = null,
+    text_vertical_alignment: ?view.Align = null,
     size: geometry.Size = .{},
     offset: geometry.Point = .{},
     animation: animation.Animation = .{},
@@ -120,6 +124,8 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
                 return false;
             };
             var node = &self.builder.nodes[self.builder.len - 1];
+            node.main_alignment = options.main_alignment;
+            node.stretch = options.stretch;
             node.min_size = options.size;
             node.offset = options.offset;
             node.animation = options.animation;
@@ -210,7 +216,7 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
             self.textWith(logical, value, .{});
         }
         pub fn textWith(self: *Self, logical: Id, value: []const u8, options: Options) void {
-            self.add(.{ .id = self.id(logical), .kind = .text, .text = value, .min_size = options.size, .offset = options.offset, .animation = options.animation }, "Text");
+            self.add(.{ .id = self.id(logical), .kind = .text, .alignment = options.text_alignment orelse options.alignment, .main_alignment = options.text_vertical_alignment orelse .start, .text = value, .min_size = options.size, .offset = options.offset, .animation = options.animation }, "Text");
         }
         pub fn wrappedText(self: *Self, logical: Id, value: []const u8, width: i16) void {
             self.wrappedTextAt(logical, value, width, .{});
@@ -226,7 +232,7 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
         }
         /// Typed escape hatch for uncommon primitives; the low-level Builder remains available.
         pub fn primitive(self: *Self, logical: Id, kind: view.Kind, value: []const u8, options: Options) void {
-            self.add(.{ .id = self.id(logical), .kind = kind, .disabled = options.disabled, .text = value, .min_size = options.size, .offset = options.offset, .animation = options.animation, .padding = options.padding, .spacing = options.spacing, .alignment = options.alignment }, @tagName(kind));
+            self.add(.{ .id = self.id(logical), .kind = kind, .disabled = options.disabled, .text = value, .min_size = options.size, .offset = options.offset, .animation = options.animation, .padding = options.padding, .spacing = options.spacing, .alignment = options.alignment, .main_alignment = options.main_alignment, .stretch = options.stretch }, @tagName(kind));
         }
         pub fn divider(self: *Self, logical: Id, width: i16) void {
             self.add(.{ .id = self.id(logical), .kind = .divider, .min_size = .{ .w = width, .h = 1 } }, "Divider");
@@ -235,7 +241,7 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
             self.buttonWith(logical, label, .{});
         }
         pub fn buttonWith(self: *Self, logical: Id, label: []const u8, options: Options) void {
-            self.add(.{ .id = self.id(logical), .kind = .button, .disabled = options.disabled, .text = label, .min_size = options.size, .offset = options.offset, .animation = options.animation }, "Button");
+            self.add(.{ .id = self.id(logical), .kind = .button, .alignment = options.text_alignment orelse options.alignment, .main_alignment = options.text_vertical_alignment orelse .start, .disabled = options.disabled, .text = label, .min_size = options.size, .offset = options.offset, .animation = options.animation }, "Button");
         }
         /// Descriptor and its text remain application-owned and valid through rendering.
         pub fn textField(self: *Self, logical: Id, spec: *const @import("text_edit.zig").Field, options: Options) void {
@@ -243,7 +249,7 @@ pub fn Ui(comptime Id: type, comptime config: anytype) type {
             self.add(.{ .id = self.id(logical), .kind = .text_field, .disabled = options.disabled, .text = std.mem.asBytes(spec), .min_size = .{ .w = @max(24, options.size.w), .h = @max(20, options.size.h) }, .offset = options.offset }, "TextField");
         }
         pub fn pressable(self: *Self, logical: Id, label: []const u8, options: Options) void {
-            self.add(.{ .id = self.id(logical), .kind = .pressable, .disabled = options.disabled, .text = label, .min_size = options.size, .offset = options.offset }, "Pressable");
+            self.add(.{ .id = self.id(logical), .kind = .pressable, .alignment = options.text_alignment orelse options.alignment, .main_alignment = options.text_vertical_alignment orelse .start, .disabled = options.disabled, .text = label, .min_size = options.size, .offset = options.offset }, "Pressable");
         }
         pub fn checkbox(self: *Self, logical: Id, label: []const u8, checked: bool) void {
             self.add(.{ .id = self.id(logical), .kind = .checkbox, .text = label, .padding = @intFromBool(checked) }, "Checkbox");

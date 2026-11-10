@@ -416,7 +416,7 @@ pub fn Runtime(comptime config: anytype) type {
                 f.x = clampCoord(@as(i32, f.x) + shift.x);
                 f.y = clampCoord(@as(i32, f.y) + shift.y);
                 switch (node.kind) {
-                    .text => font.drawWith(self.fontProvider(), r, node.font, f.x, f.y, node.text, true),
+                    .text => font.drawWith(self.fontProvider(), r, node.font, layout.aligned(f.x, f.w, font.measureWith(self.fontProvider(), node.font, node.text), node.alignment), layout.aligned(f.y, f.h, if (self.fontProvider()) |p| p.line_height else font.metrics(node.font, 0).height, node.main_alignment), node.text, true),
                     .wrapped_text => wrap.drawWith(self.fontProvider(), r, node.font, f.x, f.y, node.text, f.w, if (self.fontProvider()) |p| p.line_height else if (node.spacing == 0) 8 else node.spacing),
                     .rect => r.rect(f, true),
                     .filled_rect => r.fillRect(f, true),
@@ -492,11 +492,15 @@ pub fn Runtime(comptime config: anytype) type {
                     },
                     .button, .pressable => {
                         const selected = self.focused_id != null and self.focused_id.? == node.id;
+                        const text_w = font.measureWith(self.fontProvider(), node.font, node.text);
+                        const text_h: i16 = if (self.fontProvider()) |p| p.line_height else font.metrics(node.font, 0).height;
+                        const tx = layout.aligned(f.x + 6, @max(0, f.w - 12), text_w, node.alignment);
+                        const ty = if (node.main_alignment == .start) f.y + 2 else layout.aligned(f.y + 1, @max(0, f.h - 2), text_h, node.main_alignment);
                         r.rect(f, true);
                         if (selected and f.w > 2 and f.h > 2) {
                             r.fillRect(.{ .x = f.x + 1, .y = f.y + 1, .w = f.w - 2, .h = f.h - 2 }, true);
-                            font.drawWith(self.fontProvider(), r, node.font, f.x + 6, f.y + 2, node.text, false);
-                        } else font.drawWith(self.fontProvider(), r, node.font, f.x + 6, f.y + 2, node.text, true);
+                            font.drawWith(self.fontProvider(), r, node.font, tx, ty, node.text, false);
+                        } else font.drawWith(self.fontProvider(), r, node.font, tx, ty, node.text, true);
                     },
                     else => {},
                 }

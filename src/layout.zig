@@ -85,7 +85,8 @@ pub fn placeWith(provider: anytype, nodes: []v.Node, index: usize, frame: g.Rect
     }
     const available = if (node.kind == .row) inner.w else inner.h;
     const flexible = if (spacers > 0) @max(0, @divTrunc(available - fixed - @max(0, count - 1) * @as(i16, node.spacing), spacers)) else 0;
-    var cursor: i16 = if (node.kind == .row) inner.x else inner.y;
+    const used = if (spacers > 0) available else add(fixed, @max(0, count - 1) * @as(i16, node.spacing));
+    var cursor = aligned(if (node.kind == .row) inner.x else inner.y, available, @min(available, used), node.main_alignment);
     i = index + 1;
     while (i < node.subtree_end) : (i = childNext(nodes, i)) {
         const size = measureWith(provider, nodes, i);
@@ -95,18 +96,22 @@ pub fn placeWith(provider: anytype, nodes: []v.Node, index: usize, frame: g.Rect
             .column => {
                 child.y = cursor;
                 child.h = if (is_spacer) flexible else size.h;
-                if (size.w == 0 or is_spacer) child.w = inner.w;
+                if (node.stretch or size.w == 0 or is_spacer) child.w = inner.w;
                 child.x = aligned(inner.x, inner.w, child.w, node.alignment);
                 cursor = add(cursor, add(child.h, node.spacing));
             },
             .row => {
                 child.x = cursor;
                 child.w = if (is_spacer) flexible else size.w;
-                if (size.h == 0 or is_spacer) child.h = inner.h;
+                if (node.stretch or size.h == 0 or is_spacer) child.h = inner.h;
                 child.y = aligned(inner.y, inner.h, child.h, node.alignment);
                 cursor = add(cursor, add(child.w, node.spacing));
             },
             .stack => {
+                if (node.stretch) {
+                    child.w = inner.w;
+                    child.h = inner.h;
+                }
                 child.x = aligned(inner.x, inner.w, child.w, node.alignment);
                 child.y = aligned(inner.y, inner.h, child.h, node.alignment);
             },
@@ -115,7 +120,7 @@ pub fn placeWith(provider: anytype, nodes: []v.Node, index: usize, frame: g.Rect
         placeWith(provider, nodes, i, child);
     }
 }
-fn aligned(start: i16, extent: i16, child: i16, alignment: v.Align) i16 {
+pub fn aligned(start: i16, extent: i16, child: i16, alignment: v.Align) i16 {
     return add(start, switch (alignment) {
         .start => 0,
         .center => @divTrunc(extent - child, 2),

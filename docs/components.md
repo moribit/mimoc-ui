@@ -18,3 +18,43 @@ Prefer one unique logical ID for each sibling. `var scope = ui.row(.controls, .{
 For application state, pass values into widget calls on every rebuild and react to `Action` IDs. Focus and presentation tracks refer to derived Node IDs; Navigation can save those IDs. A component should not retain a pointer to `Ui` beyond a rebuild. Bitmap and text slices must remain valid through rendering.
 
 Desktop widgets add `ui.textField(id, &application_field, options)` and `ui.pressable(id, label, options)`. Their borrowed state, input intents and disabled behavior are documented in [Desktop Foundation](desktop-foundation.md).
+
+### Text and layout alignment
+
+Use `buttonWith` to align a label within a larger button:
+
+```zig
+ui.buttonWith(.save, "SAVE", .{
+    .size = .{ .w = 80, .h = 24 },
+    .text_alignment = .center,
+    .text_vertical_alignment = .center,
+});
+```
+
+`textWith` and `pressable` accept the same text alignment options (`start`,
+`center`, `end`). For buttons, `alignment` is also a shorthand for horizontal
+text alignment. Defaults preserve the existing left inset and top inset.
+
+Containers use `alignment` for the cross axis. Rows and columns also accept
+`main_alignment` to position the whole group at the start, center, or end of the
+available main axis. `stretch = true` expands children across the cross axis;
+for a stack it expands children in both axes. Padding is excluded from the
+available area, and spacing remains between children. Flexible spacers consume
+remaining main-axis space before group alignment takes effect. Oversized groups
+stay anchored at the start.
+
+```zig
+var actions = ui.row(.actions, .{
+    .size = .{ .w = 128, .h = 24 },
+    .spacing = 4,
+    .main_alignment = .center,
+    .stretch = true,
+});
+defer actions.end();
+ui.buttonWith(.save, "SAVE", .{ .text_vertical_alignment = .center });
+ui.buttonWith(.cancel, "CANCEL", .{ .text_vertical_alignment = .center });
+```
+
+For low-level `Node` users, `alignment` controls horizontal text alignment and
+`main_alignment` controls vertical text alignment on text/button/pressable nodes.
+The added layout settings increase a desktop Node from 48 to 56 bytes.
