@@ -3,6 +3,9 @@
 zig-out/
 *.o
 
+# Local Python capture/converter bytecode
+__pycache__/
+
 # macOS
 *.dSYM/
 .DS_Store

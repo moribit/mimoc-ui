@@ -1,11 +1,11 @@
 {
-  "commit": "94873ec79bd70d2f38040d173f2f9c89853b5734",
+  "commit": "4b6705f62160e1849cd161f9515d507df90d23d2",
   "units": "logical pixels,128x64",
   "facade": [
     {
       "name": "render_localized_with_ascii_fallback",
       "source": "main/runtime/display_facade.cpp",
-      "line": 248,
+      "line": 249,
       "signature": "int render_localized_with_ascii_fallback(const char* text, int x, int y, bool draw)",
       "callers": [],
       "constants": [
@@ -26,7 +26,7 @@
     {
       "name": "display_render_ota_progress",
       "source": "main/runtime/display_facade.cpp",
-      "line": 363,
+      "line": 364,
       "signature": "void display_render_ota_progress(int percent, const char* phase)",
       "callers": [
         {
@@ -35,7 +35,7 @@
         },
         {
           "file": "main/runtime/app_shell.cpp",
-          "line": 2022
+          "line": 2027
         },
         {
           "file": "main/runtime/ota_minimal.cpp",
@@ -94,7 +94,7 @@
     {
       "name": "render_menu_home",
       "source": "main/runtime/display_facade.cpp",
-      "line": 412,
+      "line": 413,
       "signature": "void render_menu_home(const MenuRenderState& state)",
       "callers": [
         {
@@ -120,20 +120,20 @@
     {
       "name": "render_center_status",
       "source": "main/runtime/display_facade.cpp",
-      "line": 461,
+      "line": 462,
       "signature": "void render_center_status(const char* line1, const char* line2, bool english_only)",
       "callers": [
         {
           "file": "main/runtime/app_shell.cpp",
-          "line": 2102
+          "line": 2107
         },
         {
           "file": "main/runtime/app_shell.cpp",
-          "line": 2118
+          "line": 2123
         },
         {
           "file": "main/runtime/app_shell.cpp",
-          "line": 2314
+          "line": 2319
         },
         {
           "file": "main/runtime/screens/contact_book_screen.hpp",
@@ -153,31 +153,31 @@
         },
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 130
+          "line": 134
         },
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 822
+          "line": 831
         },
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 999
+          "line": 1008
         },
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1049
+          "line": 1058
         },
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1425
+          "line": 1579
         },
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1530
+          "line": 1684
         },
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1547
+          "line": 1701
         },
         {
           "file": "main/runtime/screens/factory_setup_screen.hpp",
@@ -288,7 +288,7 @@
     {
       "name": "render_offline_notice",
       "source": "main/runtime/display_facade.cpp",
-      "line": 476,
+      "line": 477,
       "signature": "void render_offline_notice()",
       "callers": [
         {
@@ -313,11 +313,11 @@
         },
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1047
+          "line": 1056
         },
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1543
+          "line": 1697
         },
         {
           "file": "main/runtime/screens/message_box_screen.hpp",
@@ -357,7 +357,7 @@
     {
       "name": "render_error_notice",
       "source": "main/runtime/display_facade.cpp",
-      "line": 488,
+      "line": 489,
       "signature": "void render_error_notice()",
       "callers": [
         {
@@ -382,7 +382,7 @@
     {
       "name": "render_blank_screen",
       "source": "main/runtime/display_facade.cpp",
-      "line": 500,
+      "line": 501,
       "signature": "void render_blank_screen()",
       "callers": [
         {
@@ -400,7 +400,7 @@
     {
       "name": "show_watch_display",
       "source": "main/runtime/display_facade.cpp",
-      "line": 531,
+      "line": 532,
       "signature": "WatchScreenResult show_watch_display()",
       "callers": [
         {
@@ -418,7 +418,7 @@
     {
       "name": "render_language_select",
       "source": "main/runtime/display_facade.cpp",
-      "line": 533,
+      "line": 534,
       "signature": "void render_language_select(const ui::language::ViewState& state)",
       "callers": [
         {
@@ -440,7 +440,7 @@
     {
       "name": "render_setup_morse_hello",
       "source": "main/runtime/display_facade.cpp",
-      "line": 542,
+      "line": 543,
       "signature": "void render_setup_morse_hello(int64_t started_us, int64_t now_us, int64_t dash_us)",
       "callers": [
         {
@@ -478,7 +478,7 @@
     {
       "name": "render_sound_settings",
       "source": "main/runtime/display_facade.cpp",
-      "line": 623,
+      "line": 624,
       "signature": "void render_sound_settings(const ui::soundsettings::ViewState& state)",
       "callers": [
         {
@@ -496,7 +496,7 @@
     {
       "name": "render_contact_book",
       "source": "main/runtime/display_facade.cpp",
-      "line": 632,
+      "line": 633,
       "signature": "void render_contact_book(const ui::contactbook::ViewState& state)",
       "callers": [
         {
@@ -529,7 +529,7 @@
     {
       "name": "render_message_box",
       "source": "main/runtime/display_facade.cpp",
-      "line": 654,
+      "line": 655,
       "signature": "void render_message_box(const ui::messagebox::ViewState& state, const char* notice)",
       "callers": [
         {
@@ -589,7 +589,7 @@
     {
       "name": "render_profile_info",
       "source": "main/runtime/display_facade.cpp",
-      "line": 760,
+      "line": 761,
       "signature": "void render_profile_info( const std::vector<std::pair<std::string, std::string>>& rows, int offset_y)",
       "callers": [
         {
@@ -620,7 +620,7 @@
     {
       "name": "render_wifi_list",
       "source": "main/runtime/display_facade.cpp",
-      "line": 785,
+      "line": 786,
       "signature": "void render_wifi_list(const std::vector<std::string>& rows, int selected, const char* title, bool english_only)",
       "callers": [
         {
@@ -684,7 +684,7 @@
     {
       "name": "render_setting_menu",
       "source": "main/runtime/display_facade.cpp",
-      "line": 827,
+      "line": 828,
       "signature": "void render_setting_menu(const SettingMenuRenderRow* rows, size_t row_count, int selected)",
       "callers": [
         {
@@ -732,7 +732,7 @@
     {
       "name": "render_factory_reset_confirm",
       "source": "main/runtime/display_facade.cpp",
-      "line": 893,
+      "line": 894,
       "signature": "void render_factory_reset_confirm(int selected)",
       "callers": [
         {
@@ -773,7 +773,7 @@
     {
       "name": "render_friend_request_confirm",
       "source": "main/runtime/display_facade.cpp",
-      "line": 918,
+      "line": 919,
       "signature": "void render_friend_request_confirm(const std::string& nickname, int selected)",
       "callers": [
         {
@@ -811,12 +811,12 @@
     {
       "name": "render_ehagaki_public_confirm",
       "source": "main/runtime/display_facade.cpp",
-      "line": 948,
+      "line": 949,
       "signature": "void render_ehagaki_public_confirm(int selected)",
       "callers": [
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1363
+          "line": 1517
         }
       ],
       "constants": [
@@ -847,12 +847,12 @@
     {
       "name": "render_ehagaki_post_confirm",
       "source": "main/runtime/display_facade.cpp",
-      "line": 972,
+      "line": 973,
       "signature": "void render_ehagaki_post_confirm()",
       "callers": [
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1331
+          "line": 1485
         }
       ],
       "constants": [],
@@ -875,12 +875,12 @@
     {
       "name": "render_ehagaki_menu",
       "source": "main/runtime/display_facade.cpp",
-      "line": 988,
+      "line": 989,
       "signature": "void render_ehagaki_menu(int selected)",
       "callers": [
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 443
+          "line": 452
         }
       ],
       "constants": [
@@ -904,12 +904,12 @@
     {
       "name": "render_ehagaki_viewer",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1008,
+      "line": 1009,
       "signature": "int render_ehagaki_viewer(const uint8_t* bitmap, size_t bitmap_size, const char* title, const char* body, int page, int total, bool front, int text_scroll_line, int flip_inset, bool show_page_overlay, const char* sync_notice, int64_t text_reveal_elapsed_us)",
       "callers": [
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1022
+          "line": 1031
         }
       ],
       "constants": [
@@ -966,7 +966,7 @@
     {
       "name": "render_text_input",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1116,
+      "line": 1117,
       "signature": "void render_text_input(const char* title, const std::string& value, char cursor_char, bool secret)",
       "callers": [],
       "constants": [
@@ -990,7 +990,7 @@
     {
       "name": "render_wifi_text_input",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1152,
+      "line": 1153,
       "signature": "void render_wifi_text_input(const char* title, const std::string& value, int select_x, int select_y, bool secret)",
       "callers": [
         {
@@ -1036,7 +1036,7 @@
     {
       "name": "render_friend_code_input",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1185,
+      "line": 1186,
       "signature": "void render_friend_code_input(const std::string& value, int select_x, int select_y)",
       "callers": [
         {
@@ -1067,7 +1067,7 @@
     {
       "name": "render_open_chat_selector",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1218,
+      "line": 1219,
       "signature": "void render_open_chat_selector( const ui::openchat::RoomSelectorViewState& state)",
       "callers": [
         {
@@ -1085,7 +1085,7 @@
     {
       "name": "render_open_chat_composer",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1227,
+      "line": 1228,
       "signature": "void render_open_chat_composer(const ui::openchat::ComposerViewState& state)",
       "callers": [
         {
@@ -1121,7 +1121,7 @@
     {
       "name": "render_talk_input",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1262,
+      "line": 1263,
       "signature": "void render_talk_input(const ui::talk::InputViewState& state, bool cursor_on, const std::string& status_line, bool status_persistent, int64_t language_overlay_until_us, int64_t now_us, bool invert, int x_offset)",
       "callers": [
         {
@@ -1168,16 +1168,16 @@
     {
       "name": "render_ehagaki_text_input",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1309,
-      "signature": "void render_ehagaki_text_input(const ui::talk::InputViewState& state, bool cursor_on, const std::string& header_label, size_t current_chars, size_t max_chars, int64_t language_overlay_until_us, int64_t now_us)",
+      "line": 1310,
+      "signature": "void render_ehagaki_text_input(const ui::talk::InputViewState& state, bool cursor_on, const std::string& header_label, size_t current_chars, size_t max_chars, int64_t language_overlay_until_us, int64_t now_us, bool ascii_header)",
       "callers": [
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1229
+          "line": 1260
         }
       ],
       "constants": [
-        "const bool japanese = ui::current_lang() == ui::Lang::Ja;",
+        "const bool japanese = ui::current_lang() == ui::Lang::Ja && !ascii_header;",
         "const int header_y = japanese ? 5 : 2;",
         "const int divider_y = japanese ? 17 : 14;",
         "const int content_y = japanese ? 19 : 16;",
@@ -1216,7 +1216,7 @@
     {
       "name": "render_realtime_talk",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1372,
+      "line": 1373,
       "signature": "void render_realtime_talk(const ui::talk::InputViewState& state, bool cursor_on, const std::string& remote_text, const std::string& status_line, int64_t language_overlay_until_us, int64_t now_us)",
       "callers": [
         {
@@ -1256,7 +1256,7 @@
     {
       "name": "render_realtime_scan",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1409,
+      "line": 1410,
       "signature": "void render_realtime_scan(const std::vector<RealtimePeerRow>& rows, int selected, const std::string& status_line, const std::string& peer_name, RealtimeScanMode mode)",
       "callers": [
         {
@@ -1323,7 +1323,7 @@
     {
       "name": "render_open_chat_room",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1505,
+      "line": 1506,
       "signature": "void render_open_chat_room( const std::string& room_label, const std::vector<display::renderer::OpenChatRoomMessage>& messages)",
       "callers": [
         {
@@ -1346,7 +1346,7 @@
     {
       "name": "render_step_composer",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1514,
+      "line": 1515,
       "signature": "void render_step_composer(const std::vector<ComposerStepRender>& steps, int cursor, int playhead, int current_note, const std::string& instrument_label, int tempo, bool playing)",
       "callers": [
         {
@@ -1388,7 +1388,7 @@
     {
       "name": "render_tra_launcher",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1559,
+      "line": 1560,
       "signature": "void render_tra_launcher(int selected)",
       "callers": [
         {
@@ -1432,7 +1432,7 @@
     {
       "name": "render_synth_sequencer",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1603,
+      "line": 1604,
       "signature": "void render_synth_sequencer(const uint16_t track_masks[6], const uint16_t track_accents[6], int selected_track, int selected_step, int playhead, bool playing, int current_note, int tempo, uint8_t enabled_tracks, int header_focus, int dialog_mode, int pattern_slot, bool confirm_yes, int edit_page, int active_pages, uint8_t sound_preset, int page_editor_item, int sound_editor_track, int sound_editor_field)",
       "callers": [
         {
@@ -1553,14 +1553,19 @@
     {
       "name": "render_canvas_side_menu",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1815,
-      "signature": "void render_canvas_side_menu(int menu_selected, bool white, int stroke_size, int active_draw_mode = -1, int menu_focus = 1, int left_menu_selected = 0, bool can_undo = false, bool can_redo = false, bool stroke_menu_visible = false)",
+      "line": 1831,
+      "signature": "void render_canvas_side_menu(int menu_selected, bool white, int stroke_size, int active_draw_mode = -1, int menu_focus = 1, int left_menu_selected = 0, bool can_undo = false, bool can_redo = false, bool stroke_menu_visible = false, bool ehagaki_layout = false, bool rect_filled = false)",
       "callers": [],
       "constants": [
         "const bool enabled =",
         "const uint16_t fg = 0xFFFF;",
         "const uint16_t bg = active ? 0xFFFF : 0x0000;",
         "const uint16_t fg = active ? 0x0000 : 0xFFFF;",
+        "constexpr uint16_t drop[] = {0x010, 0x010, 0x038,",
+        "const uint16_t bit = 1u << x;",
+        "const bool interior =",
+        "const int y = 15 + i * 11;",
+        "const bool selected = rect_filled == (i == 1);",
         "const int y = 15 + i * 11;"
       ],
       "drawing": [
@@ -1578,6 +1583,11 @@
         "sprite.drawLine(cx - 2, cy - 4, cx + 1, cy - 4, fg)",
         "sprite.drawLine(cx - 2, cy, cx - 2, cy + 2, fg)",
         "sprite.drawLine(cx + 1, cy, cx + 1, cy + 2, fg)",
+        "sprite.drawPixel(x, y, fg)",
+        "sprite.drawPixel(cx - 4, cy - 4, fg)",
+        "sprite.drawPixel(cx + 3, cy - 4, fg)",
+        "sprite.drawPixel(cx - 4, cy + 3, fg)",
+        "sprite.drawPixel(cx + 3, cy + 3, fg)",
         "sprite.setFont(&mobus_fonts::MobusCustom7())",
         "sprite.setTextColor(fg, 0x0000)",
         "sprite.drawCenterString(\"ok\", cx, cy - 4)",
@@ -1588,11 +1598,18 @@
         "sprite.drawPixel(cx, cy, fg)",
         "sprite.drawLine(cx - 4, cy + 3, cx + 4, cy - 3, fg)",
         "sprite.drawRect(cx - 4, cy - 4, 8, 8, fg)",
+        "sprite.drawPixel(cx - 3 + x, cy - 3 + y, fg)",
         "sprite.fillRect(cx - 4, cy - 4, 8, 8, fg)",
+        "sprite.drawPixel(cx - 5 + x, cy - 4 + y, 0xFFFF)",
         "sprite.drawRect(cx - 5, cy - 4, 10, 8, fg)",
         "sprite.fillRect(cx - 4, cy - 3, 4, 6, 0xFFFF)",
         "sprite.fillRect(cx, cy - 3, 4, 6, 0x0000)",
         "sprite.drawRect(cx - 6, cy - 5, 12, 10, white ? 0xFFFF : 0x7BEF)",
+        "sprite.fillRect(96, 8, 14, 29, 0)",
+        "sprite.drawRect(96, 8, 14, 29, 0xFFFF)",
+        "sprite.fillRect(98, y - 4, 10, 9, 0xFFFF)",
+        "sprite.drawRect(100, y - 3, 7, 7, color)",
+        "sprite.fillRect(100, y - 3, 7, 7, color)",
         "sprite.fillRect(96, 8, 14, 40, 0x0000)",
         "sprite.drawRect(96, 8, 14, 40, 0xFFFF)",
         "sprite.fillRect(98, y - 4, 10, 9, 0xFFFF)",
@@ -1604,7 +1621,7 @@
     {
       "name": "render_draw_canvas",
       "source": "main/runtime/display_facade.cpp",
-      "line": 1913,
+      "line": 1988,
       "signature": "void render_draw_canvas(const uint8_t* canvas, size_t canvas_size, int cursor_x, int cursor_y, bool has_anchor, int anchor_x, int anchor_y, const std::string& overlay_label, int64_t overlay_until_us, int64_t now_us, int draw_mode, bool menu_visible, int menu_selected, bool white, int stroke_size)",
       "callers": [
         {
@@ -1643,16 +1660,16 @@
     {
       "name": "render_ehagaki_canvas",
       "source": "main/runtime/display_facade.cpp",
-      "line": 2001,
-      "signature": "void render_ehagaki_canvas(const uint8_t* canvas, size_t canvas_size, int cursor_x, int cursor_y, bool has_anchor, int anchor_x, int anchor_y, const std::string& overlay_label, int64_t overlay_until_us, int64_t now_us, int draw_mode, bool menu_visible, int menu_selected, bool white, int stroke_size, int active_draw_mode, int menu_focus, int left_menu_selected, bool can_undo, bool can_redo, bool stroke_menu_visible)",
+      "line": 2076,
+      "signature": "void render_ehagaki_canvas( const uint8_t* canvas, size_t canvas_size, int cursor_x, int cursor_y, bool has_anchor, int anchor_x, int anchor_y, const std::string& overlay_label, int64_t overlay_until_us, int64_t now_us, int draw_mode, bool menu_visible, int menu_selected, bool white, int stroke_size, int active_draw_mode, int menu_focus, int left_menu_selected, bool can_undo, bool can_redo, bool stroke_menu_visible, bool rect_filled, const mobus::runtime::ehagaki::CanvasOverlay* canvas_overlay)",
       "callers": [
         {
           "file": "main/runtime/screens/ehagaki_screen.hpp",
-          "line": 1305
+          "line": 1445
         }
       ],
       "constants": [
-        "void render_ehagaki_canvas(const uint8_t* canvas, size_t canvas_size,",
+        "const uint8_t* canvas, size_t canvas_size, int cursor_x, int cursor_y,",
         "static constexpr int kCanvasW = 122;",
         "static constexpr int kCanvasH = 58;",
         "static constexpr int kOffsetX = 3;",
@@ -1666,20 +1683,56 @@
         "const int left = std::min(anchor_x, cursor_x);",
         "const int right = std::max(anchor_x, cursor_x);",
         "const int top = std::min(anchor_y, cursor_y);",
-        "const int bottom = std::max(anchor_y, cursor_y);"
+        "const int bottom = std::max(anchor_y, cursor_y);",
+        "const bool selecting =",
+        "const int y = 15 + i * 11;",
+        "const bool selected = canvas_overlay->option == (i == 1);",
+        "const int y = 15 + i * 11;",
+        "const bool selected = canvas_overlay->option == (i == 1);",
+        "const bool modal = canvas_overlay &&",
+        "const int width = render_localized_with_ascii_fallback("
       ],
       "drawing": [
         "sprite.fillRect(0, 0, 128, 64, 0)",
         "sprite.drawRect(kOffsetX - 1, kOffsetY - 1, kCanvasW + 2, kCanvasH + 2, 0xFFFF)",
         "sprite.drawPixel(kOffsetX + x, kOffsetY + y, pixel_white(x, y) ? 0x0000 : 0xFFFF)",
         "sprite.drawPixel(kOffsetX + x, kOffsetY + y, 0xFFFF)",
+        "sprite.setTextColor(0xFFFF, 0)",
+        "sprite.fillRect(96, 8, 14, 29, 0)",
+        "sprite.drawRect(96, 8, 14, 29, 0xFFFF)",
+        "sprite.fillRect(98, y - 4, 10, 9, 0xFFFF)",
+        "sprite.drawPixel(103 - font_width(font) / 2 + xx, y - font_height(font) / 2 + yy, selected ? 0 : 0xFFFF)",
+        "sprite.fillRect(96, 8, 14, 29, 0)",
+        "sprite.drawRect(96, 8, 14, 29, 0xFFFF)",
+        "sprite.fillRect(98, y - 4, 10, 9, 0xFFFF)",
+        "sprite.drawLine(100, y, 106, y, color)",
+        "sprite.drawLine(103, y - 3, 103, y + 3, color)",
+        "sprite.drawPixel(101, y - 1, color)",
+        "sprite.drawPixel(101, y + 1, color)",
+        "sprite.drawPixel(105, y - 1, color)",
+        "sprite.drawPixel(105, y + 1, color)",
+        "sprite.drawPixel(102, y - 2, color)",
+        "sprite.drawPixel(104, y - 2, color)",
+        "sprite.drawPixel(102, y + 2, color)",
+        "sprite.drawPixel(104, y + 2, color)",
+        "sprite.drawRect(100, y - 3, 5, 5, color)",
+        "sprite.fillRect(102, y - 1, 5, 5, selected ? 0xFFFF : 0)",
+        "sprite.drawRect(102, y - 1, 5, 5, color)",
+        "sprite.drawRect(kOffsetX + cursor_x, kOffsetY + cursor_y, canvas_overlay->width, canvas_overlay->height, 0xFFFF)",
+        "sprite.fillRect(18, 12, 92, 40, 0)",
+        "sprite.drawRect(18, 12, 92, 40, 0xFFFF)",
+        "sprite.setTextColor(0xFFFF, 0)",
+        "sprite.drawCenterString(\"CLEAR ALL?\", 64, 18)",
+        "sprite.setTextColor(canvas_overlay->confirm_yes ? 0xFFFF : 0, canvas_overlay->confirm_yes ? 0 : 0xFFFF)",
+        "sprite.drawCenterString(\"NO\", 43, 37)",
+        "sprite.setTextColor(canvas_overlay->confirm_yes ? 0 : 0xFFFF, canvas_overlay->confirm_yes ? 0xFFFF : 0)",
+        "sprite.drawCenterString(\"YES\", 84, 37)",
         "sprite.fillRoundRect(34, 21, 60, 22, 3, 0xFFFF)",
         "sprite.drawRoundRect(34, 21, 60, 22, 3, 0x0000)",
-        "sprite.setTextColor(0x0000, 0xFFFF)",
-        "sprite.drawCenterString(overlay_label.c_str(), 64, 25)"
+        "sprite.setTextColor(0x0000, 0xFFFF)"
       ],
       "delegates": [
-        "set_localized_ui_font"
+        "set_english_ui_font"
       ],
       "dynamic_tokens": [
         "now_us"
@@ -1688,7 +1741,7 @@
     {
       "name": "render_game_trainer",
       "source": "main/runtime/display_facade.cpp",
-      "line": 2102,
+      "line": 2283,
       "signature": "void render_game_trainer(const std::string& target, const std::string& morse, const std::string& decoded, int cleared, int total, float elapsed_s, bool show_hint, int64_t now_us)",
       "callers": [
         {
@@ -1728,7 +1781,7 @@
     {
       "name": "render_game_clear",
       "source": "main/runtime/display_facade.cpp",
-      "line": 2139,
+      "line": 2320,
       "signature": "void render_game_clear(float elapsed_s, const std::string& best_record, bool new_record)",
       "callers": [
         {
@@ -1760,7 +1813,7 @@
     {
       "name": "render_typing_select",
       "source": "main/runtime/display_facade.cpp",
-      "line": 2183,
+      "line": 2364,
       "signature": "void render_typing_select(bool word_selected)",
       "callers": [
         {
@@ -1788,7 +1841,7 @@
     {
       "name": "render_typing_word",
       "source": "main/runtime/display_facade.cpp",
-      "line": 2200,
+      "line": 2381,
       "signature": "void render_typing_word(const char* target, unsigned letter_index, unsigned question, const char* morse, char wrong_letter)",
       "callers": [
         {
@@ -1816,7 +1869,7 @@
     {
       "name": "render_typing_word_result",
       "source": "main/runtime/display_facade.cpp",
-      "line": 2227,
+      "line": 2408,
       "signature": "void render_typing_word_result(unsigned score, unsigned misses, unsigned flow, unsigned best)",
       "callers": [
         {
@@ -1840,7 +1893,7 @@
     {
       "name": "render_low_battery_warning",
       "source": "main/runtime/display_facade.cpp",
-      "line": 2246,
+      "line": 2427,
       "signature": "void render_low_battery_warning(int battery_mv)",
       "callers": [
         {
@@ -1864,7 +1917,7 @@
     {
       "name": "render_low_battery_charging_standby",
       "source": "main/runtime/display_facade.cpp",
-      "line": 2266,
+      "line": 2447,
       "signature": "void render_low_battery_charging_standby(int battery_mv, int resume_mv)",
       "callers": [
         {
@@ -1891,7 +1944,7 @@
     {
       "name": "render_arcade",
       "source": "main/runtime/display_facade.cpp",
-      "line": 2285,
+      "line": 2466,
       "signature": "void render_arcade(const mobus::runtime::arcade::Game& game, uint32_t best, bool new_record, uint32_t celebration_frame)",
       "callers": [
         {
@@ -2424,7 +2477,7 @@
     "components/ui/src/core/navigator.cpp": "5d21b92c46b54288b145d4291399f387c9d6ff039e3937e0116834bb3c9768b6",
     "components/ui/src/core/screen_host.cpp": "0ad26ab9286b6c0f146165d16876d6d2477ac78fbce4060e48853229bd3e4b48",
     "components/ui/src/widgets/theme.cpp": "160269174eafce3126b995502e6d61adcf561a89a4c01f231c44b5f89348d57c",
-    "main/runtime/app_shell.cpp": "54436ca5e7a2b93819ac1cf75469c4df0a797cbecc82a9d5dc91df414309ad27",
+    "main/runtime/app_shell.cpp": "238843f6358af2393799848133872be78f4449f947ae38c8dc04a4cad3d2b230",
     "main/runtime/app_shell.hpp": "144c47b374dc0991757ec303570c445068933998f6db8e73b9366ca59571bf07",
     "main/runtime/app_worker.cpp": "d794ded7f9b823953670e756c592e69a513576dc004e666942a1a077fdf5ee58",
     "main/runtime/app_worker.hpp": "7ca0a5c95e1435eeb7f2788adc35ce20d48fa58bd5e1b8d71baa6a50ac9e272c",
@@ -2453,8 +2506,15 @@
     "main/runtime/debug_harness.hpp": "b3904d2e53a9f00fc519351aaade8167cb5b3d6c14e5c8f8fa86fc7b1a3d43e5",
     "main/runtime/diagnostic_log.cpp": "cadfadc974b98d534661310996d761183b2c2b54c6badcbb9e13f219c397e84b",
     "main/runtime/diagnostic_log_model.hpp": "2c1daf738a22644cc5976614e21f77d223c1ffca6d1af804f40a2f63f933f802",
-    "main/runtime/display_facade.cpp": "8e340908419d1f3f0fbb7ccc155a6fdd5af4c8027918feb2fbedaf0a17763184",
-    "main/runtime/display_facade.hpp": "d7226a5a561f6fbec011dd356662e1b32e33802691b02ad186539426103314b1",
+    "main/runtime/display_facade.cpp": "e89536d47e0f55f5ef724a149ebb461f701a25168276579be32bd75e9cd422ea",
+    "main/runtime/display_facade.hpp": "e4c7a883e2dc1f8542ebc4c2a8fc29bbd05ab1d95c4d29f099c8d9cc95341d67",
+    "main/runtime/ehagaki/canvas_bitmap.hpp": "0d035fd6472d18e337418ee020c60d59db10447940bf0ba0f10bc12e9b604033",
+    "main/runtime/ehagaki/canvas_editor_controller.hpp": "c68a455a9883cb5542473d9e6e27e29310a5b42a99bc04b85fd30fcd3723fb6e",
+    "main/runtime/ehagaki/canvas_history.hpp": "2ea73a7dc9bc54ed3d1f5aa4d77fa77cb6427a24d4fe91a34a435fb823a628f7",
+    "main/runtime/ehagaki/canvas_katakana.hpp": "e81e9a00f83ae4fb1308e619a686f5e1f8ec407d484e698d62d45e15854dcd41",
+    "main/runtime/ehagaki/canvas_selection.hpp": "58a5270aa78608d035ddfb6bb070b6f36e1fcff13ac01d2e090bcfe21fe622b0",
+    "main/runtime/ehagaki/canvas_text.hpp": "49e1176521b6d8f5c8eba0ebec0b6a3d6c771bc3fbfd3b946929fb5371d31ee9",
+    "main/runtime/ehagaki/canvas_tools.hpp": "d94dd8e95bb84de132f3008be4b24f4be539e76d78a03933dc18f89593ee8e21",
     "main/runtime/ehagaki_browse_policy.hpp": "c773dd403c4435e5c3c8e2f0188cc3a41513f85c20651ca7523eeac862451112",
     "main/runtime/ehagaki_draft_store.cpp": "872637cc19ba4fea8a4d139470d3c63d1c90886fc60d128737a6bc046d8f77b0",
     "main/runtime/ehagaki_draft_store.hpp": "3efe8ce1f459fa3efb0bc11f1b53019258391a900d78387016b81b3bbeeb18ef",
@@ -2490,7 +2550,7 @@
     "main/runtime/screens/contact_book_screen.hpp": "7e64c62c4749cc8dca7a9a633438f3dec5d9e109c25cbc0c0ac82dfed70e012c",
     "main/runtime/screens/cq_chat_screen.hpp": "795cf148240b289e699122c862b2bbd55b4d4d5d19946ea37f5ccdaa6f09b8c6",
     "main/runtime/screens/draw_screen.hpp": "33fe612eec3011261b1127d08a3eb3f2f3c4f1cd61b10ccf88ffa78db3bba261",
-    "main/runtime/screens/ehagaki_screen.hpp": "d43fea90193f964d9a7db6931bf436103ae4e0c114393247c9e21111451eecf1",
+    "main/runtime/screens/ehagaki_screen.hpp": "595769d465bd2cd7843d2f783ed0c2b8c31fb61a67a7b2b5d685abe20839d7e8",
     "main/runtime/screens/factory_setup_screen.hpp": "9408384344cd7303c916b163fb728cc7964744da628bb1b4ddd3bf80e86cf9cf",
     "main/runtime/screens/game_screen.cpp": "e33b3dc52760e5289f075207dc99be6c52a13a8dacfd0c6f7303094b1755038e",
     "main/runtime/screens/game_screen.hpp": "2db286a9462a346e5bbab6c5aa079631057d9fd3eb64a713ad52cd6ed439fc54",

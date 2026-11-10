@@ -9,7 +9,7 @@ pub fn main(init: std.process.Init) !void {
     if (args.next()) |mode| {
         if (std.mem.eql(u8, mode, "lab")) {
             studio.lab = true;
-            studio.preview_scale = 4;
+            studio.preview_scale = 3;
             if (args.next()) |name| {
                 for (@import("mobus_reference").catalog.scenarios, 0..) |scenario, i| {
                     if (std.mem.eql(u8, name, scenario.name)) studio.lab_scenario = i;

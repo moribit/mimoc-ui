@@ -5,6 +5,17 @@ pub fn main(init: std.process.Init) !void {
     _ = args.next();
     const name = args.next() orelse "menu/default";
     const out = std.Io.File.stdout();
+    if (std.mem.eql(u8, name, "--coverage")) {
+        for (ref.catalog.scenarios) |s| {
+            for ([_][]const u8{ @tagName(ref.catalog.feature(s)), ref.catalog.surface(s), @tagName(s.verification), s.name }, 0..) |field, i| {
+                if (i > 0) try out.writeStreamingAll(init.io, "\t");
+                try out.writeStreamingAll(init.io, field);
+            }
+            try out.writeStreamingAll(init.io, "\n");
+        }
+        if (!ref.catalog.gate()) return error.ProductCoverageGate;
+        return;
+    }
     if (std.mem.eql(u8, name, "--inventory")) {
         for (ref.catalog.scenarios) |s| {
             try out.writeStreamingAll(init.io, s.name);

@@ -2,7 +2,7 @@
 const ui = @import("mimoc_ui");
 const std = @import("std");
 const assets = @import("glyphs.zig");
-pub const Kind = enum(u8) { custom7, font2, misaki8 };
+pub const Kind = enum(u8) { custom7, font2, misaki8, japan8, japan12, b12 };
 pub const Font = struct {
     kind: Kind,
     printing: bool = false,
@@ -16,6 +16,9 @@ pub const Font = struct {
             .custom7 => 7,
             .font2 => 16,
             .misaki8 => 7,
+            .japan8 => 9,
+            .japan12 => 13,
+            .b12 => 12,
         } };
     }
     fn advance(ctx: ?*anyopaque, cp: u21) u8 {
@@ -87,5 +90,20 @@ test "converted provider preserves actual ASCII/Unicode metrics and fallback" {
                 try std.testing.expectEqual(provider.measureText(line.bytes), line.width);
             }
         }
+    }
+}
+
+test "additional original Unicode providers retain captured metrics and masks" {
+    for ([_]Kind{ .japan8, .japan12, .b12 }) |kind| {
+        var font = Font{ .kind = kind };
+        const cp: u21 = if (kind == .b12) 'ソ' else '沖';
+        const glyph = font.glyph(cp).?;
+        try std.testing.expectEqual(glyph.height, font.provider().line_height);
+        try std.testing.expectEqual(glyph.advance, font.provider().advance(cp));
+        var mask: [128]u8 = undefined;
+        font.provider().raster_fn(font.provider().context, cp, &mask);
+        const expected = assets.masks[glyph.ink];
+        try std.testing.expectEqualSlices(u8, expected, mask[0..expected.len]);
+        for (mask[expected.len..]) |byte| try std.testing.expectEqual(@as(u8, 0), byte);
     }
 }

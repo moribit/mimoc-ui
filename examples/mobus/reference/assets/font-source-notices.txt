@@ -1,17 +1,240 @@
-font_misaki_gothic8.cpp
+Original font source notices, pinned Mo-Bus 4b6705f62160e1849cd161f9515d507df90d23d2 and hashed LovyanGFX.
 
+font_mobus_custom7.cpp
+/*
+  Fontname: -Mobus-MobusCustom7-Regular-R-Normal--7-70-72-72-C-0-ISO10646-1
+  Copyright: (null)
+  Glyphs: 96/159
+  BBX Build Mode: 0
+*/
+font_misaki_gothic8.cpp
 /*
   Fontname: -FreeType-misaki_gothic-Regular-R-Normal--8-80-72-72-C-0-ISO10646-1
   Copyright: (null)
   Glyphs: 96/96
   BBX Build Mode: 0
 */
-
-font_mobus_custom7.cpp
-
+font_u8g2_b12_japanese1.cpp
 /*
-  Fontname: -Mobus-MobusCustom7-Regular-R-Normal--7-70-72-72-C-0-ISO10646-1
-  Copyright: (null)
-  Glyphs: 96/159
+  Fontname: -Efont-Biwidth-Medium-R-Normal--12-120-75-75-P-60-ISO10646-1
+  Copyright: (c) Copyright 2000-2003 /efont/ The Electronic Font Open Laboratory.
+  Glyphs: 1283/22759
+  BBX Build Mode: 0
+*/
+lgfx_font_japan.c
+/*
+  Fontname: -FreeType-IPAexGothic-Medium-R-Normal--12-120-72-72-P-103-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexGothic-Medium-R-Normal--16-160-72-72-P-138-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexGothic-Medium-R-Normal--20-200-72-72-P-174-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexGothic-Medium-R-Normal--24-240-72-72-P-210-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexGothic-Medium-R-Normal--28-280-72-72-P-244-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexGothic-Medium-R-Normal--32-320-72-72-P-277-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexGothic-Medium-R-Normal--36-360-72-72-P-311-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexGothic-Medium-R-Normal--40-400-72-72-P-346-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexGothic-Medium-R-Normal--8-80-72-72-P-75-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAGothic-Medium-R-Normal--12-120-72-72-P-102-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAGothic-Medium-R-Normal--16-160-72-72-P-138-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAGothic-Medium-R-Normal--20-200-72-72-P-174-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAGothic-Medium-R-Normal--24-240-72-72-P-210-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAGothic-Medium-R-Normal--28-280-72-72-P-244-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAGothic-Medium-R-Normal--32-320-72-72-P-276-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAGothic-Medium-R-Normal--36-360-72-72-P-310-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAGothic-Medium-R-Normal--40-400-72-72-P-345-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAGothic-Medium-R-Normal--8-80-72-72-P-75-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexMincho-Medium-R-Normal--12-120-72-72-P-103-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexMincho-Medium-R-Normal--16-160-72-72-P-138-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexMincho-Medium-R-Normal--20-200-72-72-P-174-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexMincho-Medium-R-Normal--24-240-72-72-P-210-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexMincho-Medium-R-Normal--28-280-72-72-P-245-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexMincho-Medium-R-Normal--32-320-72-72-P-278-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexMincho-Medium-R-Normal--36-360-72-72-P-313-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexMincho-Medium-R-Normal--40-400-72-72-P-348-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAexMincho-Medium-R-Normal--8-80-72-72-P-71-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2019. You must accept 
+  Glyphs: 4427/11691
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAMincho-Medium-R-Normal--12-120-72-72-P-108-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAMincho-Medium-R-Normal--16-160-72-72-P-140-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAMincho-Medium-R-Normal--20-200-72-72-P-176-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAMincho-Medium-R-Normal--24-240-72-72-P-212-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAMincho-Medium-R-Normal--28-280-72-72-P-248-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAMincho-Medium-R-Normal--32-320-72-72-P-282-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAMincho-Medium-R-Normal--36-360-72-72-P-316-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAMincho-Medium-R-Normal--40-400-72-72-P-350-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
+  BBX Build Mode: 0
+*/
+/*
+  Fontname: -FreeType-IPAMincho-Medium-R-Normal--8-80-72-72-P-78-ISO10646-1
+  Copyright: Copyright(c) Information-technology Promotion Agency, Japan (IPA), 2003-2011. You must accept 
+  Glyphs: 4425/11158
   BBX Build Mode: 0
 */

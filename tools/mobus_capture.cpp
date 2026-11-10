@@ -12,7 +12,22 @@
 #include <display/renderer/contact_renderer.hpp>
 #include <display/renderer/open_chat_renderer.hpp>
 #include <ui/widgets/confirm_dialog.hpp>
+#include <ui/setting/language_dialog.hpp>
+#include <ui/open_chat/open_chat_mvp.hpp>
 #include "confirm_capture.inc"
+#include <memory_caps.hpp>
+namespace mobus::memory { inline PsramString make_psram_string(const std::string& s){return s;} inline bool equals_string(const PsramString& a,const std::string& b){return a==b;} }
+#include <u8g2_b12_japanese1_font.hpp>
+#include <ui/contact/message_box_mvp.hpp>
+#include <ui/talk/input_mvp.hpp>
+#include "runtime/ehagaki/canvas_text.hpp"
+#include "runtime/ehagaki/canvas_tools.hpp"
+#include "runtime/ehagaki_browse_policy.hpp"
+#include "runtime/ehagaki_text_reveal.hpp"
+#include "runtime/chat_history_policy.hpp"
+inline uint16_t utf8_to_u16_codepoint(const std::string& str) {uint32_t cp=0;for(unsigned char c:str){if(c<128)return c;if(c>=0xe0)cp=c&15;else if(c>=0xc0)cp=c&31;else cp=(cp<<6)|(c&63);}return cp;}
+inline int64_t esp_timer_get_time(){return 500000;}
+namespace mobus::display_runtime { inline void display_panel_on(){} }
 #include "setting_capture.inc"
 
 extern "C" time_t time(time_t* p) {
@@ -34,7 +49,8 @@ void save(lgfx::LGFX_Sprite& s, const std::string& path) {
     lgfx::LGFX_Device device;
     device.setPanel(&panel);
     device.setRotation(2);
-    s.pushSprite(&device, 0, 0);
+    if(capture_panel_bg)device.fillScreen(0xFFFFFFu);
+    s.pushSprite(&device, capture_present_x, 0);
     uint8_t data[1024] = {};
     for (int y=0;y<64;y++) for(int x=0;x<128;x++)
         if(device.readPixel(x,y)) data[(y/8)*128+x] |= 1 << (y%8);
@@ -47,6 +63,7 @@ int main(int argc, char** argv) {
     setenv("TZ", "UTC", 1); tzset();
     std::filesystem::create_directories(out);
     auto frame = [&](const char* name, auto render) {
+        capture_present_x=0;capture_panel_bg=false;
         sprite.deleteSprite(); sprite.setColorDepth(8); sprite.createSprite(128,64);
         sprite.setTextSize(1); sprite.setTextDatum(lgfx::textdatum_t::top_left);
         sprite.setTextWrap(false); sprite.setTextColor(0xffff,0); sprite.setCursor(0,0);
@@ -118,14 +135,16 @@ int main(int argc, char** argv) {
     // Original drawBitmap reads 90 bytes from an 87-byte array. Do not execute
     // undefined behavior or turn arbitrary host memory into a golden baseline.
     frame("text/blank",[&]{render_blank_screen();});
+    #include "product_capture.inc"
     // Glyph masks are derived from the actual font rasterizer, not redrawn.
     // Both drawString and print origins are captured, including opaque pixels.
     std::ofstream f(out+"/glyphs.bin",std::ios::binary);
-    const lgfx::IFont* fonts[]={&mobus_fonts::MobusCustom7(),&lgfx::fonts::Font2,&mobus_fonts::MisakiGothic8()};
+    const lgfx::IFont* fonts[]={&mobus_fonts::MobusCustom7(),&lgfx::fonts::Font2,&mobus_fonts::MisakiGothic8(),&lgfx::fonts::lgfxJapanGothic_8,&lgfx::fonts::lgfxJapanGothic_12,&mobus_fonts::U8g2B12Japanese1()};
     std::vector<uint32_t> cps; for(uint32_t cp=32;cp<127;cp++)cps.push_back(cp);
     for(uint32_t cp=0x30a0;cp<=0x30ff;cp++)cps.push_back(cp);
     cps.push_back(0xfffd);
-    const std::string jp="はづきこんにちは 沖縄私CQやりませんか？戻る長押し送信受信ソウシン　モドル";
+    #include "product_strings.inc"
+    const std::string jp=product_strings+"はづきこんにちは 沖縄私CQやりませんか？戻る長押し送信受信ソウシン　モドル";
     for(size_t i=0;i<jp.size();) {
         uint8_t c=jp[i++]; uint32_t cp=c; int n=0;
         if(c>=0xe0){cp=c&15;n=2;}else if(c>=0xc0){cp=c&31;n=1;}
@@ -133,12 +152,12 @@ int main(int argc, char** argv) {
         if(std::find(cps.begin(),cps.end(),cp)==cps.end())cps.push_back(cp);
     }
     auto byte=[&](uint8_t b){f.put(static_cast<char>(b));};
-    for(int font=0;font<3;font++)for(int mode=0;mode<2;mode++)for(uint32_t cp:cps) {
+    for(int font=0;font<6;font++)for(int mode=0;mode<2;mode++)for(uint32_t cp:cps) {
         char text[5]={};
         if(cp<128)text[0]=cp;
         else if(cp<2048){text[0]=0xc0|(cp>>6);text[1]=0x80|(cp&63);}
         else {text[0]=0xe0|(cp>>12);text[1]=0x80|((cp>>6)&63);text[2]=0x80|(cp&63);}
-        sprite.setFont(fonts[font]);sprite.setTextColor(0xffff,0);sprite.setTextWrap(false);
+        sprite.setFont(font==5 && cp>=0x30a0 && cp<=0x30ff ? select_chat_glyph_style(text).font : fonts[font]);sprite.setTextColor(0xffff,0);sprite.setTextWrap(false);
         const int measured=sprite.textWidth(text);
         uint8_t ink[128]={},opaque[128]={};int advance=0;
         for(int bg=0;bg<2;bg++) {

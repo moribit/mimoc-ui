@@ -104,6 +104,11 @@ pub const Studio = struct {
             view.primitive(4, .divider, "", .{ .size = .{ .w = 688, .h = 1 }, .offset = .{ .x = 8, .y = 23 } });
             view.primitive(5, .rect, "", .{ .size = .{ .w = 528, .h = 276 }, .offset = .{ .x = 8, .y = 28 } });
             addText(&view, 6, "PREVIEW", 16, 34);
+            if (self.lab) {
+                for ([_][]const u8{ "MENU", "CONTACTS", "QSP", "CQ", "SYNTH", "EHAGAKI", "SETTINGS", "WI-FI" }, 0..) |caption, i| {
+                    addButton(&view, @intCast(120 + i), caption, 16 + @as(i16, @intCast(i % 4)) * 128, 50 + @as(i16, @intCast(i / 4)) * 16, 120);
+                }
+            }
             {
                 var panel = view.panelAt(200, "INSPECTOR", .{ .w = 152, .h = 276 }, .{ .padding = 6, .spacing = 8 }, .{ .x = 544, .y = 28 });
                 defer panel.end();
@@ -112,15 +117,17 @@ pub const Studio = struct {
                     reference.render(scenario, reference.fixtures.defaults, &self.legacy_pixels);
                     candidate.render(scenario, reference.fixtures.defaults, &self.candidate_pixels);
                     view.text(10, "MO-BUS UI LAB");
-                    view.text(11, @tagName(scenario.screen));
-                    view.text(12, scenario.name);
+                    view.text(11, @tagName(reference.catalog.feature(scenario)));
+                    view.text(21, reference.catalog.surface(scenario));
+                    const slash = std.mem.lastIndexOfScalar(u8, scenario.name, '/') orelse 0;
+                    view.text(12, scenario.name[slash + 1 ..]);
                     view.text(13, @tagName(scenario.verification));
-                    view.button(112, "NEXT SCREEN");
+                    view.button(112, "NEXT FEATURE");
+                    view.button(115, "NEXT SURFACE");
                     view.button(113, "NEXT SCENARIO");
                     view.button(114, @tagName(self.lab_compare));
                     view.text(14, label(&self.diff_label, "DIFF {d} PIXELS", .{reference.mismatch(&self.legacy_pixels, &self.candidate_pixels)}));
-                    view.text(15, "REFERENCE FROZEN");
-                    view.text(16, "CANDIDATE: SEED");
+
                     view.text(17, "UP/DOWN: SCENARIO");
                     view.text(18, "LEFT/RIGHT: MODE");
                     if (self.hovered) |p| {
@@ -216,18 +223,22 @@ pub const Studio = struct {
     fn controlId(key: u16) ?u16 {
         const View = ui.ui.Ui(u16, StudioUi.configuration);
         const root = View.rootId(1);
-        for (100..115) |control| {
+        for (100..128) |control| {
             const raw: u16 = @intCast(control);
             if (View.childId(root, raw) == key) return raw;
             if (raw >= 112 and View.childId(View.childId(root, 200), raw) == key) return raw;
         }
         return null;
     }
+    fn previewArea(self: *const Studio) ui.geometry.Rect {
+        return if (self.lab) .{ .x = preview_area.x, .y = 88, .w = preview_area.w, .h = 212 } else preview_area;
+    }
     fn previewOrigin(self: *const Studio) ui.geometry.Point {
         const scale: i16 = if (self.lab and self.lab_compare == .side_by_side) 2 else self.preview_scale;
+        const area = self.previewArea();
         return .{
-            .x = preview_area.x + @divTrunc(preview_area.w - (if (self.lab and self.lab_compare == .side_by_side) @as(i16, 256) else 128) * scale, 2),
-            .y = preview_area.y + @divTrunc(preview_area.h - 64 * scale, 2),
+            .x = area.x + @divTrunc(area.w - (if (self.lab and self.lab_compare == .side_by_side) @as(i16, 256) else 128) * scale, 2),
+            .y = area.y + @divTrunc(area.h - 64 * scale, 2),
         };
     }
     fn compose(self: *Studio) void {
@@ -251,7 +262,7 @@ pub const Studio = struct {
         var r = ui.mono1.Renderer.init(&surface);
         const scale: i16 = if (self.lab and self.lab_compare == .side_by_side) 2 else self.preview_scale;
         const origin = self.previewOrigin();
-        r.fillRect(preview_area, false);
+        r.fillRect(self.previewArea(), false);
         r.rect(.{ .x = origin.x - 2, .y = origin.y - 2, .w = 128 * scale + 4, .h = 64 * scale + 4 }, true);
         var preview_surface = ui.surface.Mono1.init(&self.preview_pixels, 128, 64) catch unreachable;
         for (0..64) |y| for (0..128) |x| {
@@ -353,7 +364,7 @@ pub const Studio = struct {
             106 => self.overlay = !self.overlay,
             107 => self.preview_scale = switch (self.preview_scale) {
                 1 => 2,
-                2 => 4,
+                2 => if (self.lab) 3 else 4,
                 else => 1,
             },
             108 => {
@@ -370,15 +381,17 @@ pub const Studio = struct {
             111 => {
                 self.lab = !self.lab;
                 self.overlay = false;
-                if (self.lab) self.preview_scale = 4;
+                if (self.lab) self.preview_scale = 3;
             },
             112 => {
-                const screen = reference.catalog.scenarios[self.lab_scenario].screen;
-                const next: reference.catalog.Screen = @fromBackingInt(@intCast((@as(u8, @backingInt(screen)) + 1) % 12));
-                for (reference.catalog.scenarios, 0..) |s, i| if (s.screen == next) {
-                    self.lab_scenario = i;
-                    break;
-                };
+                const current = reference.catalog.feature(reference.catalog.scenarios[self.lab_scenario]);
+                const next: reference.catalog.Feature = @fromBackingInt(@intCast((@as(u8, @backingInt(current)) + 1) % @typeInfo(reference.catalog.Feature).@"enum".field_names.len));
+                self.selectLabFeature(next);
+            },
+            115 => self.nextLabSurface(),
+            120...127 => {
+                const features = [_]reference.catalog.Feature{ .menu, .contacts, .qsp, .cq, .synth, .ehagaki, .settings, .wifi };
+                self.selectLabFeature(features[id - 120]);
             },
             113 => self.nextLabScenario(),
             114 => self.lab_compare = @fromBackingInt(@intCast((@as(u8, @backingInt(self.lab_compare)) + 1) % 5)),
@@ -444,23 +457,38 @@ pub const Studio = struct {
         self.frame_number +%= 1;
         self.paint();
     }
-    fn nextLabScenario(self: *Studio) void {
-        const screen = reference.catalog.scenarios[self.lab_scenario].screen;
-        var next = (self.lab_scenario + 1) % reference.catalog.scenarios.len;
-        if (reference.catalog.scenarios[next].screen != screen) {
-            next = 0;
-            while (reference.catalog.scenarios[next].screen != screen) : (next += 1) {}
+    fn selectLabFeature(self: *Studio, wanted: reference.catalog.Feature) void {
+        for (reference.catalog.scenarios, 0..) |s, i| if (reference.catalog.feature(s) == wanted) {
+            self.lab_scenario = i;
+            break;
+        };
+    }
+    fn nextLabSurface(self: *Studio) void {
+        const current = reference.catalog.scenarios[self.lab_scenario];
+        for (1..reference.catalog.scenarios.len) |offset| {
+            const next = (self.lab_scenario + offset) % reference.catalog.scenarios.len;
+            const s = reference.catalog.scenarios[next];
+            if (reference.catalog.feature(s) == reference.catalog.feature(current) and !reference.catalog.sameSurface(s, current)) {
+                self.lab_scenario = next;
+                return;
+            }
         }
-        self.lab_scenario = next;
+    }
+    fn nextLabScenario(self: *Studio) void {
+        self.moveLabScenario(false);
     }
     fn previousLabScenario(self: *Studio) void {
-        const screen = reference.catalog.scenarios[self.lab_scenario].screen;
-        var next = (self.lab_scenario + reference.catalog.scenarios.len - 1) % reference.catalog.scenarios.len;
-        if (reference.catalog.scenarios[next].screen != screen) {
-            next = reference.catalog.scenarios.len - 1;
-            while (reference.catalog.scenarios[next].screen != screen) : (next -= 1) {}
+        self.moveLabScenario(true);
+    }
+    fn moveLabScenario(self: *Studio, back: bool) void {
+        const current = reference.catalog.scenarios[self.lab_scenario];
+        for (1..reference.catalog.scenarios.len) |offset| {
+            const next = if (back) (self.lab_scenario + reference.catalog.scenarios.len - offset) % reference.catalog.scenarios.len else (self.lab_scenario + offset) % reference.catalog.scenarios.len;
+            if (reference.catalog.sameSurface(current, reference.catalog.scenarios[next])) {
+                self.lab_scenario = next;
+                return;
+            }
         }
-        self.lab_scenario = next;
     }
 };
 
@@ -660,7 +688,7 @@ test "Studio Lab selects frozen scenarios and resolves scoped controls" {
     s.rebuildPreview();
     s.clickControl(111);
     try std.testing.expect(s.lab);
-    try std.testing.expectEqual(@as(u8, 4), s.preview_scale);
+    try std.testing.expectEqual(@as(u8, 3), s.preview_scale);
     try std.testing.expectEqualSlices(u8, reference.catalog.scenarios[0].expected, &s.legacy_pixels);
     const View = ui.ui.Ui(u16, StudioUi.configuration);
     const panel = View.childId(View.rootId(1), 200);
@@ -732,5 +760,33 @@ test "Mo-Bus preview navigates independently inside the Studio PBM surface" {
         var bytes: [128]u8 = undefined;
         try ui.headless.renderPage(&shifted, &bytes, 128, @intCast(page));
         try std.testing.expectEqualSlices(u8, full[page * 128 ..][0..128], &bytes);
+    }
+}
+
+test "UI Lab directly selects product features and traverses their surfaces" {
+    const View = ui.ui.Ui(u16, StudioUi.configuration);
+    var s = Studio{};
+    s.clickControl(111);
+    s.clickControl(122);
+    try std.testing.expectEqual(reference.catalog.Feature.qsp, reference.catalog.feature(reference.catalog.scenarios[s.lab_scenario]));
+    try std.testing.expectEqualStrings("history", reference.catalog.surface(reference.catalog.scenarios[s.lab_scenario]));
+    s.clickControl(115);
+    try std.testing.expectEqualStrings("composer", reference.catalog.surface(reference.catalog.scenarios[s.lab_scenario]));
+    s.clickControl(124);
+    try std.testing.expectEqualStrings("grid", reference.catalog.surface(reference.catalog.scenarios[s.lab_scenario]));
+    s.clickControl(115);
+    try std.testing.expectEqualStrings("header", reference.catalog.surface(reference.catalog.scenarios[s.lab_scenario]));
+    s.clickControl(125);
+    try std.testing.expectEqual(reference.catalog.Feature.ehagaki, reference.catalog.feature(reference.catalog.scenarios[s.lab_scenario]));
+    const root = View.rootId(1);
+    try std.testing.expectEqual(@as(?u16, 125), Studio.controlId(View.childId(root, 125)));
+}
+test "every candidate seed shares the legacy fixture without pixel differences" {
+    for (reference.catalog.scenarios) |scenario| {
+        var legacy: [1024]u8 = undefined;
+        var design: [1024]u8 = undefined;
+        reference.render(scenario, reference.fixtures.defaults, &legacy);
+        candidate.render(scenario, reference.fixtures.defaults, &design);
+        try std.testing.expectEqualSlices(u8, &legacy, &design);
     }
 }

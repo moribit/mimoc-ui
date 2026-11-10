@@ -19,6 +19,7 @@ pub fn build(b: *std.Build) void {
     const reference_tests = b.addRunArtifact(b.addTest(.{ .root_module = reference_module }));
     test_step.dependOn(&reference_tests.step);
     b.step("check-mobus-reference", "Independent OLED equality and deterministic scenarios").dependOn(&reference_tests.step);
+    b.step("check-mobus-product-coverage", "Require captured P0 product surfaces before candidate redesign").dependOn(&reference_tests.step);
     const reference_snapshot = b.addExecutable(.{ .name = "mobus-reference-snapshot", .root_module = b.createModule(.{ .root_source_file = b.path("examples/mobus/reference/snapshot.zig"), .target = target, .optimize = optimize }) });
     reference_snapshot.root_module.addImport("mimoc_ui", module);
     b.installArtifact(reference_snapshot);

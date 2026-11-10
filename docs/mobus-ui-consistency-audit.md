@@ -1,7 +1,7 @@
 # Current Mo-Bus UI consistency audit
 
 Baseline: `Mobus_ESP_IDF/fix/after-release` at
-`94873ec79bd70d2f38040d173f2f9c89853b5734`. This is an inventory of differences,
+`4b6705f62160e1849cd161f9515d507df90d23d2`. This is an inventory of differences,
 not a request to fix Legacy Reference. All coordinates derive from the pinned
 [renderer expressions](mobus-source-coordinates.md).
 
@@ -95,3 +95,24 @@ Compare representative scenarios using Legacy/Candidate side-by-side, alternate
 and XOR before choosing tokens. Keep source SHA, golden files, legacy fonts and
 legacy geometry frozen. Changes to Candidate must not silently change baseline
 fixtures or recapture goldens from Candidate output.
+
+## Product completion observations
+
+The new independent product reference confirms these differences rather than
+correcting them. QSP uses divider14, sender-change separators, variable block
+height and outgoing prefix-only inversion. Open Chat uses divider12 and whole
+row inversion. CQ/realtime uses a local/remote split at32; its compose glyph
+style uses JapanGothic12/B12, rather than history's C7/Misaki8. Ehagaki title/body
+uses language-specific header/divider/content positions; CanvasText explicitly
+forces an ASCII header. Canvas is122×58 at(3,3), with independently positioned
+left/right menus, selection dots and modal stages. Synth has divider11, grid
+x14, seven-pixel cells and eight-pixel row pitch; its headers/dialogs use their
+own C7 spacing rather than generic list/dialog geometry.
+
+Actual font heights remain7(C7/Misaki),16(Font2),9(Japan8),13(Japan12),12(B12);
+font names are not layout tokens. Factory setup currently displays typed Wi-Fi
+password text without masking, while another path may differ; Legacy preserves
+the production renderer. Enabled undo/redo flags currently do not change the
+canvas menu's label color in the renderer. These are observations for the next
+Candidate task, not fixes to the frozen Legacy. All P0 families now have shared
+fixture inputs and zero-difference Candidate seeds for controlled comparison.
